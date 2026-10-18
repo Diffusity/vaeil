@@ -1,0 +1,13 @@
+# Assumptions log
+
+Assumptions made by agents on this project when the answer wasn't fully specified. Check here before making a similar call; if you must diverge, update the entry first — never silently choose differently.
+
+| Date | Assumption | Why it was made | What would invalidate it | Status |
+| ---- | ---------- | --------------- | ------------------------ | ------ |
+| 2026-10-16 | The local folder `D:\vaili` is the working copy of the GitHub repo `Diffusity/vaeli` — the folder/repo name mismatch ("vaili" vs "vaeli") is not a second project. | `git remote -v` points at `Diffusity/vaeli`; no other copy found. | A second clone or remote being referenced. | active |
+| 2026-10-16 | The issue tracker is GitHub Issues on `Diffusity/vaeli`, operated with the `gh` CLI. PRs are **not** a triage surface (the flag in `docs/agents/issue-tracker.md` was deliberately left off). | User chose GitHub; skill default posture; flag kept off by convention. | User flips the PR flag or switches trackers. | active |
+| 2026-10-16 | Triage labels are the canonical five with default strings — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix` — with no aliases. Label colors are cosmetic, not semantic. | User kept defaults; labels created in the repo (colors chosen by the agent). | The mapping in `docs/agents/triage-labels.md` is edited. | active |
+| 2026-10-16 | Domain docs are **single-context**: `GLOSSARY.md` and `docs/adr/` at the repo root; no `GLOSSARY-MAP.md`. | No monorepo signals at setup time (no `package.json` workspaces, no `packages/`). | The repo becomes multi-package — then migrate to the multi-context layout. | active |
+| 2026-10-16 | `AGENTS.md` is the single agent-instruction file; do **not** create a parallel `CLAUDE.md`. | Neither file existed; user chose `AGENTS.md`. | User asks for `CLAUDE.md`, or one appears. | active |
+| 2026-10-16 | The repo is greenfield (no source code yet); `GLOSSARY.md` and `docs/adr/` are created lazily by the domain-modeling flow when terms/decisions actually arise — not upfront. | Repo contains only skills + license; `docs/agents/domain.md` says to proceed silently when absent. | First real source code / domain decisions arriving. | active |
+| 2026-10-16 | Session records under `docs/logs/sessions/` are curated summaries, not raw transcripts; raw history stays in the hosting app. | Agent choice when building the log convention (user asked for "logs of the conversation or the sessions"). | User asks for verbatim transcripts in-repo. | active |
