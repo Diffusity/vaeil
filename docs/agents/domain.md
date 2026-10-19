@@ -14,7 +14,7 @@ If any of these files don't exist, **proceed silently**. Don't flag their absenc
 
 One vocabulary, two files — never let them disagree, never invent a third name:
 
-- **`UBIQUITOUS_LANGUAGE.md`** — the IT643-evaluated artifact: `Term | Definition | Aliases to avoid | Named in code at`, plus a **Flagged ambiguities** section (one word for two concepts, or two words for one — say which wins). Its code citations must match reality; stale docs are graded as absent.
+- **`UBIQUITOUS_LANGUAGE.md`** — the IT643-evaluated artifact. Structure, in order: grouped term tables (`Term | Definition | Aliases to avoid | Named in code at`), **Relationships**, **Example dialogue**, **Flagged ambiguities** (one word for two concepts, or two words for one — say which wins), **Code drift**. Citations are `path:line` and must match reality; stale docs are graded as absent. Report drift, never silently rename a term.
 - **`GLOSSARY.md`** — the skills'/agents' view, following the domain-modeling format: definitions and `_Avoid_` synonyms only, no implementation details.
 - **Sync rule:** when a term is settled, added, or changed, update **both** in the same change. If they disagree, the code wins — fix the file that is stale.
 
