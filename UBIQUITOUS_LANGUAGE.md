@@ -10,7 +10,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | _(absent)_ |
 | **Member** | A vetted person admitted to the platform. | user, account, player | _(absent)_ |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name under which a Member appears before a Reveal; their real name, photos, and contact details stay hidden. | alias, username, handle | _(absent)_ |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique (case-insensitive), fixed once set, and must never be a Personal identifier. | alias, username, handle | _(absent)_ |
 
 ## Onboarding & vetting
 
@@ -36,6 +36,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Conversation** | The private, anonymous exchange between the two Members of a Match. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
 | **Withheld** | A Message not delivered because moderation failed or timed out; the sender retries. | blocked (see **Block**), filtered, rejected | _(absent)_ |
+| **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; moderation detects them in Messages before a Reveal. | PII, personal data, doxxing | _(absent)_ |
 | **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
@@ -49,10 +50,11 @@ The words the product is about. Same format as the IT643 labs; this file is part
 - A **Match** pairs exactly two **Members**; a declined **Match** opens no **Conversation** and the pair is never proposed again.
 - A **Conversation** holds many **Messages**; each **Message** is sent by one of its two **Members**.
 - An **Escalated** **Message** is delivered, enters the Admin review queue, and is recorded in the audit log.
+- Identifier detection is per **Conversation**: **Personal identifiers** in a **Message** are **Escalated** only before that **Conversation**'s **Reveal**; afterwards they stop being **Escalated**, though safety moderation continues.
 - A **Report** enters the Admin review queue.
 - A **Reveal** is offered only once the **Engagement Threshold** is met, and requires **Reveal Consent** from both **Members**.
 - A **Block** ends a **Conversation** and prevents any future **Match** between the pair; after a **Reveal** the **Reveal** stands and both **Members** can still **Report**.
-- Before a **Reveal**, a **Member** appears only as a **Pseudonym**.
+- Before a **Reveal**, a **Member** appears only as a **Pseudonym**; a **Pseudonym** must never be a **Personal identifier** — a taken or identifier-like one is rejected and the **Member** picks another.
 
 ## Example dialogue
 
@@ -64,6 +66,8 @@ The words the product is about. Same format as the IT643 labs; this file is part
 > **Expert:** Never. Neither the AI nor a Member can force a Reveal or expose an identity.
 > **Developer:** What if someone types their phone number before the Reveal?
 > **Expert:** Moderation detects personal identifiers and marks the Message Escalated. It is still delivered, but an Admin reviews it afterwards and it lands in the audit log. We don't withhold it — we just don't treat it as normal.
+> **Developer:** What stops someone from just using their real name as a Pseudonym?
+> **Expert:** The same identifier check as Messages — a Pseudonym that looks like a real name, email, phone number, or handle is rejected, and they pick another. Once set, a Pseudonym is fixed.
 > **Developer:** And if someone blocks after a Reveal?
 > **Expert:** The Conversation ends, the pair is never rematched, and the Reveal stands. Both can still Report.
 

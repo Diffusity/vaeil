@@ -25,7 +25,7 @@ The human operator. Every rejection of an Applicant is an Admin decision, and th
 _Avoid_: moderator, staff, superuser
 
 **Pseudonym**:
-The name under which a Member appears before a Reveal; their real name, photos, and contact details stay hidden.
+The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique (case-insensitive), fixed once set, and must never be a Personal identifier.
 _Avoid_: alias, username, handle
 
 ### Onboarding & vetting
@@ -73,6 +73,10 @@ _Avoid_: text, line, post
 **Withheld**:
 A Message not delivered because moderation failed or timed out; the sender retries.
 _Avoid_: blocked (see Block), filtered, rejected
+
+**Personal identifier**:
+A real name, email address, phone number, or social handle that ties text to a Member's identity; moderation detects them in Messages before a Reveal.
+_Avoid_: PII, personal data, doxxing
 
 **Escalated**:
 A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards.

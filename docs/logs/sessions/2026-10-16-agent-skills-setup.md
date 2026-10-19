@@ -79,3 +79,12 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 - **Fail-closed rule**: cost cap hit or LLM failure → Messages Withheld, vetting NeedsReview; never fail open.
 - **Cold start**: seed the team + friends; hand Invites to classmates only once the MVP is stable.
 - Still open: LLM provider + monthly cap (Parth to supply — left blank in Round 2); viva date; hours/week.
+
+## 2026-10-19 — grill-with-docs Round 3 (Q11) decisions
+
+- **LLM provider + cap**: still blank — deferred by agreement; build against the LLM port with the fake adapter, Parth swaps in the real adapter before the first LLM-backed slice. Due again at deployment.
+- **Identifier detection is per Conversation, never global**: pre-Reveal, **Personal identifiers** in Messages are Escalated; after that pair's Reveal they stop being Escalated (normal safety moderation continues); a Reveal in one pair never relaxes detection in another.
+- **The boundary (DESIGN.md)**: the LLM port is the cited boundary — the core owns the interface and the real adapter is wired at exactly one place. DESIGN.md must cite the port at its exact file:line plus that single wiring point, so "where does your core stop?" has one precise answer. Storage/repository is a secondary seam — mentioned, not cited.
+- **Pseudonyms**: Member-chosen during Onboarding; platform-unique (case-insensitive); must pass the same identifier check as Messages (no real names, emails, phone numbers, handles) — a taken or identifier-like one is rejected and the Member picks another; fixed once set.
+- New term: **Personal identifier**; Pseudonym definition tightened.
+- Status: awaiting Parth's confirmation of the shared understanding (recap sent in chat); on confirmation, the definition phase closes and the build phase starts (spec → GitHub issues → first TDD slice).
