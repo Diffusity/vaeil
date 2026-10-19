@@ -30,3 +30,13 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 
 - `AGENTS.md`, `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`
 - Issue tracker: https://github.com/Diffusity/vaeli
+
+## 2026-10-18 addendum
+
+- Committed the setup as `48f75f2` on `master` ("Add agent skills setup and project logs"): `AGENTS.md`, `docs/`, and `.gitignore` (which keeps the vendored `.agents/` skills directory and `skills-lock.json` out of the repo).
+
+## 2026-10-19 addendum
+
+- Surfaced a local `main` branch (GitHub's default branch) carrying three local-only commits imported from `vaeil.zip` — skeleton, backend slices (domain rules, `Clock` port/adapter), and a pytest suite. `origin/main` is still at "Initial commit" (`d4199cb`); nothing has been pushed.
+- **User decision:** development continues on `master`; `main` is out of scope — left untouched, not to be merged, checked out, or cherry-picked from (see `../assumptions.md`).
+- Push to GitHub deferred (user: "Not yet"). Everything stays local.
