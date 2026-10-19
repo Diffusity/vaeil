@@ -9,7 +9,8 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. | invitation, referral code, signup code | _(absent)_ |
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | _(absent)_ |
 | **Member** | A vetted person admitted to the platform. | user, account, player | _(absent)_ |
-| **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff | _(absent)_ |
+| **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
+| **Pseudonym** | The name under which a Member appears before a Reveal; their real name, photos, and contact details stay hidden. | alias, username, handle | _(absent)_ |
 
 ## Onboarding & vetting
 
@@ -24,7 +25,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Match** | A pairing of two Members proposed for anonymous Conversation. | introduction, pairing, date | _(absent)_ |
+| **Match** | A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept. | introduction, pairing, date | _(absent)_ |
 | **Icebreaker** | A short, AI-written opening line offered to a Match to help start the Conversation. | prompt, opener, pickup line | _(absent)_ |
 | **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 Messages in total, at least 5 from each Member, over at least 3 days. | milestone, quota | _(absent)_ |
 
@@ -35,19 +36,23 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Conversation** | The private, anonymous exchange between the two Members of a Match. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
 | **Withheld** | A Message not delivered because moderation failed or timed out; the sender retries. | blocked (see **Block**), filtered, rejected | _(absent)_ |
+| **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
-| **Block** | A post-Reveal action that ends the Conversation, prevents any future Match between the pair, and leaves the Reveal standing. | unmatch, ban | _(absent)_ |
+| **Block** | An action that ends the Conversation and prevents any future Match between the pair; after a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
 
 ## Relationships
 
-- An **Invite** is redeemed by a single **Applicant**; an under-18's **Invite** stays unused.
-- An **Applicant** with an Approved **Verdict** becomes a **Member**. _(pending: before or after Onboarding)_
-- A **Match** pairs exactly two **Members** and opens one **Conversation**.
+- An **Invite** is issued by an **Admin** (Member-issued Invites are a planned extension) and is redeemed by a single **Applicant**; an under-18's **Invite** stays unused.
+- An **Applicant** becomes a **Member** at the Approved **Verdict**; a NeedsReview **Applicant** becomes a **Member** when an **Admin** approves.
+- A **Match** pairs exactly two **Members**; a declined **Match** opens no **Conversation** and the pair is never proposed again.
 - A **Conversation** holds many **Messages**; each **Message** is sent by one of its two **Members**.
+- An **Escalated** **Message** is delivered, enters the Admin review queue, and is recorded in the audit log.
+- A **Report** enters the Admin review queue.
 - A **Reveal** is offered only once the **Engagement Threshold** is met, and requires **Reveal Consent** from both **Members**.
-- A **Block** ends a **Conversation** and prevents any future **Match** between the pair; the **Reveal** stands.
+- A **Block** ends a **Conversation** and prevents any future **Match** between the pair; after a **Reveal** the **Reveal** stands and both **Members** can still **Report**.
+- Before a **Reveal**, a **Member** appears only as a **Pseudonym**.
 
 ## Example dialogue
 
@@ -57,18 +62,20 @@ The words the product is about. Same format as the IT643 labs; this file is part
 > **Expert:** Only once they've met the Engagement Threshold — 20 messages, at least 5 from each, over at least 3 days — and only with Reveal Consent from both. Either can withdraw consent until the Reveal happens.
 > **Developer:** Can one of them force it?
 > **Expert:** Never. Neither the AI nor a Member can force a Reveal or expose an identity.
+> **Developer:** What if someone types their phone number before the Reveal?
+> **Expert:** Moderation detects personal identifiers and marks the Message Escalated. It is still delivered, but an Admin reviews it afterwards and it lands in the audit log. We don't withhold it — we just don't treat it as normal.
 > **Developer:** And if someone blocks after a Reveal?
 > **Expert:** The Conversation ends, the pair is never rematched, and the Reveal stands. Both can still Report.
 
 ## Flagged ambiguities
 
-Pending decisions (winner to be confirmed):
-1. **Match vs Introduction** — early drafts said "Introduction"; the product spec says "Match". Winner: **Match** (pending confirmation).
-2. **When is an Applicant a Member?** — at the Approved Verdict, or only after Onboarding?
-3. **Block before a Reveal?** — the spec states Block "after a Reveal"; the pre-Reveal exit path is undecided.
-4. **Who issues Invites?** — undecided (Admin-issued proposed for the MVP).
-5. **Who reviews escalated Messages?** — "reviewed afterwards" names no reviewer (Admin proposed).
-6. **Match acceptance** — must both Members accept a proposed Match before its Conversation opens?
+Resolved — winners recorded (kept here as findings):
+1. **Match vs Introduction** — two words for one concept. Winner: **Match**; "Introduction" is an alias to avoid.
+2. **Applicant → Member timing** — Winner: at the Approved Verdict; a NeedsReview Applicant becomes a Member when an Admin approves.
+3. **Block timing** — the spec said "after a Reveal". Winner: Block is available any time; post-Reveal the Reveal stands and Reporting remains possible.
+4. **Invite issuer** — Winner: Admin-issued in the MVP; the model carries an issuer so Member-issued Invites are a later, non-breaking extension.
+5. **Escalation reviewer** — Winner: an Admin, via the review queue.
+6. **Match acceptance** — Winner: both Members must accept; a declined Match is never proposed again.
 
 ## Code drift
 

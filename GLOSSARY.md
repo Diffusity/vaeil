@@ -2,7 +2,7 @@
 
 Invite-only, anonymous matchmaking: AI curates Matches and identity is revealed only by mutual consent. Single context — this is the implementation-free view; the evaluated artifact with code citations is `UBIQUITOUS_LANGUAGE.md`. Keep both in sync — see `docs/agents/domain.md`.
 
-Open term questions are flagged in `UBIQUITOUS_LANGUAGE.md` (Flagged ambiguities) until resolved.
+Term decisions (including resolved ambiguities) are recorded in `UBIQUITOUS_LANGUAGE.md`.
 
 ## Language
 
@@ -23,6 +23,10 @@ _Avoid_: user, account, player
 **Admin**:
 The human operator. Every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews.
 _Avoid_: moderator, staff, superuser
+
+**Pseudonym**:
+The name under which a Member appears before a Reveal; their real name, photos, and contact details stay hidden.
+_Avoid_: alias, username, handle
 
 ### Onboarding & vetting
 
@@ -45,7 +49,7 @@ _Avoid_: setup, intake, signup flow
 ### Matching
 
 **Match**:
-A pairing of two Members proposed for anonymous Conversation.
+A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept.
 _Avoid_: introduction, pairing, date
 
 **Icebreaker**:
@@ -70,6 +74,10 @@ _Avoid_: text, line, post
 A Message not delivered because moderation failed or timed out; the sender retries.
 _Avoid_: blocked (see Block), filtered, rejected
 
+**Escalated**:
+A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards.
+_Avoid_: flagged, suspicious, quarantined
+
 **Reveal**:
 The event that ends anonymity: both Members' identities become known to each other.
 _Avoid_: unmask, unlock
@@ -79,7 +87,7 @@ A Member's agreement to a Reveal. Both are required; either can be withdrawn unt
 _Avoid_: opt-in, approval
 
 **Block**:
-A post-Reveal action that ends the Conversation, prevents any future Match between the pair, and leaves the Reveal standing.
+An action that ends the Conversation and prevents any future Match between the pair; after a Reveal the Reveal stands and both Members can still Report.
 _Avoid_: unmatch, ban
 
 **Report**:

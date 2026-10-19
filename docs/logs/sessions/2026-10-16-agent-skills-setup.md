@@ -61,3 +61,21 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 - **Team**: Parth builds (agent-driven implementation, Parth reviews each slice); Nevil, Tej, Vatsal get `ready-for-human` issues (test cases from the TESTING.md plan, rule-doc review, viva walkthrough notes) — to be created once those plans exist. All four must be able to explain any `file:line` → keep the MVP small, docs clean.
 - **Stack**: FastAPI + React (Vite; no server-rendered HTML); pure domain core with ports/adapters as the one graded boundary; LLM behind a port with a fake adapter in tests; SQLite locally. Deployment: only hosts with persistent disk, else hosted Postgres behind a repository port. Local workflow must be PowerShell-native (no bash/WSL/Makefile).
 - Vocabulary files populated: 18 terms across Access / Onboarding & vetting / Matching / Conversation & safety; six ambiguities flagged in `UBIQUITOUS_LANGUAGE.md` for Round 2.
+
+## 2026-10-19 — grill-with-docs session, Round 2 decisions
+
+- **Six rules final** (present all six everywhere; "6 of 6" in TESTING.md — the course's five plus the team-added age gate):
+  1. **Invite-only access** — nobody gets an account without redeeming an Invite.
+  2. **Vetting never rejects** — the AI outputs Approved or NeedsReview only; every rejection is an Admin decision.
+  3. **Moderated delivery** — a Message reaches the other Member only after moderation passes; on failure/timeout it is Withheld and the sender retries; an Escalated message is delivered and reviewed afterwards by an Admin.
+  4. **Consensual Reveal** — offered only once the Engagement Threshold is met; requires Reveal Consent from both; withdrawable until it happens; irreversible after.
+  5. **Anonymity before Reveal** — the system never shows or sends a Member's real name, photo, or contact details to their Match outside a Reveal; identity is shown only as a Pseudonym plus the Values Profile.
+  6. **Age gate** — 18+ validated before an Invite is redeemed; an under-18's Invite stays unused.
+- Curated-only matching (no browsing/search) is a DESIGN.md constraint, not a numbered rule.
+- **Ambiguities resolved** (winners in `UBIQUITOUS_LANGUAGE.md`): Match (not Introduction); Member at Approved Verdict (NeedsReview → Member on Admin approval); Block available any time; Admin-issued Invites (issuer modelled for later Member-issued); Admin reviews escalations; both Members must accept a Match (declines are permanent for that pair).
+- **Anonymity contract**: pre-Reveal = Pseudonym + Values Profile; name/photos/contact hidden; photos exist only post-Reveal. Personal identifiers typed into Messages are detected by moderation → Escalated: delivered, Admin queue, audit log — never Withheld for this. Rule 5 governs what the system shows/sends, not what Members type.
+- **MVP scope additions**: Report joins the Admin review queue; Admin invite issuance; seeded demo data; matching stays Admin-triggered. If time gets tight, trim in order: Engagement Threshold progress UI → Report UI → polish; never trim the Admin console or the Reveal.
+- **Audit log**: minimal, append-only; events: invite redeemed, verdict, escalation, reveal, block, report. No analytics.
+- **Fail-closed rule**: cost cap hit or LLM failure → Messages Withheld, vetting NeedsReview; never fail open.
+- **Cold start**: seed the team + friends; hand Invites to classmates only once the MVP is stable.
+- Still open: LLM provider + monthly cap (Parth to supply — left blank in Round 2); viva date; hours/week.
