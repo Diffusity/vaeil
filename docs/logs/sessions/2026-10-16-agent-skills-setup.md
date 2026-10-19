@@ -40,3 +40,11 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 - Surfaced a local `main` branch (GitHub's default branch) carrying three local-only commits imported from `vaeil.zip` — skeleton, backend slices (domain rules, `Clock` port/adapter), and a pytest suite. `origin/main` is still at "Initial commit" (`d4199cb`); nothing has been pushed.
 - **User decision:** development continues on `master`; `main` is out of scope — left untouched, not to be merged, checked out, or cherry-picked from (see `../assumptions.md`).
 - Push to GitHub deferred (user: "Not yet"). Everything stays local.
+
+## 2026-10-19 — Course deliverables wired in
+
+- Read the IT643 project page (https://it643.ankushchander.com/project/): evaluation requires four root files — `README.md`, `UBIQUITOUS_LANGUAGE.md`, `DESIGN.md`, `TESTING.md` — and docs are graded against the code (`file:line`); stale docs count as absent.
+- Created `UBIQUITOUS_LANGUAGE.md` (course format: term table + flagged ambiguities) and `GLOSSARY.md` (skills format). Both are intentionally empty of terms: the course warns an unreviewed agent-authored glossary is worse than none — the team populates them.
+- `docs/agents/domain.md`: vocabulary section added (read both files; keep in sync; code wins on disagreement).
+- `AGENTS.md`: `## Project constraints` section added.
+- Not yet created on `master`: `README.md`, `DESIGN.md`, `TESTING.md` — they land with the work.

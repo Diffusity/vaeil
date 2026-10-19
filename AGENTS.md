@@ -15,3 +15,7 @@ Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents
 ## Project logs
 
 Assumptions and session history live in `docs/logs/`. Before deciding anything ambiguous for this project, read `docs/logs/assumptions.md` and stay consistent with recorded assumptions; record any new assumption there (dated, with what would invalidate it). Append a session summary to `docs/logs/sessions/` when a session's work is done. See `docs/logs/README.md`.
+
+## Project constraints
+
+IT643 course project — evaluation requires four files at the repo root: `README.md`, `UBIQUITOUS_LANGUAGE.md`, `DESIGN.md`, `TESTING.md`. Docs are graded against the code (`file:line`); stale docs count as absent. The shared vocabulary lives in `UBIQUITOUS_LANGUAGE.md` + `GLOSSARY.md`, kept in sync — rules in `docs/agents/domain.md`, rationale in `docs/logs/assumptions.md`.
