@@ -48,3 +48,16 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 - `docs/agents/domain.md`: vocabulary section added (read both files; keep in sync; code wins on disagreement).
 - `AGENTS.md`: `## Project constraints` section added.
 - Not yet created on `master`: `README.md`, `DESIGN.md`, `TESTING.md` — they land with the work.
+
+## 2026-10-19 — grill-with-docs session, Round 1 decisions
+
+- **Product shape (corrected)**: Vaeil — invite-only, anonymous matchmaking for college students and young professionals (18–28). One loop only: invite → vet → onboard → match → anonymous chat → reveal.
+- **Invite flow**: an Applicant redeems an Invite; AI Vetting returns Approved or NeedsReview (never auto-reject); an Admin makes every rejection.
+- **AI powers**: builds the Values Profile (conversational Onboarding); vets Applicants; scores compatibility and proposes Matches; writes Icebreakers; moderates Messages (LLM failure/timeout → Message is Withheld, sender retries; escalated Messages are delivered and reviewed afterwards); never forces a Reveal or exposes identity.
+- **Reveal**: mutual Reveal Consent (withdrawable until it happens; irreversible after); offered once the Engagement Threshold is met (≥20 Messages total, ≥5 from each, ≥3 days). "Introduction runs out of time" was dropped — never decided.
+- **Block/Report (post-Reveal)**: Block ends the Conversation, the pair is never rematched, the Reveal stays, both can still Report.
+- **Six rules, not five** — the sixth is 18+ validation before Invite redemption (an under-18's Invite stays unused). The course page says "five rules"; plan (pending confirmation): present all six in DESIGN.md/TESTING.md rather than dropping one.
+- **Delivery**: ceiling 9 (deployed MVP, live URL); chase 10 opportunistically. Deadline: start of December 2026; viva date TBD.
+- **Team**: Parth builds (agent-driven implementation, Parth reviews each slice); Nevil, Tej, Vatsal get `ready-for-human` issues (test cases from the TESTING.md plan, rule-doc review, viva walkthrough notes) — to be created once those plans exist. All four must be able to explain any `file:line` → keep the MVP small, docs clean.
+- **Stack**: FastAPI + React (Vite; no server-rendered HTML); pure domain core with ports/adapters as the one graded boundary; LLM behind a port with a fake adapter in tests; SQLite locally. Deployment: only hosts with persistent disk, else hosted Postgres behind a repository port. Local workflow must be PowerShell-native (no bash/WSL/Makefile).
+- Vocabulary files populated: 18 terms across Access / Onboarding & vetting / Matching / Conversation & safety; six ambiguities flagged in `UBIQUITOUS_LANGUAGE.md` for Round 2.
