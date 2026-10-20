@@ -88,3 +88,16 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 - **Pseudonyms**: Member-chosen during Onboarding; platform-unique (case-insensitive); must pass the same identifier check as Messages (no real names, emails, phone numbers, handles) — a taken or identifier-like one is rejected and the Member picks another; fixed once set.
 - New term: **Personal identifier**; Pseudonym definition tightened.
 - Status: awaiting Parth's confirmation of the shared understanding (recap sent in chat); on confirmation, the definition phase closes and the build phase starts (spec → GitHub issues → first TDD slice).
+
+## 2026-10-20 — Definition phase closed
+
+Parth confirmed the shared-understanding recap. Ratified on top of Rounds 1–3:
+
+- **Tag requirement corrected**: the viva needs **a pushed `project-final` tag** (the recap's "≥project-final tag" was wrong). Recorded in `../assumptions.md` and `DESIGN.md`.
+- **Earlier decisions re-verified**: Pseudonym rules; Member timing (Approved at the verdict, NeedsReview on Admin approval); Match decline (never re-proposed); Block available any time (post-Reveal: Reveal stands, pair never rematched, both can still Report); under-18's Invite stays unused; Withheld + retry and Escalated delivered + reviewed by an Admin; Admin-issued Invites with an issuer for a later Member-issued extension; identifier detection per Conversation. All were already in the Round 2/3 entries and are now also in `UBIQUITOUS_LANGUAGE.md` and `GLOSSARY.md` definitions/relationships.
+- **Conversation lifecycle**: a Member has at most one active Conversation at a time and is not proposed in new Match batches while it is active; a Conversation ends by a Block or after a completed Reveal, after which the Member can be proposed again.
+- **Known limitation (MVP)**: no auto-expiry of inactive Conversations — recorded in `DESIGN.md`.
+- **Demo pool**: because the Engagement Threshold needs ≥3 days, the seeded pool must be large enough that an Admin-triggered batch still produces Matches; seeded Conversations carry backdated Messages.
+- **Clock port**: time comes from an injectable Clock port — a second secondary seam beside the repository port; Rule 4's 3-day threshold is testable without waiting, and seeds can backdate. The LLM port remains the cited boundary.
+- **Rule docs**: `DESIGN.md` created with the six rules, the ratified decisions, the boundary, and the known limitation (citations land with the code); `TESTING.md` starts with the first slice.
+- **Build phase starts**: spec → GitHub issues → first TDD slice (domain core).

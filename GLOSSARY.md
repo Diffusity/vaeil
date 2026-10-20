@@ -9,7 +9,7 @@ Term decisions (including resolved ambiguities) are recorded in `UBIQUITOUS_LANG
 ### Access
 
 **Invite**:
-A code that grants its holder the right to apply for membership; Vaeil is invite-only.
+A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension.
 _Avoid_: invitation, referral code, signup code
 
 **Applicant**:
@@ -17,7 +17,7 @@ A person who has redeemed an Invite and is being vetted; not yet a Member.
 _Avoid_: user, candidate, signup
 
 **Member**:
-A vetted person admitted to the platform.
+A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves.
 _Avoid_: user, account, player
 
 **Admin**:
@@ -49,7 +49,7 @@ _Avoid_: setup, intake, signup flow
 ### Matching
 
 **Match**:
-A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept.
+A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again.
 _Avoid_: introduction, pairing, date
 
 **Icebreaker**:
@@ -71,7 +71,7 @@ A single contribution to a Conversation, moderated before delivery.
 _Avoid_: text, line, post
 
 **Withheld**:
-A Message not delivered because moderation failed or timed out; the sender retries.
+A Message not delivered because moderation failed or timed out; the sender is told to retry.
 _Avoid_: blocked (see Block), filtered, rejected
 
 **Personal identifier**:
@@ -91,7 +91,7 @@ A Member's agreement to a Reveal. Both are required; either can be withdrawn unt
 _Avoid_: opt-in, approval
 
 **Block**:
-An action that ends the Conversation and prevents any future Match between the pair; after a Reveal the Reveal stands and both Members can still Report.
+An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report.
 _Avoid_: unmatch, ban
 
 **Report**:

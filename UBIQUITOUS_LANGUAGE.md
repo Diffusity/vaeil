@@ -6,9 +6,9 @@ The words the product is about. Same format as the IT643 labs; this file is part
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. | invitation, referral code, signup code | _(absent)_ |
+| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | _(absent)_ |
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | _(absent)_ |
-| **Member** | A vetted person admitted to the platform. | user, account, player | _(absent)_ |
+| **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | _(absent)_ |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
 | **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique (case-insensitive), fixed once set, and must never be a Personal identifier. | alias, username, handle | _(absent)_ |
 
@@ -25,7 +25,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Match** | A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept. | introduction, pairing, date | _(absent)_ |
+| **Match** | A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again. | introduction, pairing, date | _(absent)_ |
 | **Icebreaker** | A short, AI-written opening line offered to a Match to help start the Conversation. | prompt, opener, pickup line | _(absent)_ |
 | **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 Messages in total, at least 5 from each Member, over at least 3 days. | milestone, quota | _(absent)_ |
 
@@ -35,12 +35,12 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Conversation** | The private, anonymous exchange between the two Members of a Match. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
-| **Withheld** | A Message not delivered because moderation failed or timed out; the sender retries. | blocked (see **Block**), filtered, rejected | _(absent)_ |
+| **Withheld** | A Message not delivered because moderation failed or timed out; the sender is told to retry. | blocked (see **Block**), filtered, rejected | _(absent)_ |
 | **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; moderation detects them in Messages before a Reveal. | PII, personal data, doxxing | _(absent)_ |
 | **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
-| **Block** | An action that ends the Conversation and prevents any future Match between the pair; after a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
+| **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
 
 ## Relationships
@@ -49,6 +49,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 - An **Applicant** becomes a **Member** at the Approved **Verdict**; a NeedsReview **Applicant** becomes a **Member** when an **Admin** approves.
 - A **Match** pairs exactly two **Members**; a declined **Match** opens no **Conversation** and the pair is never proposed again.
 - A **Conversation** holds many **Messages**; each **Message** is sent by one of its two **Members**.
+- A **Member** has at most one active **Conversation** at a time and is not proposed in new **Match** batches while it is active; a **Conversation** ends by a **Block** or after a completed **Reveal**, after which the **Member** can be proposed again.
 - An **Escalated** **Message** is delivered, enters the Admin review queue, and is recorded in the audit log.
 - Identifier detection is per **Conversation**: **Personal identifiers** in a **Message** are **Escalated** only before that **Conversation**'s **Reveal**; afterwards they stop being **Escalated**, though safety moderation continues.
 - A **Report** enters the Admin review queue.
