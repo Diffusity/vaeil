@@ -97,3 +97,7 @@ _Avoid_: unmatch, ban
 **Report**:
 A flag a Member can raise against the other Member.
 _Avoid_: complaint, flag
+
+**Audit log**:
+An append-only record of the events an Admin may review: invite redeemed, verdict, escalation, reveal, block, report. No analytics.
+_Avoid_: event log, history, analytics

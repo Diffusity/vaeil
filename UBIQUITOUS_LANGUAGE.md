@@ -42,6 +42,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
+| **Audit log** | An append-only record of the events an Admin may review: invite redeemed, verdict, escalation, reveal, block, report. No analytics. | event log, history, analytics | _(absent)_ |
 
 ## Relationships
 

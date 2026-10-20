@@ -19,11 +19,25 @@ The course asks for five rules; the product has six — the five plus a team-add
 
 ## Decisions
 
-The course asks for three decisions with `file:line`; these are the three. Citations land with the code.
+The course asks for three design decisions. Each names the principle it applies, the `file:line` where it lives, and what it looked like before and why it changed. Citations are completed as the slices land; a later refactor is recorded here with the commit that shows the "before".
 
-1. **The domain core owns the LLM interface.** The LLM is the dependency worth protecting the domain from — probabilistic, timeout-prone, and fail-closed. The core defines the port; a fake adapter runs the tests; the real adapter is wired in exactly one place.
-2. **Anonymity is enforced per Conversation, not globally.** Identifier detection and Reveal state are scoped to the pair: a Reveal in one Conversation never relaxes detection in another.
-3. **Time is a port.** An injectable Clock lets tests cross the ≥3-day Engagement Threshold without waiting and lets seeded Conversations carry backdated Messages.
+### 1. The domain core owns the LLM interface
+
+- **Principle**: Dependency Inversion (SOLID) at the boundary (Lecture 23) — the core depends on an interface it owns, not on a provider SDK.
+- **Where**: `_pending_` (the port) + `_pending_` (the single place the real adapter is wired).
+- **Before / why**: the straightforward version calls the provider client directly from the vetting and moderation flows. Rejected in the design interview — the core would depend on an SDK, tests would need the network, and failures could not fail closed. The port keeps the core testable with a fake adapter and turns every failure into Withheld (messages) or NeedsReview (vetting).
+
+### 2. Anonymity is enforced per Conversation, not globally
+
+- **Principle**: information hiding — Reveal state and identifier detection are scoped to the pair, never to a global Member flag, so one Reveal cannot relax any other Conversation.
+- **Where**: `_pending_`.
+- **Before / why**: the first recommendation was to log contact details typed before a Reveal. Rejected because logging lets two Members bypass Reveal Consent and makes Rule 5 untestable. Changed to identifier detection that Escalates the Message (still delivered, Admin-reviewed, audited), then scoped per Conversation so a Reveal only relaxes its own pair.
+
+### 3. Time is a port
+
+- **Principle**: Dependency Inversion (SOLID) plus testability (Lecture 13–14) — the core asks for "now" instead of reading the system clock.
+- **Where**: `_pending_`.
+- **Before / why**: the Engagement Threshold's ≥3 days would have been tested by waiting, or faked ad hoc. Replaced with an injectable Clock so tests cross the threshold instantly and demo seeds backdate Messages.
 
 Also ratified and binding:
 
@@ -41,9 +55,10 @@ Storage sits behind a repository port and time behind a Clock port — secondary
 
 ## AI use
 
+- **Tools used**: OpenCode agents with the repository's engineering skills — for the design interview, domain vocabulary, specs, tests, docs, and implementation.
+- **For what**: Parth is the sole human implementer; the agent implements through the repository and Parth reviews every slice. Every claim in this repo's docs is checked against the code at the viva.
 - **In the product**: Vetting, Values Profiles via conversational Onboarding, compatibility scoring, Icebreakers, and Message moderation. The AI never rejects an Applicant, never forces a Reveal, and never exposes identity.
-- **In the build**: Parth is the sole human implementer; the agent implements through the repository and Parth reviews every slice. The repo's skills drive the domain docs, tests, and reviews.
-- **One rejected suggestion**: an early recommendation of a server-rendered HTML app was rejected in favour of FastAPI + React (Vite) with a pure domain core — no server-rendered HTML.
+- **One rejected suggestion**: an early recommendation of a server-rendered HTML app was rejected in favour of FastAPI + React (Vite) with a pure domain core — no server-rendered HTML, a clean client boundary, and a domain core that never imports a framework.
 
 ## Known limitations (MVP)
 
