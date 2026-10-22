@@ -113,3 +113,29 @@ Parth confirmed the shared-understanding recap. Ratified on top of Rounds 1–3:
   - The core imports nothing from FastAPI, the database, or any LLM SDK.
   - All commands run in PowerShell on Windows; no bash-only tooling.
   - Parth reviews and approves each slice before the next begins; tickets stay small enough to explain every file in one sitting.
+
+## 2026-10-22 — Slice 1 implemented (red → green → mutations)
+
+- **Ticket published**: https://github.com/Diffusity/vaeli/issues/1 — `ready-for-agent`, slice-1 scope and all acceptance criteria. Next ticket is deliberately held back until Parth reviews this slice.
+- **Red set expanded** beyond the original three tests, per Parth's review:
+  - Both sides of the 18th-birthday boundary (day before succeeds, day after is refused) and the on-the-day case.
+  - Leap-day rule chosen: a 29 February birthday turns 18 on **28 February** in non-leap years; tested on 2026-02-28 and 2026-03-01.
+  - Future date of birth → `FutureDateOfBirthError` (not `UnderageError`).
+  - Single-use Invite → `InviteAlreadyRedeemedError`, original redeemer unchanged.
+  - Unknown Invite (`None` at this seam) and malformed Invite (blank code) → `InvalidInviteError`; an underage Applicant gets `UnderageError` first because age is checked before the Invite is touched.
+  - Age check proven to use the injected Clock with a fixed fake date (2030-01-01) that differs from the real date.
+  - Vetting: port error, timeout, `"Reject"` string, and `None` all return `NeedsReview`; nothing propagates or fails open.
+  - Purity guard tightened: only stdlib + `vaeil.domain` (not `vaeil`), no `datetime.now()` / `date.today()` / `time.time()` calls, and both guards assert they scanned at least one domain file.
+- **Red run**: `2 passed, 2 errors` — the two test modules fail to import the not-yet-existing seam symbols; the two purity guards pass. Red set committed as `35108c6`.
+- **Green cycle 1a**: `Clock` (`clock.py:7`), `Applicant`, `Invite`, `redeem_invite` with age → invite-validity → single-use ordering. 15 passed (invite + purity). Commit `e6351d2`.
+- **Green cycle 1b**: `Verdict` (Approved/NeedsReview only), `VettingModel` protocol, `vet` with `except Exception` and `isinstance` fallbacks. Full suite 22 passed. Commit `52ba2de`.
+- **Mutation checks** (each reverted; suite green afterwards):
+  - Age boundary `>=` → `>`: 2 failures (`test_turning_eighteen_today_is_allowed`, `test_leap_day_birthday_turns_eighteen_on_feb_28_in_non_leap_years`).
+  - Removed single-use guard: 1 failure (`test_redeeming_an_already_redeemed_invite_is_refused`).
+  - Propagated the LLM error instead of failing closed: 2 failures (`test_port_error_fails_closed_to_needs_review`, `test_port_timeout_fails_closed_to_needs_review`).
+- **Docs**:
+  - `DESIGN.md`: decision 1 cites the port at `src/vaeil/domain/vetting.py:16`; the Clock support cites `clock.py:7`; decision 3 cites `vet` at `vetting.py:23` (fallback `:27`, `isinstance` `:30`); boundary cites the port, with the adapter wiring point still pending; decision 2 stays pending until the Conversation slice.
+  - `TESTING.md` created: rule→test table for Rules 1, 2, 6 with what is still missing; leap-day rule documented; mutation-check table; the weak-test entry is `test_age_check_uses_the_injected_clock_not_the_real_clock` (its discriminating power fades after 2028, with the purity guard as backstop). Interim count is 3 of 6 domain-level; final answer must be 6 of 6.
+  - Commit `8082667`.
+- **Open**: Parth's review of the slice is the gate for the next ticket. LLM provider + cap still blank; viva date and teammate hours still unknown.
+
