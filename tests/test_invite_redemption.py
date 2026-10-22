@@ -147,11 +147,9 @@ def test_underage_error_wins_over_an_invalid_invite() -> None:
         redeem(None, date(2010, 1, 1))
 
 
-def test_age_check_uses_the_injected_clock_not_the_real_clock() -> None:
-    # 2010-01-01 is 16 by the real 2026 date but 20 by the injected 2030 date.
-    # Succeeding here is only possible if redeem_invite reads the injected Clock.
-    invite = an_unused_invite()
-
-    applicant = redeem(invite, date(2010, 1, 1), today=date(2030, 1, 1))
-
-    assert applicant.date_of_birth == date(2010, 1, 1)
+def test_age_check_uses_the_injected_clock_not_the_real_date() -> None:
+    # 1990-01-01 is 10 on the injected 2000-01-01 clock, but an adult on
+    # every real date after 2008. A real-clock implementation would accept
+    # this Applicant, so the fake and real outcomes never converge.
+    with pytest.raises(UnderageError):
+        redeem(an_unused_invite(), date(1990, 1, 1), today=date(2000, 1, 1))
