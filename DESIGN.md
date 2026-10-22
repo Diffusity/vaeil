@@ -12,7 +12,7 @@ The course asks for five rules; the product has six — the five plus a team-add
 2. **Vetting never rejects.** The AI's Vetting returns Approved or NeedsReview only. An Approved Applicant becomes a Member at the verdict; a NeedsReview Applicant becomes a Member when an Admin approves. Every rejection is an Admin decision; the AI never rejects.
 3. **Moderated delivery.** A Message reaches the other Member only after moderation passes. If the LLM fails or times out, the Message is Withheld and the sender is told to retry. An Escalated Message is still delivered, then reviewed afterwards by an Admin. Fail-closed: a cost-cap hit or provider failure yields Withheld (messages) or NeedsReview (vetting) — never unchecked delivery or auto-approval.
 4. **Consensual Reveal.** A Reveal is offered only once the Engagement Threshold is met: ≥20 Messages in total, ≥5 from each Member, over ≥3 days. Both Members must give Reveal Consent; either can withdraw until the Reveal happens; a completed Reveal is irreversible.
-5. **Anonymity before Reveal.** The system never shows or sends a Member's real name, photo, or contact details to their Match outside a Reveal. Identity is shown only as a Pseudonym plus the Values Profile; photos exist only after a Reveal. A Pseudonym is chosen by the Member during Onboarding, platform-unique (case-insensitive), must pass the same identifier check as Messages, and is fixed once set. Personal identifiers typed by Members are detected per Conversation — Escalated before that pair's Reveal, normal afterwards — and are delivered, reviewed by an Admin, and recorded in the audit log. Rule 5 constrains what the system shows and sends, not what Members type.
+5. **Anonymity before Reveal.** The system never shows or sends a Member's real name, photo, or contact details to their Match outside a Reveal. Identity is shown only as a Pseudonym plus the Values Profile; photos exist only after a Reveal. A Pseudonym is chosen by the Member during Onboarding, platform-unique (case-insensitive), must pass the same identifier check as Messages, and is fixed once set. Personal identifiers typed by Members are detected per Conversation — Escalated before that pair's Reveal, normal afterwards — and are delivered, reviewed by an Admin, and recorded in the audit log. Rule 5 constrains what the system shows and sends, not what Members type. Detection is heuristic: it routes suspicious text to Escalated but does not promise to catch every identifier — spelled-out numbers, novel obfuscation, or identifiers split across Messages can be missed, and a long numeric string can be a false positive. The system-side guarantee does not depend on detection.
 6. **Age gate.** 18+ is validated before an Invite is redeemed; an under-18's Invite stays unused.
 
 **Not a numbered rule, but binding:** matching is curated only — no browsing or search. An Admin triggers a matching batch; the AI proposes pairs scored from Values Profiles.
@@ -65,6 +65,7 @@ Storage sits behind a repository port and time behind a Clock port — secondary
 ## Known limitations (MVP)
 
 - No auto-expiry of inactive Conversations.
+- Identifier detection is heuristic: spelled-out numbers, novel obfuscation, and identifiers split across Messages can be missed; long numeric strings can be false positives.
 
 ## Evidence
 

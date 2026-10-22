@@ -10,7 +10,7 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-22 tests, all green at slice 1. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
+The 22 slice-1 tests are green; the slice-2 red tests are waiting for implementation. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
 
 ## Rules → tests
 
@@ -28,6 +28,15 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 ## The leap-day rule
 
 Someone born on 29 February is treated as having their birthday on 28 February in non-leap years. In 2026 (not a leap year) they turn 18 on 2026-02-28, not 2026-03-01. Both dates are tested at `tests/test_invite_redemption.py:91` and `:104`; the clamp is implemented at `src/vaeil/domain/invite.py:71`.
+
+## Identifier detection is heuristic
+
+Rule 5's guarantee is about what the system displays and sends: a Member's real name, photo, or contact details are never shown to a Match outside a Reveal. Detection is a safety net for text Members type. It returns a result — clean, or flagged with a reason — and does not decide delivery; a flagged Message is Escalated by the moderation slice, delivered, and reviewed by an Admin. A clean scan is not proof of anonymity. Known limits:
+
+- numbers spelled out in words, e.g. "nine eight seven six five four three two one zero";
+- obfuscations the patterns do not cover;
+- identifiers split across multiple Messages;
+- false positives: a long numeric string that is not a phone number is still flagged.
 
 ## Mutation checks (slice 1)
 
