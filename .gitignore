@@ -1,2 +1,11 @@
 /.agents 
 skills-lock.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment
+.env

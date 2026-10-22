@@ -1,0 +1,10 @@
+[project]
+name = "vaeil"
+version = "0.1.0"
+description = "Vaeil — invite-only, anonymous matchmaking"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
