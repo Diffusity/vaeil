@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-Issues live as GitHub Issues in `Diffusity/vaeli`, operated via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues live as GitHub Issues in `Diffusity/vaeil`, operated via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

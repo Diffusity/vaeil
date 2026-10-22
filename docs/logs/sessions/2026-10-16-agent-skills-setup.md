@@ -8,7 +8,7 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 
 ## What happened
 
-- Explored the repo: greenfield — only `.agents/`, `LICENSE`, `skills-lock.json`. GitHub remote `Diffusity/vaeli`. `triage` skill installed. No monorepo signals → single-context.
+- Explored the repo: greenfield — only `.agents/`, `LICENSE`, `skills-lock.json`. GitHub remote `Diffusity/vaeli` (renamed to `Diffusity/vaeil` on 2026-10-22). `triage` skill installed. No monorepo signals → single-context.
 - User decisions (asked explicitly):
   - Issue tracker → **GitHub** Issues via `gh` CLI.
   - Triage labels → **keep the five defaults**.
@@ -29,7 +29,7 @@ Initialize the per-repo configuration the Matt Pocock engineering skills assume:
 ## Related artifacts
 
 - `AGENTS.md`, `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md`
-- Issue tracker: https://github.com/Diffusity/vaeli
+- Issue tracker: https://github.com/Diffusity/vaeil
 
 ## 2026-10-18 addendum
 
@@ -116,7 +116,7 @@ Parth confirmed the shared-understanding recap. Ratified on top of Rounds 1–3:
 
 ## 2026-10-22 — Slice 1 implemented (red → green → mutations)
 
-- **Ticket published**: https://github.com/Diffusity/vaeli/issues/1 — `ready-for-agent`, slice-1 scope and all acceptance criteria. Next ticket is deliberately held back until Parth reviews this slice.
+- **Ticket published**: https://github.com/Diffusity/vaeil/issues/1 — `ready-for-agent`, slice-1 scope and all acceptance criteria. Next ticket is deliberately held back until Parth reviews this slice.
 - **Red set expanded** beyond the original three tests, per Parth's review:
   - Both sides of the 18th-birthday boundary (day before succeeds, day after is refused) and the on-the-day case.
   - Leap-day rule chosen: a 29 February birthday turns 18 on **28 February** in non-leap years; tested on 2026-02-28 and 2026-03-01.
