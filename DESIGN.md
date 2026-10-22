@@ -26,6 +26,7 @@ The course asks for three design decisions. Each names the principle it applies,
 - **Principle**: Dependency Inversion (SOLID) at the boundary (Lecture 23) — the core depends on an interface it owns, not on a provider SDK.
 - **Where**: `_pending_` (the port) + `_pending_` (the single place the real adapter is wired).
 - **Before / why**: the straightforward version calls the provider client directly from the vetting and moderation flows. Rejected in the design interview — the core would depend on an SDK, tests would need the network, and failures could not fail closed. The port keeps the core testable with a fake adapter and turns every failure into Withheld (messages) or NeedsReview (vetting).
+- **Supporting decision — time is a port**: the core asks a Clock port for "now" instead of reading the system clock. That makes the Engagement Threshold's ≥3 days testable without waiting and lets demo seeds backdate Messages. It is a testing aid, not a product trade-off, and stays a secondary seam.
 
 ### 2. Anonymity is enforced per Conversation, not globally
 
@@ -33,11 +34,11 @@ The course asks for three design decisions. Each names the principle it applies,
 - **Where**: `_pending_`.
 - **Before / why**: the first recommendation was to log contact details typed before a Reveal. Rejected because logging lets two Members bypass Reveal Consent and makes Rule 5 untestable. Changed to identifier detection that Escalates the Message (still delivered, Admin-reviewed, audited), then scoped per Conversation so a Reveal only relaxes its own pair.
 
-### 3. Time is a port
+### 3. The LLM port fails closed
 
-- **Principle**: Dependency Inversion (SOLID) plus testability (Lecture 13–14) — the core asks for "now" instead of reading the system clock.
+- **Principle**: boundary (Lecture 23) — the port's contract defines the failure mode; the domain never sees an unchecked or partial LLM result.
 - **Where**: `_pending_`.
-- **Before / why**: the Engagement Threshold's ≥3 days would have been tested by waiting, or faked ad hoc. Replaced with an injectable Clock so tests cross the threshold instantly and demo seeds backdate Messages.
+- **Before / why**: the default failure behaviour is to fall back — deliver the Message anyway, or approve the Applicant. Rejected: unchecked delivery breaks Rule 3 and auto-approval breaks Rule 2. Changed to explicit domain states — a timeout, provider error, or budget-cap hit means Withheld for Messages and NeedsReview for Vetting, never fail open. The cost is real (legitimate Messages are delayed, and more work lands on the Admin), and that is the point: a human reviews instead of an unchecked model deciding.
 
 Also ratified and binding:
 
@@ -58,7 +59,8 @@ Storage sits behind a repository port and time behind a Clock port — secondary
 - **Tools used**: OpenCode agents with the repository's engineering skills — for the design interview, domain vocabulary, specs, tests, docs, and implementation.
 - **For what**: Parth is the sole human implementer; the agent implements through the repository and Parth reviews every slice. Every claim in this repo's docs is checked against the code at the viva.
 - **In the product**: Vetting, Values Profiles via conversational Onboarding, compatibility scoring, Icebreakers, and Message moderation. The AI never rejects an Applicant, never forces a Reveal, and never exposes identity.
-- **One rejected suggestion**: an early recommendation of a server-rendered HTML app was rejected in favour of FastAPI + React (Vite) with a pure domain core — no server-rendered HTML, a clean client boundary, and a domain core that never imports a framework.
+- **One rejected suggestion (primary)**: allowing contact details in chat and merely logging them. The AI recommended logging as a light-touch safety measure; rejected because logging enforces nothing — two Members could exchange numbers before a Reveal and bypass Reveal Consent, and Rule 5 would become untestable. Replaced with identifier detection that Escalates the Message: it is still delivered, but an Admin reviews it, it is audited, and Reveal remains the only route to identity.
+- **Also rejected (secondary)**: a server-rendered HTML app. The stack was already decided (FastAPI + React/Vite), the team was comfortable with it, and the Reveal ceremony and chat UI benefit from client-side state. Server-rendered HTML would also have been defensible for a project this small — this was a fit choice, not a technical verdict.
 
 ## Known limitations (MVP)
 

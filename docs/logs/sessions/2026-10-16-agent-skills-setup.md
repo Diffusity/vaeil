@@ -101,3 +101,15 @@ Parth confirmed the shared-understanding recap. Ratified on top of Rounds 1–3:
 - **Clock port**: time comes from an injectable Clock port — a second secondary seam beside the repository port; Rule 4's 3-day threshold is testable without waiting, and seeds can backdate. The LLM port remains the cited boundary.
 - **Rule docs**: `DESIGN.md` created with the six rules, the ratified decisions, the boundary, and the known limitation (citations land with the code); `TESTING.md` starts with the first slice.
 - **Build phase starts**: spec → GitHub issues → first TDD slice (domain core).
+
+## 2026-10-22 — Build phase approved; first-slice constraints
+
+- **Graded decisions swapped**: headline #3 is now **the LLM port fails closed** — budget cap, timeout, or provider failure means Withheld for Messages and NeedsReview for Vetting, never fail open. Chosen because it is a product trade-off with real costs (delayed Messages, more Admin work) that Parth can defend in a minute. The **Clock port** is documented as a supporting decision under the LLM-boundary decision (testing aid, secondary seam), not a headline.
+- **Rejected AI suggestion changed**: the primary entry is now the "contact details allowed in chat, only logged" recommendation (it would let Members bypass Reveal Consent and make Rule 5 untestable); the server-rendered HTML suggestion stays as a shorter secondary entry — stack already decided, client-side state suits the Reveal ceremony and chat UI, and server-rendered HTML would have been defensible at this scale.
+- **First slice — Invite, age gate, Vetting verdict**:
+  - Tests first: the failing tests are shown to Parth before any implementation.
+  - The Vetting `Verdict` is an enum with only Approved and NeedsReview — Reject is unrepresentable in the type; the fake LLM adapter can only produce those two values.
+  - Age gate runs before Invite redemption; a test proves an under-18's Invite stays unused.
+  - The core imports nothing from FastAPI, the database, or any LLM SDK.
+  - All commands run in PowerShell on Windows; no bash-only tooling.
+  - Parth reviews and approves each slice before the next begins; tickets stay small enough to explain every file in one sitting.
