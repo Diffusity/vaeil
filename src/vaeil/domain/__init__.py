@@ -10,6 +10,7 @@ from vaeil.domain.invite import (
     UnderageError,
     redeem_invite,
 )
+from vaeil.domain.vetting import Verdict, VettingModel, vet
 
 __all__ = [
     "Applicant",
@@ -19,5 +20,8 @@ __all__ = [
     "InviteAlreadyRedeemedError",
     "InvalidInviteError",
     "UnderageError",
+    "Verdict",
+    "VettingModel",
     "redeem_invite",
+    "vet",
 ]
