@@ -24,9 +24,9 @@ The course asks for three design decisions. Each names the principle it applies,
 ### 1. The domain core owns the LLM interface
 
 - **Principle**: Dependency Inversion (SOLID) at the boundary (Lecture 23) — the core depends on an interface it owns, not on a provider SDK.
-- **Where**: `_pending_` (the port) + `_pending_` (the single place the real adapter is wired).
+- **Where**: `src/vaeil/domain/vetting.py:16` (the port) + `_pending_` (the single place the real adapter is wired, in the adapter slice).
 - **Before / why**: the straightforward version calls the provider client directly from the vetting and moderation flows. Rejected in the design interview — the core would depend on an SDK, tests would need the network, and failures could not fail closed. The port keeps the core testable with a fake adapter and turns every failure into Withheld (messages) or NeedsReview (vetting).
-- **Supporting decision — time is a port**: the core asks a Clock port for "now" instead of reading the system clock. That makes the Engagement Threshold's ≥3 days testable without waiting and lets demo seeds backdate Messages. It is a testing aid, not a product trade-off, and stays a secondary seam.
+- **Supporting decision — time is a port**: the core asks a Clock port (`src/vaeil/domain/clock.py:7`) for "now" instead of reading the system clock. That makes the Engagement Threshold's ≥3 days testable without waiting and lets demo seeds backdate Messages. It is a testing aid, not a product trade-off, and stays a secondary seam.
 
 ### 2. Anonymity is enforced per Conversation, not globally
 
@@ -37,7 +37,7 @@ The course asks for three design decisions. Each names the principle it applies,
 ### 3. The LLM port fails closed
 
 - **Principle**: boundary (Lecture 23) — the port's contract defines the failure mode; the domain never sees an unchecked or partial LLM result.
-- **Where**: `_pending_`.
+- **Where**: `src/vaeil/domain/vetting.py:23` — the `vet` wrapper's `except Exception` fallback at `:27` and its `isinstance` guard at `:30` are the actual fail-closed checks.
 - **Before / why**: the default failure behaviour is to fall back — deliver the Message anyway, or approve the Applicant. Rejected: unchecked delivery breaks Rule 3 and auto-approval breaks Rule 2. Changed to explicit domain states — a timeout, provider error, or budget-cap hit means Withheld for Messages and NeedsReview for Vetting, never fail open. The cost is real (legitimate Messages are delayed, and more work lands on the Admin), and that is the point: a human reviews instead of an unchecked model deciding.
 
 Also ratified and binding:
@@ -50,7 +50,7 @@ Also ratified and binding:
 
 ## Boundary
 
-**The LLM port is the one boundary** — where the domain core stops and the outside world begins, and the dependency it protects the domain from. The port's interface is owned by the domain; the real adapter is wired at exactly one place. At submission this section cites the port at `file:line` plus that single wiring point, so "where does your core stop?" has one precise answer.
+**The LLM port is the one boundary** — where the domain core stops and the outside world begins, and the dependency it protects the domain from. The port's interface is owned by the domain at `src/vaeil/domain/vetting.py:16`; the real adapter will be wired at exactly one place when the adapter slice lands. At submission this section cites that single wiring point too, so "where does your core stop?" has one precise answer.
 
 Storage sits behind a repository port and time behind a Clock port — secondary seams, mentioned but not cited as the boundary.
 
@@ -68,4 +68,4 @@ Storage sits behind a repository port and time behind a Clock port — secondary
 
 ## Evidence
 
-`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here.
+`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here. Slice 1 cites decision 1 (the port) and decision 3 (fail-closed vetting); decision 2, the adapter wiring point, and Rules 3–5 land with their slices.
