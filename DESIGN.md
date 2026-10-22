@@ -6,7 +6,7 @@ Vaeil — invite-only, anonymous matchmaking for 18–28 students and young prof
 
 ## The six rules
 
-The course asks for five rules; the product has six — the five plus a team-added age gate. All six are demonstrated and tested ("6 of 6" in `TESTING.md`).
+The course asks for five rules; the product has six — the five plus a team-added age gate. All six are presented here; `TESTING.md` tracks which ones have tests today.
 
 1. **Invite-only access.** Nobody gets an account without redeeming an Invite. Invites are Admin-issued in the MVP; each Invite records its issuer, so Member-issued Invites can be added later without a breaking change.
 2. **Vetting never rejects.** The AI's Vetting returns Approved or NeedsReview only. An Approved Applicant becomes a Member at the verdict; a NeedsReview Applicant becomes a Member when an Admin approves. Every rejection is an Admin decision; the AI never rejects.

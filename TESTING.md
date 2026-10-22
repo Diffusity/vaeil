@@ -2,7 +2,7 @@
 
 Vaeil's rules are tested where they live. This file maps each rule to the test that proves it, says how many rules are covered, and names one test I would not defend as strong.
 
-**Status: in progress.** Slice 1 proves Rules 1, 2, and 6 at the domain seam. Rules 3–5 have no tests yet. The final answer before the pushed `project-final` tag is **6 of 6**; the table below is the checklist.
+**Status: in progress.** Slice 1 proves Rules 1, 2, and 6 at the domain seam. Rules 3–5 have no tests yet. **Current coverage: 3 of 6 rules domain-level; 0 of 6 end-to-end.** This count changes only when a rule's tests are green; no future coverage is claimed here.
 
 ## How to run
 
@@ -23,7 +23,7 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 | 5 | Anonymity before Reveal | — | — | Conversation and per-Conversation identifier detection are not built |
 | 6 | Age gate | `tests/test_invite_redemption.py:54`, `:68`, `:77`, `:86`, `:91`, `:104`, `:112`, `:150` | Under-18 is refused and leaves the Invite unused; both birthday boundaries; the Feb 29 rule; future DOB has its own error; the age check reads the injected Clock | The UI must surface the refusal; no HTTP layer yet |
 
-**How many rules are tested?** At slice 1, 3 of 6 rules have domain-level tests (Rules 1, 2, 6); none is end-to-end. At submission every rule has an automated test and the answer is **6 of 6**.
+**How many rules are tested?** 3 of 6 rules have domain-level tests (Rules 1, 2, 6); none is end-to-end. The count stays here until the other rules' tests actually exist.
 
 ## The leap-day rule
 
@@ -43,4 +43,6 @@ Each mutation was reverted and the full suite returned to green.
 
 ## The weak test
 
-`tests/test_invite_redemption.py:150` (`test_age_check_uses_the_injected_clock_not_the_real_clock`) is the weakest test in this slice. It proves the Clock is used by picking a fake date (2030-01-01) on which a 2010-01-01 birth date is 20, while on the real 2026 date it is 16. If the implementation used `date.today()`, the test would fail today — but after 2028 the real date also makes that applicant an adult, so the test would pass for the wrong reason. The durable backstop is the purity guard at `tests/test_domain_purity.py:106`, which forbids `date.today()`, `datetime.now()`, and `time.time()` in the domain at all.
+`tests/test_domain_purity.py:106` (`test_domain_does_not_read_the_system_clock`) is the weakest test in the suite. It is a static AST check: it catches direct calls (and common import aliases) to `datetime.now()`, `date.today()`, and `time.time()`, but it does not follow indirection such as `today = date.today; today()` or `getattr(datetime, "today")()`. It is a guardrail, not a sandbox. The Clock port and review remain the real protection; the test only makes the obvious bypass visible.
+
+The injected-clock test at `tests/test_invite_redemption.py:150` is no longer weak. The fake date is 2000-01-01 and the birth date is 1990-01-01: the fake clock says 10, while every real date after 2008 says adult. The fake and real outcomes can never converge, so a `date.today()` implementation always fails it.
