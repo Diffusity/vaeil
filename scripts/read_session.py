@@ -11,16 +11,30 @@ import sys
 def visible_dialogue(data: dict) -> str:
     entries: list[str] = []
     for message in data.get("messages", []):
+        if not isinstance(message, dict):
+            raise ValueError("session messages must be objects")
         if message.get("type") == "user" and message.get("text"):
             entries.append(f"[USER]\n{message['text']}")
         elif message.get("type") == "assistant":
-            for part in message.get("content", []):
+            content = message.get("content", [])
+            if not isinstance(content, list):
+                raise ValueError("assistant content must be an array")
+            for part in content:
+                if not isinstance(part, dict):
+                    raise ValueError("assistant content entries must be objects")
                 if part.get("type") == "text":
                     entries.append(f"[ASSISTANT]\n{part.get('text', '')}")
                 elif part.get("type") == "tool" and part.get("name") == "question":
                     state = part.get("state", {})
+                    if not isinstance(state, dict):
+                        raise ValueError("question state must be an object")
                     entries.append("[QUESTION]\n" + json.dumps(state.get("input", {}), ensure_ascii=False))
-                    for reply in state.get("content", []):
+                    replies = state.get("content", [])
+                    if not isinstance(replies, list):
+                        raise ValueError("question replies must be an array")
+                    for reply in replies:
+                        if not isinstance(reply, dict):
+                            raise ValueError("question reply entries must be objects")
                         if reply.get("type") == "text":
                             entries.append(f"[ANSWER]\n{reply.get('text', '')}")
     return "\n\n".join(entries)

@@ -8,3 +8,10 @@
 - Added source-session recovery, approval reconciliation, and issue-closure verification in `docs/agents/workflow.md`. The transcript reader filters hidden reasoning/tool noise, paginates by visible character offsets, handles Unicode output, and stores no raw export. Live validation against the supplied OpenCode session succeeded with bounded 400/500-character pages.
 - Parametrized long strings/bytes get short deterministic IDs; collection refuses oversized node IDs with a concise error. Regression tests exercise real CLI errors, replacement chains/cycles, pagination/filtering, malformed exports, and actual pytest collection.
 - Local validation: shared checks passed with **119 tests** (107 product + 12 tooling), and diff whitespace check passed. Product behavior, six-rule numbering, and Rule 5 partial coverage are unchanged. The physical folder rename remains the previously reported Windows lock operation.
+
+## Closeout review and hosted CI
+
+- Created issue #4 and PR #5: https://github.com/Diffusity/vaeil/pull/5. Verified GitHub's closingIssuesReferences contains #4. The new Windows check passed on the initial pushed tree (45 seconds); GitGuardian also passed.
+- Ran independent Standards and Spec closeout reviews. Standards reported zero actionable findings. A malformed-structure reader edge case was found during closeout: JSON messages/content/question state containing null could raise a traceback.
+- Added three targeted red cases (**3 failed, 12 deselected**), then explicit structure validation. Shared checks now pass **122 tests** (107 product + 15 tooling) with lint and assumption validation green. Spec reviewer independently confirmed actionable ValueErrors for malformed structures.
+- Reader and workflow changes require no raw session export committed to the repo. The approved physical rename remains blocked; no workflow merge or branch-protection changes were made in this task.

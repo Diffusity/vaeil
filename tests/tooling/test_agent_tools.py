@@ -102,6 +102,20 @@ def test_session_export_reports_bad_input_without_a_traceback(tmp_path: Path) ->
     assert "Traceback" not in result.stderr
 
 
+@pytest.mark.parametrize("data", [
+    {"messages": [None]},
+    {"messages": [{"type": "assistant", "content": [None]}]},
+    {"messages": [{"type": "assistant", "content": [{"type": "tool", "name": "question", "state": None}]}]},
+], ids=["bad-message", "bad-part", "bad-question-state"])
+def test_malformed_session_structure_reports_a_concise_error(tmp_path: Path, data: dict) -> None:
+    path = tmp_path / "bad-structure.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    result = run_tool("read_session.py", "--input", str(path))
+    assert result.returncode == 1
+    assert "error:" in result.stderr.lower()
+    assert "Traceback" not in result.stderr
+
+
 def test_large_parameter_values_get_short_ids(tmp_path: Path) -> None:
     (tmp_path / "conftest.py").write_bytes((ROOT / "tests/conftest.py").read_bytes())
     (tmp_path / "test_sample.py").write_text(
