@@ -2,6 +2,7 @@
 
 from vaeil.domain.applicant import Applicant
 from vaeil.domain.clock import Clock
+from vaeil.domain.identifiers import IdentifierReason, IdentifierScan, scan_identifiers
 from vaeil.domain.invite import (
     FutureDateOfBirthError,
     Invite,
@@ -15,6 +16,8 @@ from vaeil.domain.vetting import Verdict, VettingModel, vet
 __all__ = [
     "Applicant",
     "Clock",
+    "IdentifierReason",
+    "IdentifierScan",
     "FutureDateOfBirthError",
     "Invite",
     "InviteAlreadyRedeemedError",
@@ -23,5 +26,6 @@ __all__ = [
     "Verdict",
     "VettingModel",
     "redeem_invite",
+    "scan_identifiers",
     "vet",
 ]
