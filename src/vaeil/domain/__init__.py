@@ -12,6 +12,13 @@ from vaeil.domain.invite import (
     redeem_invite,
 )
 from vaeil.domain.vetting import Verdict, VettingModel, vet
+from vaeil.domain.pseudonym import (
+    InvalidPseudonymError,
+    Pseudonym,
+    PseudonymAlreadySetError,
+    PseudonymDirectory,
+    PseudonymTakenError,
+)
 
 __all__ = [
     "Applicant",
@@ -22,6 +29,11 @@ __all__ = [
     "Invite",
     "InviteAlreadyRedeemedError",
     "InvalidInviteError",
+    "InvalidPseudonymError",
+    "Pseudonym",
+    "PseudonymAlreadySetError",
+    "PseudonymDirectory",
+    "PseudonymTakenError",
     "UnderageError",
     "Verdict",
     "VettingModel",
