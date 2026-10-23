@@ -6,7 +6,7 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 ## Status
 
-Slice 1 is complete: the pure domain core handles single-use Invite redemption behind an 18+ age gate, and reject-free vetting that fails closed. The API, UI, database, and real LLM adapter are not built yet.
+Slice 1 is complete: the pure domain core handles single-use Invite redemption behind an 18+ age gate, and reject-free vetting that fails closed. Slice 2 is implemented for review: heuristic identifier scanning and in-memory Pseudonym claims pass their existing tests. Real-name Pseudonym detection remains an unresolved policy gap. The API, UI, database, and real LLM adapter are not built yet.
 
 ## Run the tests (5 commands)
 
@@ -16,7 +16,7 @@ Requires Python 3.11+ and Git; PowerShell on Windows.
 git clone https://github.com/Diffusity/vaeil.git
 cd vaeil
 python -m venv .venv
-.venv\Scripts\python.exe -m pip install pytest
+.venv\Scripts\python.exe -m pip install -e ".[dev]"
 .venv\Scripts\python.exe -m pytest -q
 ```
 
