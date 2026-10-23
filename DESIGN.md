@@ -64,6 +64,17 @@ Storage sits behind a repository port and time behind a Clock port — secondary
 
 ## Known limitations (MVP)
 
+### Slice 2 detection and Pseudonym policy
+
+**When in doubt, flag.** A false positive costs the Admin a queue item; a false negative can undermine Rule 5, so the cost asymmetry favours flagging. Detection is a safety net; the pre-Reveal display boundary must independently prevent system disclosure. This slice does not implement that boundary or decide delivery.
+
+- `src/vaeil/domain/identifiers.py:32` normalizes input with NFKC and converts Unicode decimal digits before scanning. `MIN_PHONE_DIGITS = 10` is the threshold for a run after stripping whitespace, parentheses, dots, plus signs, and hyphens; 9 digits stay clean and 10 or more flag, with no upper limit. Numeric runs embedded in a Pseudonym also flag.
+- Reason order is EMAIL, PHONE, HANDLE, OBFUSCATED_EMAIL, URL. Handles include `@name`, `insta: name`, `my ig is name`, and Instagram profile links. Web links, including bare domains, produce URL; Instagram profile links produce both HANDLE and URL. Email addresses alone do not additionally produce URL. Supported obfuscation includes plain, bracketed, and parenthesized `at`, plus `dot`/`d0t`, ignoring case.
+- The immutable scan result stores only ordered reasons, never matched text or spans. Keeping another copy of identifiers in the audit log or Admin queue is deliberately avoided. Any later span-retention requirement belongs to the moderation slice.
+- Pseudonyms are NFKC-normalized and trimmed for display, then casefolded for uniqueness. They contain 3-20 Unicode letters or decimal digits, underscore or hyphen, start with a letter, and cannot be reserved staff names (`admin`, `moderator`, `system`, `vaeil`, `support`, case-insensitively). Named constants live in `src/vaeil/domain/pseudonym.py:8`.
+- The in-memory directory is only the domain seam. When the repository lands, uniqueness must be enforced atomically with a unique index on the normalized value; checking then inserting without that constraint races during concurrent signups. The current directory does not enforce platform-wide or cross-process uniqueness.
+- Real names are not reliably detected; the format rule rejects `rahul.sharma` but a name such as `Rahul` can still pass. Spelled-out numbers, novel obfuscation, identifiers split across Messages, and numeric false positives remain known limits. Rule 5 is partially tested here and remains incomplete until the pre-Reveal display slice.
+
 - No auto-expiry of inactive Conversations.
 - Identifier detection is heuristic: spelled-out numbers, novel obfuscation, and identifiers split across Messages can be missed; long numeric strings can be false positives.
 

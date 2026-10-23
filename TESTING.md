@@ -2,7 +2,7 @@
 
 Vaeil's rules are tested where they live. This file maps each rule to the test that proves it, says how many rules are covered, and names one test I would not defend as strong.
 
-**Status: in progress.** Slice 1 proves Rules 1, 2, and 6 at the domain seam. Rules 3–5 have no tests yet. **Current coverage: 3 of 6 rules domain-level; 0 of 6 end-to-end.** This count changes only when a rule's tests are green; no future coverage is claimed here.
+**Status: in progress.** Slice 1 proves Rules 1, 2, and 6 at the domain seam. Rules 3 and 4 have no tests yet; Rule 5 has partial domain tests and is not counted as done. **Current coverage: 3 of 6 rules domain-level; 0 of 6 end-to-end.** Rule 5 remains partial until the pre-Reveal display slice proves the system-side guarantee.
 
 ## How to run
 
@@ -10,7 +10,7 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-The 22 slice-1 tests are green; the slice-2 red tests are waiting for implementation. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
+All 105 tests are green: 22 slice-1 tests and 83 slice-2 cases for identifier scanning and Pseudonym claims. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
 
 ## Rules → tests
 
@@ -20,7 +20,7 @@ The 22 slice-1 tests are green; the slice-2 red tests are waiting for implementa
 | 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Reject is unrepresentable; port errors, timeouts, and non-Verdict results fail closed to NeedsReview | The Admin approval flow, persistence, and the real LLM adapter are not built |
 | 3 | Moderated delivery | — | — | Messages and moderation are not built. Fail-closed is proven for vetting only, not yet for Messages |
 | 4 | Consensual Reveal | — | — | Conversation and Reveal are not built |
-| 5 | Anonymity before Reveal | — | — | Conversation and per-Conversation identifier detection are not built |
+| 5 | Anonymity before Reveal (partial) | `tests/test_identifier_detection.py:25`, `:59`, `:74`; `tests/test_pseudonyms.py:36`, `:41`, `:49`, `:57`, `:66` | Supported identifiers are reported; identifier-like Pseudonyms are rejected, claims are case-insensitively unique within one directory and fixed once set; failed claims do not reserve a name | Real-name detection is unresolved. Persistent uniqueness, identity projection, Conversation-scoped escalation, delivery, and audit integration are not built; this rule is not counted as fully covered |
 | 6 | Age gate | `tests/test_invite_redemption.py:54`, `:68`, `:77`, `:86`, `:91`, `:104`, `:112`, `:150` | Under-18 is refused and leaves the Invite unused; both birthday boundaries; the Feb 29 rule; future DOB has its own error; the age check reads the injected Clock | The UI must surface the refusal; no HTTP layer yet |
 
 **How many rules are tested?** 3 of 6 rules have domain-level tests (Rules 1, 2, 6); none is end-to-end. The count stays here until the other rules' tests actually exist.
@@ -37,6 +37,31 @@ Rule 5's guarantee is about what the system displays and sends: a Member's real 
 - obfuscations the patterns do not cover;
 - identifiers split across multiple Messages;
 - false positives: a long numeric string that is not a phone number is still flagged.
+
+The scanner at `src/vaeil/domain/identifiers.py:32` handles email, phone, handle/social hints, supported obfuscated-email patterns, and URLs. It normalizes NFKC and Unicode decimal digits, returns all reasons in enum order, and stores no matched text. It does not detect real names. Pseudonym validation at `src/vaeil/domain/pseudonym.py:31` shares this scanner, so the documented real-name prohibition is not yet fully enforced. Claims are unique only within a shared in-memory directory; database-backed platform uniqueness remains pending.
+
+The expanded detection cases begin at `tests/test_identifier_detection.py:83`: phone formats and threshold boundaries, handle/URL classification, obfuscation, ordinary-number guards, deterministic reasons, long input, and reason-only results. Pseudonym normalization, format boundaries, reserved names, repeat claims, and a format-valid identifier are covered from `tests/test_pseudonyms.py:77`.
+
+## Mutation checks (slice 2)
+
+Run `.venv\Scripts\python.exe scripts/check_slice2_mutations.py`. Each mutation is applied alone and restored in a `finally` block; pytest exit code 1 is required. Results on the 83 slice-2 cases:
+
+| Mutation | Result |
+|---|---|
+| Remove phone | 16 failed, 67 passed |
+| Remove email | 3 failed, 80 passed |
+| Remove handle | 6 failed, 77 passed |
+| Remove obfuscated email | 8 failed, 75 passed |
+| Remove URL | 5 failed, 78 passed |
+| Threshold 10 to 9 | 2 failed, 81 passed |
+| Threshold 10 to 11 | 13 failed, 70 passed |
+| Remove casefold | 6 failed, 77 passed |
+| Remove Pseudonym NFKC | 2 failed, 81 passed |
+| Remove identifier check | 1 failed, 82 passed |
+| Remove fixed-once guard | 2 failed, 81 passed |
+| Remove reserved-name check | 5 failed, 78 passed |
+
+All mutations were restored; the full suite returned to **105 passed**, including the purity guards.
 
 ## Mutation checks (slice 1)
 

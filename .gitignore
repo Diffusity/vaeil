@@ -6,6 +6,9 @@ skills-lock.json
 __pycache__/
 *.py[cod]
 .pytest_cache/
+*.egg-info/
+build/
+dist/
 
 # Local environment
 .env

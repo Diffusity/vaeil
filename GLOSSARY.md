@@ -25,7 +25,7 @@ The human operator. Every rejection of an Applicant is an Admin decision, and th
 _Avoid_: moderator, staff, superuser
 
 **Pseudonym**:
-The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique (case-insensitive), fixed once set, and must never be a Personal identifier.
+The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name.
 _Avoid_: alias, username, handle
 
 ### Onboarding & vetting

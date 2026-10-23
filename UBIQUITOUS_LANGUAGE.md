@@ -6,18 +6,18 @@ The words the product is about. Same format as the IT643 labs; this file is part
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | _(absent)_ |
-| **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | _(absent)_ |
+| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | `src/vaeil/domain/invite.py:32` |
+| **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:8` |
 | **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | _(absent)_ |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique (case-insensitive), fixed once set, and must never be a Personal identifier. | alias, username, handle | _(absent)_ |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name. | alias, username, handle | `src/vaeil/domain/pseudonym.py:27`; validation and in-memory claims at `:31`; persistent uniqueness and real-name detection remain incomplete |
 
 ## Onboarding & vetting
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | _(absent)_ |
-| **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | _(absent)_ |
+| **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:23` |
+| **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:9` |
 | **Values Profile** | A Member's written self-description — who they are, their values and interests — built through conversational Onboarding. | bio, profile, personality test | _(absent)_ |
 | **Onboarding** | The conversation in which the AI builds a Member's Values Profile. | setup, intake, signup flow | _(absent)_ |
 
@@ -88,4 +88,4 @@ Resolved — winners recorded (kept here as findings):
 | Canonical term | Called in code | Location | Note |
 | -------------- | -------------- | -------- | ---- |
 
-_None yet — no code on `master`. All `Named in code at` citations are marked `_(absent)_` until the first slices land._
+The first two slices implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. Other terms remain planned; Rule 5 is only partial. Real-name detection and persistent platform uniqueness are not yet enforced; see `DESIGN.md` for the scanner limits.
