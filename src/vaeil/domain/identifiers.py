@@ -61,7 +61,8 @@ _PATTERNS = (
         re.IGNORECASE,
     )),
     (IdentifierReason.OBFUSCATED_EMAIL, re.compile(
-        r"\b[\w.+-]+\s+(?:at|\[at\]|\(at\))\s+[\w-]+"
+        # Retry only at token starts, not after every internal dot/hyphen.
+        r"(?<![\w.+-])\b[\w.+-]+\s+(?:at|\[at\]|\(at\))\s+[\w-]+"
         r"\s+(?:d[o0]t|\[d[o0]t\]|\(d[o0]t\))\s+[a-z]{2,}\b", re.IGNORECASE
     )),
     (IdentifierReason.URL, re.compile(

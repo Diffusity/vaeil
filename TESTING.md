@@ -10,7 +10,7 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-All 105 tests are green: 22 slice-1 tests and 83 slice-2 cases for identifier scanning and Pseudonym claims. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
+All 107 tests are green: 22 slice-1 tests and 85 slice-2 cases for identifier scanning and Pseudonym claims. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
 
 ## Rules → tests
 
@@ -20,7 +20,7 @@ All 105 tests are green: 22 slice-1 tests and 83 slice-2 cases for identifier sc
 | 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Reject is unrepresentable; port errors, timeouts, and non-Verdict results fail closed to NeedsReview | The Admin approval flow, persistence, and the real LLM adapter are not built |
 | 3 | Moderated delivery | — | — | Messages and moderation are not built. Fail-closed is proven for vetting only, not yet for Messages |
 | 4 | Consensual Reveal | — | — | Conversation and Reveal are not built |
-| 5 | Anonymity before Reveal (partial) | `tests/test_identifier_detection.py:25`, `:59`, `:74`; `tests/test_pseudonyms.py:36`, `:41`, `:49`, `:57`, `:66` | Supported identifiers are reported; identifier-like Pseudonyms are rejected, claims are case-insensitively unique within one directory and fixed once set; failed claims do not reserve a name | Real-name detection is unresolved. Persistent uniqueness, identity projection, Conversation-scoped escalation, delivery, and audit integration are not built; this rule is not counted as fully covered |
+| 5 | Anonymity before Reveal (partial) | `tests/test_identifier_detection.py:27`, `:61`, `:76`; `tests/test_pseudonyms.py:36`, `:41`, `:49`, `:57`, `:66` | Supported identifiers are reported; identifier-like Pseudonyms are rejected, claims are case-insensitively unique within one directory and fixed once set; failed claims do not reserve a name | Real-name detection is unresolved. Persistent uniqueness, identity projection, Conversation-scoped escalation, delivery, and audit integration are not built; this rule is not counted as fully covered |
 | 6 | Age gate | `tests/test_invite_redemption.py:54`, `:68`, `:77`, `:86`, `:91`, `:104`, `:112`, `:150` | Under-18 is refused and leaves the Invite unused; both birthday boundaries; the Feb 29 rule; future DOB has its own error; the age check reads the injected Clock | The UI must surface the refusal; no HTTP layer yet |
 
 **How many rules are tested?** 3 of 6 rules have domain-level tests (Rules 1, 2, 6); none is end-to-end. The count stays here until the other rules' tests actually exist.
@@ -40,28 +40,28 @@ Rule 5's guarantee is about what the system displays and sends: a Member's real 
 
 The scanner at `src/vaeil/domain/identifiers.py:32` handles email, phone, handle/social hints, supported obfuscated-email patterns, and URLs. It normalizes NFKC and Unicode decimal digits, returns all reasons in enum order, and stores no matched text. It does not detect real names. Pseudonym validation at `src/vaeil/domain/pseudonym.py:31` shares this scanner, so the documented real-name prohibition is not yet fully enforced. Claims are unique only within a shared in-memory directory; database-backed platform uniqueness remains pending.
 
-The expanded detection cases begin at `tests/test_identifier_detection.py:83`: phone formats and threshold boundaries, handle/URL classification, obfuscation, ordinary-number guards, deterministic reasons, long input, and reason-only results. Pseudonym normalization, format boundaries, reserved names, repeat claims, and a format-valid identifier are covered from `tests/test_pseudonyms.py:77`.
+The expanded detection cases begin at `tests/test_identifier_detection.py:85`: phone formats and threshold boundaries, handle/URL classification, obfuscation, ordinary-number guards, deterministic reasons, long input, and reason-only results. Pseudonym normalization, format boundaries, reserved names, repeat claims, and a format-valid identifier are covered from `tests/test_pseudonyms.py:77`.
 
 ## Mutation checks (slice 2)
 
-Run `.venv\Scripts\python.exe scripts/check_slice2_mutations.py`. Each mutation is applied alone and restored in a `finally` block; pytest exit code 1 is required. Results on the 83 slice-2 cases:
+Run `.venv\Scripts\python.exe scripts/check_slice2_mutations.py`. Each mutation is applied alone and restored in a `finally` block; pytest exit code 1 is required. Results on the 85 slice-2 cases (rerun after the scanner performance fix):
 
 | Mutation | Result |
 |---|---|
-| Remove phone | 16 failed, 67 passed |
-| Remove email | 3 failed, 80 passed |
-| Remove handle | 6 failed, 77 passed |
-| Remove obfuscated email | 8 failed, 75 passed |
-| Remove URL | 5 failed, 78 passed |
-| Threshold 10 to 9 | 2 failed, 81 passed |
-| Threshold 10 to 11 | 13 failed, 70 passed |
-| Remove casefold | 6 failed, 77 passed |
-| Remove Pseudonym NFKC | 2 failed, 81 passed |
-| Remove identifier check | 1 failed, 82 passed |
-| Remove fixed-once guard | 2 failed, 81 passed |
-| Remove reserved-name check | 5 failed, 78 passed |
+| Remove phone | 16 failed, 69 passed |
+| Remove email | 3 failed, 82 passed |
+| Remove handle | 6 failed, 79 passed |
+| Remove obfuscated email | 8 failed, 77 passed |
+| Remove URL | 5 failed, 80 passed |
+| Threshold 10 to 9 | 2 failed, 83 passed |
+| Threshold 10 to 11 | 13 failed, 72 passed |
+| Remove casefold | 6 failed, 79 passed |
+| Remove Pseudonym NFKC | 2 failed, 83 passed |
+| Remove identifier check | 1 failed, 84 passed |
+| Remove fixed-once guard | 2 failed, 83 passed |
+| Remove reserved-name check | 5 failed, 80 passed |
 
-All mutations were restored; the full suite returned to **105 passed**, including the purity guards.
+All mutations were restored; the full suite returned to **107 passed**, including the purity guards.
 
 ## Mutation checks (slice 1)
 
@@ -80,3 +80,7 @@ Each mutation was reverted and the full suite returned to green.
 `tests/test_domain_purity.py:106` (`test_domain_does_not_read_the_system_clock`) is the weakest test in the suite. It is a static AST check: it catches direct calls (and common import aliases) to `datetime.now()`, `date.today()`, and `time.time()`, but it does not follow indirection such as `today = date.today; today()` or `getattr(datetime, "today")()`. It is a guardrail, not a sandbox. The Clock port and review remain the real protection; the test only makes the obvious bypass visible.
 
 The injected-clock test at `tests/test_invite_redemption.py:150` is no longer weak. The fake date is 2000-01-01 and the birth date is 1990-01-01: the fake clock says 10, while every real date after 2008 says adult. The fake and real outcomes can never converge, so a `date.today()` implementation always fails it.
+
+## Punctuation-heavy input regression
+
+`tests/test_identifier_detection.py:147` scans 100 KB of dot- or hyphen-separated clean text in a subprocess with a three-second deadline. Both cases timed out before the fix; after restricting obfuscated-email matching to token starts, direct scans took about 0.04 seconds each and both subprocess tests pass. The deadline includes process startup and is deliberately generous; it catches repeated suffix scanning, rather than enforcing a tight benchmark.
