@@ -6,6 +6,8 @@ status. Escalated handling belongs to the moderation slice.
 
 import pytest
 from dataclasses import fields
+import subprocess
+import sys
 
 from vaeil.domain import IdentifierReason, scan_identifiers
 
@@ -139,3 +141,19 @@ def test_scan_stores_only_reasons_and_no_identifier_text() -> None:
     assert [field.name for field in fields(scan)] == ["reasons"]
     assert "john@example.com" not in repr(scan)
     assert not hasattr(scan, "delivery_status")
+
+
+@pytest.mark.parametrize("separator", [".", "-"], ids=["dots", "hyphens"])
+def test_long_punctuation_separated_text_finishes_promptly(separator: str) -> None:
+    # A separate process bounds a regression without hanging the pytest worker.
+    # 100 KB is large enough to expose repeated suffix scans, with ample
+    # startup headroom for an ordinary scan on Windows.
+    code = (
+        "import sys; from vaeil.domain import scan_identifiers; "
+        "assert scan_identifiers(('a' + sys.argv[1]) * 50000).is_clean"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code, separator],
+        capture_output=True, text=True, timeout=3,
+    )
+    assert result.returncode == 0, result.stderr
