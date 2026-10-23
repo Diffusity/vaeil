@@ -22,6 +22,8 @@ python -m venv .venv
 
 The suite uses in-memory fakes: no network, no database, and no real clock.
 
+After setup, run all development checks with `.venv\Scripts\python.exe scripts/check.py` (Ruff, assumption-history validation, and pytest). The Windows CI job runs the same command on PRs and pushes to master. The five-command setup above is unchanged.
+
 ## Repository layout
 
 - `src/vaeil/domain/` — pure domain core: no frameworks, no database, no LLM SDK.

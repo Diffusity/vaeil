@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def run_tool(name: str, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(ROOT / "scripts" / name), *args],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True, encoding="utf-8", timeout=10,
     )
 
 
@@ -86,8 +86,8 @@ def test_session_export_pages_without_losing_text(tmp_path: Path) -> None:
     first = run_tool("read_session.py", "--input", path, "--max-chars", "30")
     second = run_tool("read_session.py", "--input", path, "--start", "30", "--max-chars", "30")
     whole = run_tool("read_session.py", "--input", path)
-    first_body = first.stdout.split("\n", 1)[1].rstrip("\n")
-    second_body = second.stdout.split("\n", 1)[1].rstrip("\n")
+    first_body = first.stdout.split("\n", 1)[1].removesuffix("\n")
+    second_body = second.stdout.split("\n", 1)[1].removesuffix("\n")
     whole_body = whole.stdout.split("\n", 1)[1]
     assert first_body + second_body == whole_body[:60]
     assert "next --start 30" in first.stdout

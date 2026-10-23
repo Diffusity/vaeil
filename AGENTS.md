@@ -14,6 +14,8 @@ Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents
 
 ## Project logs
 
+When recovering an earlier session, implementing a slice, or preparing a PR handoff, follow `docs/agents/workflow.md`.
+
 Assumptions and session history live in `docs/logs/`. Before deciding anything ambiguous for this project, read `docs/logs/assumptions.md` and stay consistent with recorded assumptions; record any new assumption there (dated, with what would invalidate it). Append a session summary to `docs/logs/sessions/` when a session's work is done. See `docs/logs/README.md`.
 
 ## Project constraints
