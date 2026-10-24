@@ -10,7 +10,9 @@ Vaeil's rules are tested where they live. This file maps each rule to the test t
 .venv\Scripts\python.exe -m pytest -q
 ```
 
-All 107 tests are green: 22 slice-1 tests and 85 slice-2 cases for identifier scanning and Pseudonym claims. No network, no database, and no real clock: the domain tests use in-memory fakes, including a fixed `FakeClock`.
+The 107 product tests cover 22 slice-1 and 85 slice-2 cases. Additional agent-tooling tests live under `tests/tooling/`; they do not increase product-rule coverage. The domain suite uses no network, database, or real clock; its fakes include a fixed `FakeClock`. Tooling tests exercise local CLIs and bounded pytest subprocesses.
+
+Run all checks with `.venv\Scripts\python.exe scripts/check.py`; Windows CI uses the same command. It runs Ruff, validates assumption IDs/supersession links, and executes the whole pytest suite. `tests/tooling/test_agent_tools.py` covers invalid assumption histories, filtered/paginated session reads, malformed exports, and bounded test IDs. Mutations remain a separate manual check because they temporarily rewrite sources.
 
 ## Rules → tests
 

@@ -1,0 +1,17 @@
+# Retrospective recommendations integrated
+
+- User explicitly requested implementing all recommendations in `2026-10-23-retro.md`. Created branch `chore/retro-guardrails`; preserved the pending slice-2 merge/issue-closure log and retro artifact.
+- Used writing-for-agents for the small AGENTS pointer and linked workflow. Tooling seams are public command-line entry points and pytest collection, separate from the product's vaeil.domain seam.
+- Added tooling tests first: **12 failed** before implementation. Implemented assumption validator, bounded OpenCode reader, and pytest ID safeguards; **12 passed** after implementation.
+- Added `scripts/check.py` as the shared non-mutating command: Ruff, assumptions, pytest. Pinned Ruff 0.14.1 in the existing dev extra; README setup stays five PowerShell commands. Added Windows GitHub Actions job on PRs and master pushes. CI is the selected guardrail; mutation scripts remain manual and serial.
+- Migrated 23 historical assumption rows to stable IDs and explicit predecessor links, added two replacement rows, invalidated the obsolete greenfield statement, and superseded the old coverage claim. Historical statements and reasons were preserved. The validator catches structural/link/status inconsistencies; semantics remain a review responsibility.
+- Added source-session recovery, approval reconciliation, and issue-closure verification in `docs/agents/workflow.md`. The transcript reader filters hidden reasoning/tool noise, paginates by visible character offsets, handles Unicode output, and stores no raw export. Live validation against the supplied OpenCode session succeeded with bounded 400/500-character pages.
+- Parametrized long strings/bytes get short deterministic IDs; collection refuses oversized node IDs with a concise error. Regression tests exercise real CLI errors, replacement chains/cycles, pagination/filtering, malformed exports, and actual pytest collection.
+- Local validation: shared checks passed with **119 tests** (107 product + 12 tooling), and diff whitespace check passed. Product behavior, six-rule numbering, and Rule 5 partial coverage are unchanged. The physical folder rename remains the previously reported Windows lock operation.
+
+## Closeout review and hosted CI
+
+- Created issue #4 and PR #5: https://github.com/Diffusity/vaeil/pull/5. Verified GitHub's closingIssuesReferences contains #4. The new Windows check passed on the initial pushed tree (45 seconds); GitGuardian also passed.
+- Ran independent Standards and Spec closeout reviews. Standards reported zero actionable findings. A malformed-structure reader edge case was found during closeout: JSON messages/content/question state containing null could raise a traceback.
+- Added three targeted red cases (**3 failed, 12 deselected**), then explicit structure validation. Shared checks now pass **122 tests** (107 product + 15 tooling) with lint and assumption validation green. Spec reviewer independently confirmed actionable ValueErrors for malformed structures.
+- Reader and workflow changes require no raw session export committed to the repo. The approved physical rename remains blocked; no workflow merge or branch-protection changes were made in this task.
