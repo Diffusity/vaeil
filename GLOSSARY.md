@@ -39,7 +39,7 @@ The outcome of Vetting: Approved or NeedsReview. The AI never rejects.
 _Avoid_: decision, score, result
 
 **Values Profile**:
-A Member's written self-description — who they are, their values and interests — built through conversational Onboarding.
+A Member's structured self-description — values and interests built through conversational Onboarding — with fields from a fixed schema and at most one short, length-capped free-text about field.
 _Avoid_: bio, profile, personality test
 
 **Onboarding**:
@@ -75,7 +75,7 @@ A Message not delivered because moderation failed or timed out; the sender is to
 _Avoid_: blocked (see Block), filtered, rejected
 
 **Personal identifier**:
-A real name, email address, phone number, or social handle that ties text to a Member's identity; moderation detects them in Messages before a Reveal.
+A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically.
 _Avoid_: PII, personal data, doxxing
 
 **Escalated**:

@@ -18,7 +18,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:23` |
 | **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:9` |
-| **Values Profile** | A Member's written self-description — who they are, their values and interests — built through conversational Onboarding. | bio, profile, personality test | _(absent)_ |
+| **Values Profile** | A Member's structured self-description — values and interests built through conversational Onboarding — with fields from a fixed schema and at most one short, length-capped free-text about field. | bio, profile, personality test | _(absent)_ — approved profile-write validation remains to be implemented |
 | **Onboarding** | The conversation in which the AI builds a Member's Values Profile. | setup, intake, signup flow | _(absent)_ |
 
 ## Matching
@@ -36,7 +36,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Conversation** | The private, anonymous exchange between the two Members of a Match. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
 | **Withheld** | A Message not delivered because moderation failed or timed out; the sender is told to retry. | blocked (see **Block**), filtered, rejected | _(absent)_ |
-| **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; moderation detects them in Messages before a Reveal. | PII, personal data, doxxing | _(absent)_ |
+| **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically. | PII, personal data, doxxing | `src/vaeil/domain/identifiers.py:11` and `:32` — implemented reason types and scanner; general name detection is not provided; self-name and moderation integration remain pending |
 | **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
@@ -69,7 +69,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 > **Developer:** What if someone types their phone number before the Reveal?
 > **Expert:** Moderation detects personal identifiers and marks the Message Escalated. It is still delivered, but an Admin reviews it afterwards and it lands in the audit log. We don't withhold it — we just don't treat it as normal.
 > **Developer:** What stops someone from just using their real name as a Pseudonym?
-> **Expert:** The same identifier check as Messages — a Pseudonym that looks like a real name, email, phone number, or handle is rejected, and they pick another. Once set, a Pseudonym is fixed.
+> **Expert:** The implemented scanner rejects supported email, phone, and handle patterns. The planned self-name check will also reject a Pseudonym containing a token of that Member's own real name or email local part. It is not general name detection, and unfamiliar forms can still be missed. Once set, a Pseudonym is fixed.
 > **Developer:** And if someone blocks after a Reveal?
 > **Expert:** The Conversation ends, the pair is never rematched, and the Reveal stands. Both can still Report.
 
