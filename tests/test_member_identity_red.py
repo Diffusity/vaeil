@@ -14,6 +14,7 @@ import sys
 import pytest
 
 from vaeil import domain as d
+from vaeil.domain.privacy import PrivateDate, PrivateText
 
 
 CANARY_DOB = date(1987, 3, 14)
@@ -170,7 +171,7 @@ def test_reveal_adds_identity_without_removing_the_public_profile():
     }
     assert view.pseudonym == subject.pseudonym
     assert view.values_profile == subject.values_profile
-    assert (view.legal_name, view.email, view.phone) == CANARIES[:3]
+    assert (view.legal_name, view.email, view.phone) == tuple(PrivateText(value) for value in CANARIES[:3])
     payload = d.serialize_member_view(view)
     assert set(payload) == {"pseudonym", "values_profile", "legal_name", "email", "phone"}
     assert CANARIES[3] not in repr(payload)
@@ -227,8 +228,8 @@ def test_viewer_errors_are_distinct_and_do_not_echo_identity(case, error_name, r
 def test_owner_projection_is_a_separate_redacted_view(scenario):
     view = d.project_own_profile(member())
     assert type(view) is d.OwnProfileView
-    assert (view.legal_name, view.email, view.phone) == CANARIES[:3]
-    assert view.date_of_birth == CANARY_DOB
+    assert (view.legal_name, view.email, view.phone) == tuple(PrivateText(value) for value in CANARIES[:3])
+    assert view.date_of_birth == PrivateDate(CANARY_DOB)
     assert_no_canary(str(view))
     assert_no_canary(repr(view))
 
@@ -411,8 +412,10 @@ def test_about_will_false_positive_gives_safe_rephrase_feedback():
     ("ABOUT", "STRASSE", True, "Straße"),
     ("PSEUDONYM", "StarSTRASSE", True, "Straße"),
     ("ABOUT", "mark", True, "Ｍａｒｋ"),
+    ("ABOUT", "ｍａｒｋ", True, "Mark"),
+    ("PSEUDONYM", "Ｍａｒｋ", True, "Mark"),
 ], ids=["substring", "whole-word", "casefold", "punctuation", "embedded-about", "embedded-name",
-        "will-period", "will-apostrophe", "will-embedded", "about-sharp-s", "name-sharp-s", "about-nfkc"])
+        "will-period", "will-apostrophe", "will-embedded", "about-sharp-s", "name-sharp-s", "about-nfkc", "about-input-nfkc", "pseudonym-input-nfkc"])
 def test_shared_predicate_has_distinct_pseudonym_and_about_modes(mode_name, candidate, flagged, owner_name):
     owner = identity(name=owner_name, email="unrelated@example.invalid")
     assert d.contains_self_name(candidate, identity=owner, mode=getattr(d.SelfNameMode, mode_name)) is flagged

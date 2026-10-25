@@ -12,6 +12,8 @@ from datetime import date
 
 import pytest
 
+from vaeil.domain.privacy import PrivateDate
+
 from vaeil.domain import (
     Applicant,
     FutureDateOfBirthError,
@@ -70,7 +72,7 @@ def test_turning_eighteen_today_is_allowed() -> None:
 
     applicant = redeem(invite, date(2008, 10, 22))  # exactly 18 on TODAY
 
-    assert applicant.date_of_birth == date(2008, 10, 22)
+    assert applicant.date_of_birth == PrivateDate(date(2008, 10, 22))
     assert invite.is_redeemed is True
 
 
@@ -79,7 +81,7 @@ def test_turned_eighteen_yesterday_is_allowed() -> None:
 
     applicant = redeem(invite, date(2008, 10, 21))  # turned 18 yesterday
 
-    assert applicant.date_of_birth == date(2008, 10, 21)
+    assert applicant.date_of_birth == PrivateDate(date(2008, 10, 21))
     assert invite.redeemed_by is applicant
 
 
@@ -97,7 +99,7 @@ def test_leap_day_birthday_turns_eighteen_on_feb_28_in_non_leap_years() -> None:
         today=date(2026, 2, 28),  # 2026 is not a leap year
     )
 
-    assert applicant.date_of_birth == date(2008, 2, 29)
+    assert applicant.date_of_birth == PrivateDate(date(2008, 2, 29))
     assert invite.is_redeemed is True
 
 
@@ -106,7 +108,7 @@ def test_leap_day_birthday_is_allowed_on_mar_1_in_non_leap_years() -> None:
 
     applicant = redeem(invite, date(2008, 2, 29), today=date(2026, 3, 1))
 
-    assert applicant.date_of_birth == date(2008, 2, 29)
+    assert applicant.date_of_birth == PrivateDate(date(2008, 2, 29))
 
 
 def test_future_date_of_birth_is_refused_with_its_own_error() -> None:
