@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 import unicodedata
 from vaeil.domain.identifiers import scan_identifiers
+from vaeil.domain.self_name import SelfNameMode, contains_self_name
 from vaeil.domain.identity import MemberIdentity
 
 class RelationshipIntent(str, Enum):
@@ -140,6 +141,7 @@ def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_sta
         raise AboutTooLongError(field="about")
     if scan_identifiers(text).is_flagged:
         raise ProfileIdentifierError(field="about")
-    # The next red-green cycle adds the shared self-name seam here.
+    if contains_self_name(text, identity=owner, mode=SelfNameMode.ABOUT):
+        raise ProfileSelfNameError(field="about")
     return ValuesProfile(**normalized, interests=frozenset(selected["interests"]),
                          values=frozenset(selected["values"]), about=text)
