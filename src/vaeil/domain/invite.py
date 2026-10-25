@@ -10,6 +10,7 @@ from datetime import date
 
 from vaeil.domain.applicant import Applicant
 from vaeil.domain.clock import Clock
+from vaeil.domain.privacy import PrivateRecord
 
 
 class UnderageError(Exception):
@@ -28,8 +29,8 @@ class InviteAlreadyRedeemedError(Exception):
     """The Invite has already been used by an Applicant."""
 
 
-@dataclass
-class Invite:
+@dataclass(slots=True)
+class Invite(PrivateRecord):
     code: str
     issuer: str
     redeemed_by: Applicant | None = None
