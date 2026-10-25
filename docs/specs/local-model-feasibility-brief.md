@@ -1,6 +1,6 @@
-# Local-model feasibility brief — scheduled after T1, not started
+# Local-model feasibility brief — research started after T1 PR
 
-Owner decision: native Windows laptop inference behind the existing LLM port. No runtime/model is selected, installed or benchmarked by this brief. No model integration until Parth reads the feasibility note. Initial investigation is timeboxed to 0.5 session immediately after T1, alongside T2/T3; if required measurements cannot finish inside that time, report exactly what is missing rather than invent results or silently extend scope.
+Owner decision: native Windows laptop inference behind the existing LLM port. Initial source research is in docs/research/local-model-feasibility-2026-10-25.md. No runtime/model is selected, installed or benchmarked by this brief. No model integration until Parth reads the feasibility note. Initial investigation is timeboxed to 0.5 session immediately after T1, alongside T2/T3; if required measurements cannot finish inside that time, report exactly what is missing rather than invent results or silently extend scope.
 
 ## Machine and evidence
 

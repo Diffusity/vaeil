@@ -1,6 +1,6 @@
 # T1 timed implementation blocks
 
-UTC boundaries come from tool-clock observations, captured before housekeeping commits. These measure agent-led work, not Parth's human sessions. Earlier audit active time across an overnight gap is unverified; its 0.5-session budget is separate from actual measured work. Waiting between user decisions is excluded.
+UTC boundaries are tool-clock observations captured before housekeeping commits. Blocks 1-14 are measured T1 work; block 15 starts the next feasibility note. Parth's human session ledger is separate. Earlier audit/pretracking active time is unverified; the audit's 0.5-session budget is not an actual measurement. User-decision waiting intervals are excluded.
 
 | Block | Start UTC | End UTC | Work / evidence |
 | --- | --- | --- | --- |
@@ -16,7 +16,8 @@ UTC boundaries come from tool-clock observations, captured before housekeeping c
 | 10 | 2026-10-25 10:46:51 | 2026-10-25 10:51:43 | Opaque PrivateText cycle: immutable slotted non-str, strict equality/unhashable, redacted formatting, explicit consumers; 39 targeted tests green. |
 | 11 | 2026-10-25 10:51:43 | 2026-10-25 10:54:16 | Opaque PrivateDate cycle and age-gate extraction; full check 401 passed in 7.78s including exact three-site AST guard and fake-module controls. |
 | 12 | 2026-10-25 10:54:16 | 2026-10-25 11:22:59 | Opaque re-reviews, 74/74 mutation kills (CRLF runner fixed/restarted), restored 23-file hash snapshot, final 401 passed / AST 4 passed, graded-doc citations. |
-
-Prior stop gate resolved by user approval of opaque text/date. No tests changed after34bb4e9. Final velocity is recorded in docs/audit/t1-velocity.md after PR preparation.
-
 | 13 | 2026-10-25 11:22:59 | 2026-10-25 11:30:27 | Final reviewed evidence, 74-row table, exact extraction citations and canonical spec/docs synchronization; PR preparation. |
+| 14 | 2026-10-25 11:30:27 | 2026-10-25 11:38:31 | Published PR #14 against master (Closes #8), synced #7/#8, no merge. Windows checks subsequently passed at head9a02f31. |
+| 15 | 2026-10-25 11:38:31 | 2026-10-25 11:51:52 | Post-T1 feasibility started: official runtime/model/licence/tunnel research, hardware/runtime probes, initial note with all benchmarks explicitly unmeasured; no installation/integration. CI success verified. |
+
+PR: https://github.com/Diffusity/vaeil/pull/14. Latest source implementation06fd4b6; no tests changed after34bb4e9. All401 tests pass,74/74 mutations killed, AST4green. No issue closure/merge or later child publication/assignment. Final bookkeeping records this completed work; additional user review/model benchmarking is not charged to these blocks.

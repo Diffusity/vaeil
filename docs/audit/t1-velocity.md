@@ -2,7 +2,7 @@
 
 ## Measured work and original estimate
 
-Original estimate: **3-4 sessions**, using the plan's 2-3 focused hours/session. Timed work blocks through 11:30:27 UTC: **2h 35m 32s**, equivalent to **0.86-1.30 sessions**. Publication bookkeeping is logged as a following block. These are agent-led timings, not a substitute for Parth's human review-session ledger.
+Original estimate: **3-4 sessions**, using the plan's 2-3 focused hours/session. Timed T1 work blocks through PR publication at 11:38:31 UTC: **2h 43m 36s**, equivalent to **0.91-1.36 sessions**. The next feasibility note is recorded separately in block 15. These are agent-led timings, not a substitute for Parth's human review-session ledger.
 
 Audit: budget **0.5 session**, actual active duration unverified because its clock observations span an overnight gap. Initial T1 test drafting/recovery before timestamp tracking is also unmeasured. Therefore **total actual T1 sessions cannot honestly be certified yet**. Measured portion is inside the 3-4 estimate; do not claim all unmeasured work took zero or release reserved slots as “savings”. Reconcile with Parth's own session notes.
 
@@ -22,3 +22,5 @@ Remaining lead work after T1, excluding local-model T12: **19-31 sessions**, plu
 With the original T1 reservation still held against the approximately 25-slot build window, only **2.5-3.5 slots** remain for T12 and unexpected work at the optimistic bound. The upper range does not fit. The measured portion of T1 is **not evidence that we are behind its estimate**, but the entire plan remains tight/high-risk; a low-effort local adapter and accepted teammate work are necessary. Do not extrapolate domain-test speed to SQL contracts, deployment or laptop availability.
 
 Next: start the half-session local-model feasibility note; T2/local T3 can overlap after T1 lands and this review. Re-estimate again after T2, before T4. If T2 exceeds two sessions or local-model setup/adapter/rehearsal needs more than the remaining bound, flag the freeze forecast immediately and propose capacity/deadline adjustment; mandatory safety scope stays. Later tickets remain unpublished until the review and feasibility findings make their estimates real. No teammate assignment is made here.
+
+PR #14 is open against master, not merged. Windows checks passed at head9a02f31. Local-model research has started in docs/research/local-model-feasibility-2026-10-25.md; actual runtime benchmarks and the accuracy-bar/model decision remain pending.
