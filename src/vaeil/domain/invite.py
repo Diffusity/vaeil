@@ -10,7 +10,7 @@ from datetime import date
 
 from vaeil.domain.applicant import Applicant
 from vaeil.domain.clock import Clock
-from vaeil.domain.privacy import PrivateRecord
+from vaeil.domain.privacy import PrivateRecord, PrivateDate, private_date
 
 
 class UnderageError(Exception):
@@ -42,7 +42,7 @@ class Invite(PrivateRecord):
 
 def redeem_invite(
     invite: Invite | None,
-    date_of_birth: date,
+    date_of_birth: date | PrivateDate,
     clock: Clock,
 ) -> Applicant:
     """Redeem a single-use Invite for an 18+ Applicant.
@@ -51,11 +51,12 @@ def redeem_invite(
     gets UnderageError even when the Invite is unknown or already used.
     """
     today = clock.today()
+    birth = private_date(date_of_birth).UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()
 
-    if date_of_birth > today:
+    if birth > today:
         raise FutureDateOfBirthError("Date of birth cannot be in the future.")
 
-    if not (today >= _eighteenth_birthday(date_of_birth)):
+    if not (today >= _eighteenth_birthday(birth)):
         raise UnderageError("Applicant must be 18 or older to redeem an Invite.")
 
     if invite is None or not invite.code.strip():

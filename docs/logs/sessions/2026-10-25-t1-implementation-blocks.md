@@ -17,3 +17,4 @@ Measured work in this run: 1h 37m 51s (0.54-0.82 of a 2-3h session). This is not
 
 | 9 | 2026-10-25 10:32:46 | 2026-10-25 10:46:51 | Approved opaque refinement tests only; valid red 39 failed/35 passed, actual scalar JSON and padded-format leaks; 7 existing functions strengthened, Ruff green. |
 | 10 | 2026-10-25 10:46:51 | 2026-10-25 10:51:43 | Opaque PrivateText cycle: immutable slotted non-str, strict equality/unhashable, redacted formatting, explicit consumers; 39 targeted tests green. |
+| 11 | 2026-10-25 10:51:43 | 2026-10-25 10:54:16 | Opaque PrivateDate cycle and age-gate extraction; full check 401 passed in 7.78s including exact three-site AST guard and fake-module controls. |

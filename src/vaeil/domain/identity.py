@@ -1,7 +1,6 @@
 """Private Member identity, separate from all public profile/view fields."""
 from dataclasses import dataclass, field
-from datetime import date
-from vaeil.domain.privacy import PrivateRecord, PrivateText, private_date
+from vaeil.domain.privacy import PrivateRecord, PrivateText, PrivateDate, private_date
 
 @dataclass(frozen=True, slots=True)
 class MemberIdentity(PrivateRecord):
@@ -10,7 +9,7 @@ class MemberIdentity(PrivateRecord):
     legal_name: PrivateText = field(repr=False)
     email: PrivateText = field(repr=False)
     phone: PrivateText | None = field(repr=False)
-    date_of_birth: date = field(repr=False)
+    date_of_birth: PrivateDate = field(repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "legal_name", PrivateText(self.legal_name))

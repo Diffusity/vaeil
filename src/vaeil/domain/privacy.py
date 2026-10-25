@@ -1,6 +1,6 @@
 """Refuse accidental private-record export; explicit persistence mapping is T5.
 
-Opaque private text refuses native-string operations and generic export.
+Opaque private values refuse native string/date operations and generic export.
 Private values refuse deepcopy so asdict cannot bypass the record guard.
 Authorized extraction uses one noisy method, pinned to explicit production sites.
 This is an export boundary, not protection from code already holding private data.
@@ -77,18 +77,10 @@ class PrivateText(_OpaquePrivateValue):
     _plain_type = str
 
 
-class PrivateDate(PrivateRecord, date):
+class PrivateDate(_OpaquePrivateValue):
     __slots__ = ()
-
-    def __repr__(self):
-        return "<private>"
-
-    def __str__(self):
-        return "<private>"
+    _plain_type = date
 
 
-def private_date(value: date) -> PrivateDate:
-    if not isinstance(value, date):
-        raise TypeError("Private date must be a date.")
-    return PrivateDate(value.year, value.month, value.day)
-
+def private_date(value: date | PrivateDate) -> PrivateDate:
+    return PrivateDate(value)
