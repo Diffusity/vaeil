@@ -21,3 +21,7 @@ UTC boundaries are tool-clock observations captured before housekeeping commits.
 | 15 | 2026-10-25 11:38:31 | 2026-10-25 11:51:52 | Post-T1 feasibility started: official runtime/model/licence/tunnel research, hardware/runtime probes, initial note with all benchmarks explicitly unmeasured; no installation/integration. CI success verified. |
 
 PR: https://github.com/Diffusity/vaeil/pull/14. Latest source implementation06fd4b6; no tests changed after34bb4e9. All401 tests pass,74/74 mutations killed, AST4green. No issue closure/merge or later child publication/assignment. Final bookkeeping records this completed work; additional user review/model benchmarking is not charged to these blocks.
+
+## Pre-merge review follow-up
+
+Working block: 2026-10-25 13:40:07–13:42:26 UTC. Recovered PR #14 final head, fetched Issue #8, ran independent Standards/Spec reviews and the full local check (401 passed). Fixed two documentation findings; no product or test changes. User authorized a merge commit after Windows CI on the final head. Effort before time tracking began remains unverified; gaps between logged blocks are not active work. Benchmark label/rubric review is required before any model run; nothing installed or measured in this block.

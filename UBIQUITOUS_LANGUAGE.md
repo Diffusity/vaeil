@@ -88,4 +88,4 @@ Resolved — winners recorded (kept here as findings):
 | Canonical term | Called in code | Location | Note |
 | -------------- | -------------- | -------- | ---- |
 
-The first two slices implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. Other terms remain planned; Rule 5 is only partial. Real-name detection and persistent platform uniqueness are not yet enforced; see `DESIGN.md` for the scanner limits.
+Slices 1-2 implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. T1 adds Member, Values Profile, the self-name check, and pair-scoped identity views. Conversation lifecycle, transport, and persistent platform uniqueness remain planned; Rule 5 stays partial. The self-name check is implemented, but general real-name detection is not promised; see `DESIGN.md` for the heuristic limits.

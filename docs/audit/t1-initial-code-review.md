@@ -24,3 +24,7 @@ No hard-standard violations or blocking maintainability findings. Native subtype
 No additional actionable findings. Opaque values resolve native JSON/format leakage; exact view shapes/payload, profile precedence, participant rules, both self-name modes and original claim policy match the approved contract. Only the approved residual limit remains: deliberate extraction by code with access is not prevented. The AST test pins the three production functions.
 
 Both reviewers completed source reads before mutations began. Final summary: Standards 0 hard violations / 1 nonblocking typing note; Spec 0 additional actionable findings. Complete mutation evidence is recorded separately (74/74 killed), not inferred from review.
+
+## Requested pre-merge review — 75d4ced...b1937f6
+
+Two independent read-only reviewers checked the complete PR against master and Issue #8/the approved seam. Standards found two stale documentation summaries: DESIGN retained superseded cost-cap failure wording, and UBIQUITOUS_LANGUAGE omitted the implemented T1 seams. Both were corrected without changing source or tests. Spec found zero missing, incorrect, or unrequested behaviors. Full local check: 401 passed, Ruff and assumption validation green. Windows CI must pass on the documentation-fix head before the authorized merge commit.
