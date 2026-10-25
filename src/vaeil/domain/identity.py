@@ -5,6 +5,7 @@ from vaeil.domain.privacy import PrivateRecord, PrivateText, private_date
 
 @dataclass(frozen=True, slots=True)
 class MemberIdentity(PrivateRecord):
+    __getstate__ = PrivateRecord.__getstate__
     member_id: str
     legal_name: str = field(repr=False)
     email: str = field(repr=False)
