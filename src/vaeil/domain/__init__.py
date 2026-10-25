@@ -41,3 +41,46 @@ __all__ = [
     "scan_identifiers",
     "vet",
 ]
+
+from vaeil.domain.identity import (
+    MemberIdentity,
+    IdentityOwnerMismatchError,
+)
+from vaeil.domain.self_name import (
+    SelfNameMode,
+    contains_self_name,
+)
+from vaeil.domain.profile import (
+    RelationshipIntent,
+    LifeStage,
+    CommunicationStyle,
+    PaceAndLifestyle,
+    Interest,
+    CoreValue,
+    ValuesProfile,
+    build_values_profile,
+    InvalidValuesProfileError,
+    ProfileShapeError,
+    UnknownProfileChoiceError,
+    ProfileSelectionError,
+    AboutNormalizationError,
+    AboutTooLongError,
+    ProfileIdentifierError,
+    ProfileSelfNameError,
+)
+from vaeil.domain.member import (
+    Member,
+    ConversationRevealState,
+    PreRevealMemberView,
+    RevealedMemberView,
+    OwnProfileView,
+    SelfViewerError,
+    ViewerNotParticipantError,
+    SubjectNotParticipantError,
+    InvalidConversationParticipantsError,
+    project_member_for_viewer,
+    project_own_profile,
+    serialize_member_view,
+)
+
+__all__ += ['MemberIdentity', 'IdentityOwnerMismatchError', 'SelfNameMode', 'contains_self_name', 'RelationshipIntent', 'LifeStage', 'CommunicationStyle', 'PaceAndLifestyle', 'Interest', 'CoreValue', 'ValuesProfile', 'build_values_profile', 'InvalidValuesProfileError', 'ProfileShapeError', 'UnknownProfileChoiceError', 'ProfileSelectionError', 'AboutNormalizationError', 'AboutTooLongError', 'ProfileIdentifierError', 'ProfileSelfNameError', 'Member', 'ConversationRevealState', 'PreRevealMemberView', 'RevealedMemberView', 'OwnProfileView', 'SelfViewerError', 'ViewerNotParticipantError', 'SubjectNotParticipantError', 'InvalidConversationParticipantsError', 'project_member_for_viewer', 'project_own_profile', 'serialize_member_view']
