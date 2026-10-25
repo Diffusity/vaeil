@@ -1,7 +1,7 @@
 [project]
 name = "vaeil"
 version = "0.1.0"
-description = "Vaeil — invite-only, anonymous matchmaking"
+description = "Vaeil — values-based matching with AI-assisted safety"
 requires-python = ">=3.11"
 dependencies = []
 

@@ -1,0 +1,446 @@
+[
+  {
+    "mutation": "remove phone detection",
+    "result": "KILLED",
+    "failed": 18,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[phone]"
+  },
+  {
+    "mutation": "remove email detection",
+    "result": "KILLED",
+    "failed": 6,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[email]"
+  },
+  {
+    "mutation": "remove handle detection",
+    "result": "KILLED",
+    "failed": 7,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[handle]"
+  },
+  {
+    "mutation": "remove obfuscated_email detection",
+    "result": "KILLED",
+    "failed": 9,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[obfuscated]"
+  },
+  {
+    "mutation": "remove url detection",
+    "result": "KILLED",
+    "failed": 6,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[url]"
+  },
+  {
+    "mutation": "phone threshold 9",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_phone_digit_threshold_boundary[123456789-False]"
+  },
+  {
+    "mutation": "phone threshold 11",
+    "result": "KILLED",
+    "failed": 14,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[phone]"
+  },
+  {
+    "mutation": "drop Pseudonym NFKC",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_a_failed_taken_claim_does_not_set_the_member[merged-t1-fullwidth-taken]"
+  },
+  {
+    "mutation": "drop Pseudonym casefold",
+    "result": "KILLED",
+    "failed": 7,
+    "witness": "test_pseudonyms_are_unique_case_insensitively"
+  },
+  {
+    "mutation": "drop claim identifier check",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_format_valid_phone_identifier_is_refused"
+  },
+  {
+    "mutation": "drop fixed-once guard",
+    "result": "KILLED",
+    "failed": 4,
+    "witness": "test_fixed_once_precedes_other_claim_validation"
+  },
+  {
+    "mutation": "drop reserved-name check",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_reserved_names_are_refused[admin]"
+  },
+  {
+    "mutation": "make identity optional",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_pseudonym_claim_requires_private_identity_without_a_bypass_default"
+  },
+  {
+    "mutation": "drop owner check",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_claim_rejects_a_mismatched_identity_without_leaking_private_values"
+  },
+  {
+    "mutation": "drop claim self-name check",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_pseudonym_self_name_failure_does_not_consume_the_slot"
+  },
+  {
+    "mutation": "use whole-word in claim",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_pseudonym_self_name_failure_does_not_consume_the_slot"
+  },
+  {
+    "mutation": "move fixed-once after owner",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_fixed_once_precedes_other_claim_validation"
+  },
+  {
+    "mutation": "drop self-name NFKC",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_shared_predicate_has_distinct_pseudonym_and_about_modes[about-nfkc]"
+  },
+  {
+    "mutation": "drop email-local NFKC",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[nfkc-local]"
+  },
+  {
+    "mutation": "replace casefold with lower",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_shared_predicate_has_distinct_pseudonym_and_about_modes[about-sharp-s]"
+  },
+  {
+    "mutation": "drop text NFKC",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_shared_predicate_has_distinct_pseudonym_and_about_modes[about-input-nfkc]"
+  },
+  {
+    "mutation": "name token threshold 2",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[short]"
+  },
+  {
+    "mutation": "name token threshold 4",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[three]"
+  },
+  {
+    "mutation": "do not split plus",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[name-separators]"
+  },
+  {
+    "mutation": "do not split dot",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[dot]"
+  },
+  {
+    "mutation": "include email domain",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_self_name_normalization_tokens_and_length_boundary[not-domain]"
+  },
+  {
+    "mutation": "drop whole-word boundaries",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_about_whole_word_mode_accepts_market_for_mark"
+  },
+  {
+    "mutation": "drop About self-name",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_profile_errors_never_print_private_rejected_text[legal-name]"
+  },
+  {
+    "mutation": "substring mode in About",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_about_whole_word_mode_accepts_market_for_mark"
+  },
+  {
+    "mutation": "drop profile identifier check",
+    "result": "KILLED",
+    "failed": 8,
+    "witness": "test_every_identifier_category_refuses_the_entire_profile_save[email]"
+  },
+  {
+    "mutation": "drop controls",
+    "result": "KILLED",
+    "failed": 11,
+    "witness": "test_about_control_characters_are_refused_even_at_trim_boundaries[nul]"
+  },
+  {
+    "mutation": "About limit 279",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_about_is_optional_and_normalized_before_storage_and_counting"
+  },
+  {
+    "mutation": "About limit 281",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_about_is_optional_and_normalized_before_storage_and_counting"
+  },
+  {
+    "mutation": "selection maximum 4",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_complete_profile_selection_boundaries[5-True-interests]"
+  },
+  {
+    "mutation": "selection maximum 6",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_complete_profile_selection_boundaries[6-False-interests]"
+  },
+  {
+    "mutation": "selection minimum 0",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_complete_profile_selection_boundaries[0-False-interests]"
+  },
+  {
+    "mutation": "selection minimum 2",
+    "result": "KILLED",
+    "failed": 82,
+    "witness": "test_pre_reveal_type_and_serialized_keys_are_exactly_the_allow_list"
+  },
+  {
+    "mutation": "silently deduplicate",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_duplicate_selections_are_refused_before_frozenset_conversion[interests]"
+  },
+  {
+    "mutation": "mutable interests",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_complete_profile_selection_boundaries[1-True-interests]"
+  },
+  {
+    "mutation": "mutable values",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_complete_profile_selection_boundaries[1-True-values]"
+  },
+  {
+    "mutation": "drop About normalization",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_about_is_optional_and_normalized_before_storage_and_counting"
+  },
+  {
+    "mutation": "drop About trim",
+    "result": "KILLED",
+    "failed": 2,
+    "witness": "test_about_is_optional_and_normalized_before_storage_and_counting"
+  },
+  {
+    "mutation": "scanner before length",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "self-name before scanner",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "controls before selection",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "length before controls",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "duplicate check before unknown codes",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "skip shape checks",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_profile_validation_precedence_is_pinned"
+  },
+  {
+    "mutation": "accept Member Reveal flag",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_member_cannot_supply_a_global_reveal_flag"
+  },
+  {
+    "mutation": "always reveal",
+    "result": "KILLED",
+    "failed": 9,
+    "witness": "test_pre_reveal_type_and_serialized_keys_are_exactly_the_allow_list"
+  },
+  {
+    "mutation": "never reveal",
+    "result": "KILLED",
+    "failed": 12,
+    "witness": "test_reveal_adds_identity_without_removing_the_public_profile"
+  },
+  {
+    "mutation": "drop subject membership",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_viewer_errors_are_distinct_and_do_not_echo_identity[wrong-subject-SubjectNotParticipantError-anonymous]"
+  },
+  {
+    "mutation": "drop self-view check",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_viewer_errors_are_distinct_and_do_not_echo_identity[self-SelfViewerError-anonymous]"
+  },
+  {
+    "mutation": "drop viewer membership",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_viewer_errors_are_distinct_and_do_not_echo_identity[outsider-ViewerNotParticipantError-anonymous]"
+  },
+  {
+    "mutation": "accept duplicate participants",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_conversation_state_requires_exactly_two_distinct_participants[duplicate]"
+  },
+  {
+    "mutation": "expose private pre-Reveal field",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_pre_reveal_type_and_serialized_keys_are_exactly_the_allow_list"
+  },
+  {
+    "mutation": "leak identity repr",
+    "result": "KILLED",
+    "failed": 4,
+    "witness": "test_private_records_never_print_identity_values[identity]"
+  },
+  {
+    "mutation": "leak Applicant repr",
+    "result": "KILLED",
+    "failed": 5,
+    "witness": "test_existing_date_of_birth_holders_also_redact_private_representations[repr-applicant]"
+  },
+  {
+    "mutation": "echo rejected private About",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_profile_errors_never_print_private_rejected_text[legal-name]"
+  },
+  {
+    "mutation": "allow shallow private copy",
+    "result": "KILLED",
+    "failed": 8,
+    "witness": "test_private_records_refuse_generic_serialization[copy-applicant]"
+  },
+  {
+    "mutation": "allow deep private copy/asdict",
+    "result": "KILLED",
+    "failed": 20,
+    "witness": "test_private_records_refuse_generic_serialization[deepcopy-applicant]"
+  },
+  {
+    "mutation": "allow private pickle",
+    "result": "KILLED",
+    "failed": 14,
+    "witness": "test_private_records_refuse_generic_serialization[pickle-applicant]"
+  },
+  {
+    "mutation": "allow direct private reduction",
+    "result": "KILLED",
+    "failed": 8,
+    "witness": "test_private_records_refuse_generic_serialization[reduce-applicant]"
+  },
+  {
+    "mutation": "SDK import in domain",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_domain_imports_only_the_standard_library_and_its_own_package"
+  },
+  {
+    "mutation": "real clock in domain",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_domain_does_not_read_the_system_clock"
+  },
+  {
+    "mutation": "unwrap outside allowed function",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_production_unwrap_sites_are_exactly_the_approved_functions"
+  },
+  {
+    "mutation": "wrapper repr leaks",
+    "result": "KILLED",
+    "failed": 4,
+    "witness": "test_all_scalar_rendering_is_redacted[repr-legal_name]"
+  },
+  {
+    "mutation": "drop scalar str redaction",
+    "result": "KILLED",
+    "failed": 9,
+    "witness": "test_all_scalar_rendering_is_redacted[str-legal_name]"
+  },
+  {
+    "mutation": "drop scalar format redaction",
+    "result": "KILLED",
+    "failed": 13,
+    "witness": "test_all_scalar_rendering_is_redacted[format-legal_name]"
+  },
+  {
+    "mutation": "private equality against plain value",
+    "result": "KILLED",
+    "failed": 4,
+    "witness": "test_equality_never_compares_equal_to_a_plain_value[name]"
+  },
+  {
+    "mutation": "allow wrapper hashing",
+    "result": "KILLED",
+    "failed": 4,
+    "witness": "test_scalars_are_opaque_immutable_slotted_and_unhashable[legal_name]"
+  },
+  {
+    "mutation": "expose PrivateDate year",
+    "result": "KILLED",
+    "failed": 1,
+    "witness": "test_private_date_exposes_no_calendar_accessors[year]"
+  },
+  {
+    "mutation": "view holds plain private text",
+    "result": "KILLED",
+    "failed": 8,
+    "witness": "test_reveal_adds_identity_without_removing_the_public_profile"
+  },
+  {
+    "mutation": "global Reveal cache by Member",
+    "result": "KILLED",
+    "failed": 3,
+    "witness": "test_reveal_in_one_pair_does_not_reveal_the_subject_in_another"
+  }
+]

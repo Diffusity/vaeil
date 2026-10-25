@@ -1,4 +1,6 @@
-# T1 private scalar serialization — decision required
+# T1 private scalar serialization — resolved decision
+
+Resolved 25 October 2026: Parth approved opaque private text **and date**, strict same-wrapper equality, unhashable values, redacted formatting and the exact three-function AST unwrap boundary. Test-only commit `34bb4e9` preceded implementation commits `30ddc9e` and `06fd4b6`; 401 tests pass. The proposal below is preserved as decision history, not a pending gate.
 
 Latest user condition 3: every type holding private values must refuse generic serialization. Earlier approved field declarations use native `str` for legal name/email/phone. Those constraints conflict when private text itself is passed to the standard JSON encoder: it accepts str subtypes without invoking repr/str/reduction guards.
 

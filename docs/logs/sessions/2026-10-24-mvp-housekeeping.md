@@ -13,3 +13,9 @@
 - User approved commit `dd807da` and the Issue #1 checkbox update, authorized a docs-branch PR and merge after Windows CI, and requested the unpublished to-spec draft next. Ticket drafting remains gated on spec approval.
 - Confirmed support for all eleven criteria from current tests, red/green commit history, historical mutation results, and Parth's recorded slice-1 approval. Displayed the complete issue-body diff before applying it; only the eleven checkbox markers changed, with the rest of the body compared exactly before and after. Issue #1 remains closed.
 - Made schedule labeling explicitly provisional and clarified Parth's product decisions, review requests, and merge authorization alongside factual agent contributions. No product or tooling code changed.
+
+## Housekeeping merged
+
+- Kept the change as one local housekeeping commit by amending unpublished `dd807da` to `b777ab3` with the approved conditions, then opened PR #6. Windows CI and GitGuardian passed. Transient GitHub connection failures were retried after checking PR state.
+- Merged PR #6 as authorized into master: `75d4ced20ac4d2fb76fdaff8a3f58e15d4f1e48d`. Updated local master; shared checks passed with **122 tests in 7.52s**, Ruff and assumption validation green.
+- The next artifact is the local, unpublished project-wide MVP spec for approval; no tickets or product implementation have started. This merge append remains local for the next authorized commit.

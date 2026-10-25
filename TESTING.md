@@ -1,35 +1,46 @@
 # Testing
 
-Vaeil's rules are tested where they live. This file maps each rule to the test that proves it, says how many rules are covered, and names one test I would not defend as strong.
-
-**Status: in progress.** Slice 1 proves Rules 1, 2, and 6 at the domain seam. Rules 3 and 4 have no tests yet; Rule 5 has partial domain tests and is not counted as done. **Current coverage: 3 of 6 rules domain-level; 0 of 6 end-to-end.** Rule 5 remains partial until the pre-Reveal display slice proves the system-side guarantee.
+**Current evidence:** 401 tests pass: 386 product/domain/boundary cases and 15 tooling cases. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; no API or UI exists yet. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
 ```powershell
-.venv\Scripts\python.exe -m pytest -q
+.venv\Scripts\python.exe scripts/check.py
 ```
 
-The 107 product tests cover 22 slice-1 and 85 slice-2 cases. Additional agent-tooling tests live under `tests/tooling/`; they do not increase product-rule coverage. The domain suite uses no network, database, or real clock; its fakes include a fixed `FakeClock`. Tooling tests exercise local CLIs and bounded pytest subprocesses.
-
-Run all checks with `.venv\Scripts\python.exe scripts/check.py`; Windows CI uses the same command. It runs Ruff, validates assumption IDs/supersession links, and executes the whole pytest suite. `tests/tooling/test_agent_tools.py` covers invalid assumption histories, filtered/paginated session reads, malformed exports, and bounded test IDs. Mutations remain a separate manual check because they temporarily rewrite sources.
+Product/domain tests use no live provider/database or system clock. Logging tests capture diagnostics; bounded parser/predicate subprocesses enforce generous regression deadlines, not latency claims. The AST tests inspect source for purity and the private extraction boundary. Tooling tests do not increase rule coverage.
 
 ## Rules → tests
 
-| # | Rule | Test(s) (`file:line`) | What is proven | What is still missing |
-|---|------|-----------------------|----------------|----------------------|
-| 1 | Invite-only access | `tests/test_invite_redemption.py:121`, `:131`, `:136` | An Invite is required, single-use, and unknown or malformed Invites are refused without changing the original redeemer | Account creation and the API/UI are not built; the app slice must redeem before creating an account |
-| 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Reject is unrepresentable; port errors, timeouts, and non-Verdict results fail closed to NeedsReview | The Admin approval flow, persistence, and the real LLM adapter are not built |
-| 3 | Moderated delivery | — | — | Messages and moderation are not built. Fail-closed is proven for vetting only, not yet for Messages |
-| 4 | Consensual Reveal | — | — | Conversation and Reveal are not built |
-| 5 | Anonymity before Reveal (partial) | `tests/test_identifier_detection.py:27`, `:61`, `:76`; `tests/test_pseudonyms.py:36`, `:41`, `:49`, `:57`, `:66` | Supported identifiers are reported; identifier-like Pseudonyms are rejected, claims are case-insensitively unique within one directory and fixed once set; failed claims do not reserve a name | Self-name and profile-write validation remain pending. Persistent uniqueness, identity projection, Conversation-scoped escalation, delivery, and audit integration are not built; this rule is not counted as fully covered |
-| 6 | Age gate | `tests/test_invite_redemption.py:54`, `:68`, `:77`, `:86`, `:91`, `:104`, `:112`, `:150` | Under-18 is refused and leaves the Invite unused; both birthday boundaries; the Feb 29 rule; future DOB has its own error; the age check reads the injected Clock | The UI must surface the refusal; no HTTP layer yet |
+| # | Rule | Current evidence (`file:line`) | Proven / remaining |
+| --- | --- | --- | --- |
+| 1 | Invite-only | `tests/test_invite_redemption.py:123`, `:133`, `:138` | Single-use/unknown/invalid Invite refusal; account/API/admission wiring still T6. |
+| 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Closed Verdict and safe wrapper; real model and Admin admission remain pending. |
+| 3 | Moderated delivery | — | Message delivery/moderation not implemented; Vetting failure tests do not prove delivery. |
+| 4 | Consensual Reveal | — | Eligibility, Clock timestamps and bilateral consent not implemented. T1 Reveal fixtures are projection inputs only. |
+| 5 | Anonymity before Reveal — **partial** | `tests/test_member_identity_red.py:107`, `:119`, `:189`, `:508`; `tests/test_opaque_private_values.py:23`, `:39`, `:144`, `:165`, `:179`; `tests/test_private_unwrap_boundary.py:60` | Exact view shape, graph/serialization canaries, pair isolation, owner checks and opaque scalars/authorized payload. State authority, HTTP auth, deployed UI, persistence and moderated transport remain pending. |
+| 6 | Age gate | `tests/test_invite_redemption.py:56`, `:61`, `:70`, `:79`, `:93`, `:106`, `:114`, `:152` | 18+ before consume, birthday/leap boundaries and injected Clock; UI/admission integration pending. |
 
-**How many rules are tested?** 3 of 6 rules have domain-level tests (Rules 1, 2, 6); none is end-to-end. The count stays here until the other rules' tests actually exist.
+**How many rules are tested?** Rules 1, 2 and 6 have existing domain-level evidence; 3/6 domain, 0/6 E2E. Domain privacy improvements do not mark Rule 5 done.
+
+## T1 privacy/profile evidence
+
+- Exact pre-Reveal `{pseudonym, values_profile}` and revealed `{pseudonym, values_profile, legal_name, email, phone}` field/key sets; DOB never enters a Match payload. No photos.
+- Profile writes: seven distinct validation failures in order, stable code sets, 1-5 distinct frozenset selections, trimmed NFKC About at 280 code points, no controls/truncation, shared scanner then whole-word self-name checks. See `tests/test_member_identity_red.py:302`, `:309`, `:339`, `:535`, `:665`.
+- Own-name tokens use normalized names/email-local parts of length >=3; Pseudonyms use substrings and About whole words. Mark/market accepted; Will/will remains a documented rephraseable false positive. Unicode/casefold/token and long-input evidence: `tests/test_member_identity_red.py:419`, `:442`, `:571`.
+- Opaque scalar rendering/equality/native-operation/export tests: `tests/test_opaque_private_values.py:23`, `:39`, `:58`, `:79`, `:90`, `:110`, `:128`. Unhashable values; plain-field constructors wrap without caller hand-wrapping.
+- Distinctive DOB canaries include ISO, DMY, MDY, English display, date repr and pickle state/decoded values; positive controls demonstrate actual detection (`tests/test_member_identity_red.py:482`, `:617`). Pre-Reveal tests inspect dict/slots, pickle/roundtrip, asdict, JSON and references. Private records/scalars instead refuse generic export (`:638`). Logs/tracebacks/errors are scanned (`tests/test_opaque_private_values.py:179`).
+- Exact unwrap allowlist and deliberately violating fake modules: `tests/test_private_unwrap_boundary.py:60`, `:73`. The guard catches direct loads, aliases and literal getattr; deliberate reflective access/dynamic indirection is not prevented. Allowed code can intentionally extract data; review remains required.
+
+## T1 red/green and mutation evidence
+
+The test-only commit preceded the measured skeleton: 219 failed/106 passed, with 178 direct NotImplementedErrors and 41 assertions (one wrapped a child NotImplementedError). Every passing T1 control was classified in `docs/audit/t1-skeleton-red.md`. Five separate implementation cycles reached 325 green. The approved opaque refinement then showed 39 failed/35 passed against old scalars, including actual native JSON/format leaks, before separate text/date green commits reached **401 passed**. No tests were loosened; wrapper-comparison refinements and full legacy diffs are recorded in `docs/audit/`.
+
+Run `.venv\Scripts\python.exe scripts/check_t1_mutations.py` separately: it temporarily rewrites one fault at a time, rejects collection/setup-error kills and restores exact bytes in finally. Do not run concurrent source-mutating checks. Results table: `docs/audit/t1-mutation-results.md`; raw results: `t1-mutation-results.json`. This does not prove unlisted faults impossible. The existing slice-1/2 mutation tables below are historical baseline evidence, not current counts.
 
 ## The leap-day rule
 
-Someone born on 29 February is treated as having their birthday on 28 February in non-leap years. In 2026 (not a leap year) they turn 18 on 2026-02-28, not 2026-03-01. Both dates are tested at `tests/test_invite_redemption.py:91` and `:104`; the clamp is implemented at `src/vaeil/domain/invite.py:71`.
+Someone born on 29 February is treated as having their birthday on 28 February in non-leap years. In 2026 (not a leap year) they turn 18 on 2026-02-28, not 2026-03-01. Both dates are tested at `tests/test_invite_redemption.py:93` and `:106`; the clamp is implemented at `src/vaeil/domain/invite.py:73`.
 
 ## Identifier detection is heuristic
 
@@ -40,11 +51,11 @@ Rule 5's guarantee is about what the system displays and sends: a Member's real 
 - identifiers split across multiple Messages;
 - false positives: a long numeric string that is not a phone number is still flagged.
 
-The scanner at `src/vaeil/domain/identifiers.py:32` handles email, phone, handle/social hints, supported obfuscated-email patterns, and URLs. It normalizes NFKC and Unicode decimal digits, returns all reasons in enum order, and stores no matched text. It does not detect real names. Pseudonym validation at `src/vaeil/domain/pseudonym.py:31` shares this scanner, so the documented real-name prohibition is not yet fully enforced. Claims are unique only within a shared in-memory directory; database-backed platform uniqueness remains pending.
+The scanner at `src/vaeil/domain/identifiers.py:32` handles email, phone, handle/social hints, supported obfuscated-email patterns, and URLs. It normalizes NFKC and Unicode decimal digits, returns all reasons in enum order, and stores no matched text. It does not detect real names. Pseudonym validation at `src/vaeil/domain/pseudonym.py:33` shares this scanner and the owner-specific predicate at `src/vaeil/domain/self_name.py:11`. T1 also checks owner-specific tokens in Pseudonym claims and About; it is not general name recognition. Claims remain in-memory; atomic database uniqueness is T5.
 
 The expanded detection cases begin at `tests/test_identifier_detection.py:85`: phone formats and threshold boundaries, handle/URL classification, obfuscation, ordinary-number guards, deterministic reasons, long input, and reason-only results. Pseudonym normalization, format boundaries, reserved names, repeat claims, and a format-valid identifier are covered from `tests/test_pseudonyms.py:77`.
 
-## Mutation checks (slice 2)
+## Historical mutation checks (slice 2 baseline)
 
 Run `.venv\Scripts\python.exe scripts/check_slice2_mutations.py`. Each mutation is applied alone and restored in a `finally` block; pytest exit code 1 is required. Results on the 85 slice-2 cases (rerun after the scanner performance fix):
 
@@ -81,7 +92,7 @@ Each mutation was reverted and the full suite returned to green.
 
 `tests/test_domain_purity.py:106` (`test_domain_does_not_read_the_system_clock`) is the weakest test in the suite. It is a static AST check: it catches direct calls (and common import aliases) to `datetime.now()`, `date.today()`, and `time.time()`, but it does not follow indirection such as `today = date.today; today()` or `getattr(datetime, "today")()`. It is a guardrail, not a sandbox. The Clock port and review remain the real protection; the test only makes the obvious bypass visible.
 
-The injected-clock test at `tests/test_invite_redemption.py:150` is no longer weak. The fake date is 2000-01-01 and the birth date is 1990-01-01: the fake clock says 10, while every real date after 2008 says adult. The fake and real outcomes can never converge, so a `date.today()` implementation always fails it.
+The injected-clock test at `tests/test_invite_redemption.py:152` is no longer weak. The fake date is 2000-01-01 and the birth date is 1990-01-01: the fake clock says 10, while every real date after 2008 says adult. The fake and real outcomes can never converge, so a `date.today()` implementation always fails it.
 
 ## Punctuation-heavy input regression
 

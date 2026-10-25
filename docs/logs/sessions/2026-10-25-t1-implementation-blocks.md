@@ -1,6 +1,6 @@
 # T1 timed implementation blocks
 
-Times are UTC, captured from the tool clock. This records measured blocks separately from Parth's human session ledger. Audit effort across the earlier overnight gap remains unverified, with a 0.5-session budget, not an invented measurement.
+UTC boundaries come from tool-clock observations, captured before housekeeping commits. These measure agent-led work, not Parth's human sessions. Earlier audit active time across an overnight gap is unverified; its 0.5-session budget is separate from actual measured work. Waiting between user decisions is excluded.
 
 | Block | Start UTC | End UTC | Work / evidence |
 | --- | --- | --- | --- |
@@ -12,9 +12,11 @@ Times are UTC, captured from the tool clock. This records measured blocks separa
 | 6 | 2026-10-25 09:29:37 | 2026-10-25 09:38:48 | Cycle 4: immutable pair views, participant precedence and explicit encoder; 185 targeted tests green; 60 privacy/roundtrip regressions green after state-export hardening. |
 | 7 | 2026-10-25 09:38:48 | 2026-10-25 09:40:56 | Cycle 5: required authoritative identity, owner and substring checks, preserved slice-2 claim policy; full check 325 passed in 7.02s, Ruff/assumptions green. |
 | 8 | 2026-10-25 09:40:56 | 2026-10-25 10:13:54 | Independent code review, mutation-runner preparation (not run), synthetic scalar JSON probe; contract conflict triggers user stop gate. |
-
-Measured work in this run: 1h 37m 51s (0.54-0.82 of a 2-3h session). This is not final T1 velocity: earlier audit active time is unverified, its 0.5-session budget stays separate, and policy decision/mutations/docs/PR remain pending. Asked for opaque private text + three added tests versus explicit record-only scope. No tests changed after607062b. No PR or local-model work starts before the gate resolves.
-
 | 9 | 2026-10-25 10:32:46 | 2026-10-25 10:46:51 | Approved opaque refinement tests only; valid red 39 failed/35 passed, actual scalar JSON and padded-format leaks; 7 existing functions strengthened, Ruff green. |
 | 10 | 2026-10-25 10:46:51 | 2026-10-25 10:51:43 | Opaque PrivateText cycle: immutable slotted non-str, strict equality/unhashable, redacted formatting, explicit consumers; 39 targeted tests green. |
 | 11 | 2026-10-25 10:51:43 | 2026-10-25 10:54:16 | Opaque PrivateDate cycle and age-gate extraction; full check 401 passed in 7.78s including exact three-site AST guard and fake-module controls. |
+| 12 | 2026-10-25 10:54:16 | 2026-10-25 11:22:59 | Opaque re-reviews, 74/74 mutation kills (CRLF runner fixed/restarted), restored 23-file hash snapshot, final 401 passed / AST 4 passed, graded-doc citations. |
+
+Prior stop gate resolved by user approval of opaque text/date. No tests changed after34bb4e9. Final velocity is recorded in docs/audit/t1-velocity.md after PR preparation.
+
+| 13 | 2026-10-25 11:22:59 | 2026-10-25 11:30:27 | Final reviewed evidence, 74-row table, exact extraction citations and canonical spec/docs synchronization; PR preparation. |

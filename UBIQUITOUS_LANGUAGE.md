@@ -6,11 +6,11 @@ The words the product is about. Same format as the IT643 labs; this file is part
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | `src/vaeil/domain/invite.py:32` |
-| **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:8` |
-| **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | _(absent)_ |
+| **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | `src/vaeil/domain/invite.py:33` |
+| **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:9` |
+| **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | `src/vaeil/domain/member.py:9` — complete-profile projection input; admission wiring remains T6 |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name. | alias, username, handle | `src/vaeil/domain/pseudonym.py:27`; validation and in-memory claims at `:31`; persistent uniqueness and real-name detection remain incomplete |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:33`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic storage uniqueness remains T5 |
 
 ## Onboarding & vetting
 
@@ -18,8 +18,8 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:23` |
 | **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:9` |
-| **Values Profile** | A Member's structured self-description — values and interests built through conversational Onboarding — with fields from a fixed schema and at most one short, length-capped free-text about field. | bio, profile, personality test | _(absent)_ — approved profile-write validation remains to be implemented |
-| **Onboarding** | The conversation in which the AI builds a Member's Values Profile. | setup, intake, signup flow | _(absent)_ |
+| **Values Profile** | A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding. | bio, profile, personality test | `src/vaeil/domain/profile.py:95`, `:104` — validated complete profiles; form/API remains pending |
+| **Onboarding** | The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope. | setup, intake, signup flow | _(absent)_ |
 
 ## Matching
 
@@ -27,22 +27,22 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Match** | A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again. | introduction, pairing, date | _(absent)_ |
 | **Icebreaker** | A short, AI-written opening line offered to a Match to help start the Conversation. | prompt, opener, pickup line | _(absent)_ |
-| **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 Messages in total, at least 5 from each Member, over at least 3 days. | milestone, quota | _(absent)_ |
+| **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 hours since the first delivered Message; Withheld does not count. | milestone, quota | _(absent)_ |
 
 ## Conversation & safety
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Conversation** | The private, anonymous exchange between the two Members of a Match. | chat, DM, thread | _(absent)_ |
+| **Conversation** | The private exchange between the two Members of a Match, anonymous until Reveal and open for chat until Block; it occupies the active slot only while neither Revealed nor Blocked. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
 | **Withheld** | A Message not delivered because moderation failed or timed out; the sender is told to retry. | blocked (see **Block**), filtered, rejected | _(absent)_ |
-| **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically. | PII, personal data, doxxing | `src/vaeil/domain/identifiers.py:11` and `:32` — implemented reason types and scanner; general name detection is not provided; self-name and moderation integration remain pending |
+| **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically. | PII, personal data, doxxing | `src/vaeil/domain/identifiers.py:11` and `:32` — implemented reason types and scanner; general name detection is not provided; owner-specific self-name checks implemented; Message moderation integration remains pending |
 | **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
-| **Audit log** | An append-only record of the events an Admin may review: invite redeemed, verdict, escalation, reveal, block, report. No analytics. | event log, history, analytics | _(absent)_ |
+| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | _(absent)_ |
 
 ## Relationships
 
@@ -50,7 +50,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 - An **Applicant** becomes a **Member** at the Approved **Verdict**; a NeedsReview **Applicant** becomes a **Member** when an **Admin** approves.
 - A **Match** pairs exactly two **Members**; a declined **Match** opens no **Conversation** and the pair is never proposed again.
 - A **Conversation** holds many **Messages**; each **Message** is sent by one of its two **Members**.
-- A **Member** has at most one active **Conversation** at a time and is not proposed in new **Match** batches while it is active; a **Conversation** ends by a **Block** or after a completed **Reveal**, after which the **Member** can be proposed again.
+- A **Member** has at most one active **Conversation** (not Revealed and not Blocked); Reveal frees the slot for new **Matches** but that **Conversation** stays open for chat until **Block**. Identifier escalation stops there; safety moderation and Reporting continue.
 - An **Escalated** **Message** is delivered, enters the Admin review queue, and is recorded in the audit log.
 - Identifier detection is per **Conversation**: **Personal identifiers** in a **Message** are **Escalated** only before that **Conversation**'s **Reveal**; afterwards they stop being **Escalated**, though safety moderation continues.
 - A **Report** enters the Admin review queue.
@@ -63,13 +63,13 @@ The words the product is about. Same format as the IT643 labs; this file is part
 > **Developer:** An Applicant redeems an Invite — does the AI decide whether they get in?
 > **Expert:** It gives a Verdict — Approved or NeedsReview. It can never reject. Every rejection is an Admin decision.
 > **Developer:** When can a pair Reveal?
-> **Expert:** Only once they've met the Engagement Threshold — 20 messages, at least 5 from each, over at least 3 days — and only with Reveal Consent from both. Either can withdraw consent until the Reveal happens.
+> **Expert:** Only once they've met the Engagement Threshold — 20 delivered Messages, at least 5 delivered by each Member, and 72 hours since the first delivered Message — and only with both Reveal Consents. Escalated counts; Withheld does not. Either can withdraw consent until Reveal happens.
 > **Developer:** Can one of them force it?
 > **Expert:** Never. Neither the AI nor a Member can force a Reveal or expose an identity.
 > **Developer:** What if someone types their phone number before the Reveal?
 > **Expert:** Moderation detects personal identifiers and marks the Message Escalated. It is still delivered, but an Admin reviews it afterwards and it lands in the audit log. We don't withhold it — we just don't treat it as normal.
 > **Developer:** What stops someone from just using their real name as a Pseudonym?
-> **Expert:** The implemented scanner rejects supported email, phone, and handle patterns. The planned self-name check will also reject a Pseudonym containing a token of that Member's own real name or email local part. It is not general name detection, and unfamiliar forms can still be missed. Once set, a Pseudonym is fixed.
+> **Expert:** The implemented scanner rejects supported email, phone, and handle patterns. The self-name check also rejects a Pseudonym containing a token of that Member's own real name or email local part. It is not general name detection, and unfamiliar forms can still be missed. Once set, a Pseudonym is fixed.
 > **Developer:** And if someone blocks after a Reveal?
 > **Expert:** The Conversation ends, the pair is never rematched, and the Reveal stands. Both can still Report.
 

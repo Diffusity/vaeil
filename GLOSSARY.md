@@ -1,6 +1,6 @@
 # Vaeil
 
-Invite-only, anonymous matchmaking: AI curates Matches and identity is revealed only by mutual consent. Single context — this is the implementation-free view; the evaluated artifact with code citations is `UBIQUITOUS_LANGUAGE.md`. Keep both in sync — see `docs/agents/domain.md`.
+Values-based matching with AI-assisted safety: Matches are curated and identity is revealed only by mutual consent. Single context — this is the implementation-free view; the evaluated artifact with code citations is `UBIQUITOUS_LANGUAGE.md`. Keep both in sync — see `docs/agents/domain.md`.
 
 Term decisions (including resolved ambiguities) are recorded in `UBIQUITOUS_LANGUAGE.md`.
 
@@ -25,7 +25,7 @@ The human operator. Every rejection of an Applicant is an Admin decision, and th
 _Avoid_: moderator, staff, superuser
 
 **Pseudonym**:
-The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name.
+The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check.
 _Avoid_: alias, username, handle
 
 ### Onboarding & vetting
@@ -39,11 +39,11 @@ The outcome of Vetting: Approved or NeedsReview. The AI never rejects.
 _Avoid_: decision, score, result
 
 **Values Profile**:
-A Member's structured self-description — values and interests built through conversational Onboarding — with fields from a fixed schema and at most one short, length-capped free-text about field.
+A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding.
 _Avoid_: bio, profile, personality test
 
 **Onboarding**:
-The conversation in which the AI builds a Member's Values Profile.
+The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope.
 _Avoid_: setup, intake, signup flow
 
 ### Matching
@@ -57,13 +57,13 @@ A short, AI-written opening line offered to a Match to help start the Conversati
 _Avoid_: prompt, opener, pickup line
 
 **Engagement Threshold**:
-The condition that makes a pair eligible to be offered a Reveal: at least 20 Messages in total, at least 5 from each Member, over at least 3 days.
+The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 hours since the first delivered Message; Withheld does not count.
 _Avoid_: milestone, quota
 
 ### Conversation & safety
 
 **Conversation**:
-The private, anonymous exchange between the two Members of a Match.
+The private exchange between the two Members of a Match, anonymous until Reveal and open for chat until Block; it occupies the active slot only while neither Revealed nor Blocked.
 _Avoid_: chat, DM, thread
 
 **Message**:
@@ -99,5 +99,5 @@ A flag a Member can raise against the other Member.
 _Avoid_: complaint, flag
 
 **Audit log**:
-An append-only record of the events an Admin may review: invite redeemed, verdict, escalation, reveal, block, report. No analytics.
+An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics.
 _Avoid_: event log, history, analytics
