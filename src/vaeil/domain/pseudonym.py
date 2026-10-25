@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import unicodedata
 
 from vaeil.domain.identifiers import scan_identifiers
+from vaeil.domain.identity import MemberIdentity, IdentityOwnerMismatchError
+from vaeil.domain.self_name import SelfNameMode, contains_self_name
 
 MIN_PSEUDONYM_LENGTH = 3
 MAX_PSEUDONYM_LENGTH = 20
@@ -39,9 +41,14 @@ class PseudonymDirectory:
         self._members: dict[str, Pseudonym] = {}
         self._taken: set[str] = set()
 
-    def claim(self, member_id: str, candidate: str) -> Pseudonym:
+    def claim(self, member_id: str, candidate: str, *, identity: MemberIdentity) -> Pseudonym:
         if member_id in self._members:
             raise PseudonymAlreadySetError("Pseudonym is fixed once set.")
+
+        if not isinstance(identity, MemberIdentity) or identity.member_id != member_id:
+            raise IdentityOwnerMismatchError("Use the claiming Member's identity.")
+        if not isinstance(candidate, str):
+            raise InvalidPseudonymError("Choose a valid Pseudonym.")
 
         value = unicodedata.normalize("NFKC", candidate).strip()
         if scan_identifiers(value).is_flagged:
@@ -53,6 +60,9 @@ class PseudonymDirectory:
             or not all(char.isalpha() or char.isdecimal() or char in PSEUDONYM_PUNCTUATION for char in value)
         ):
             raise InvalidPseudonymError("Use 3-20 letters, digits, underscores or hyphens; start with a letter.")
+
+        if contains_self_name(value, identity=identity, mode=SelfNameMode.PSEUDONYM):
+            raise InvalidPseudonymError("Choose a non-identifying Pseudonym.")
 
         key = value.casefold()
         if key in RESERVED_PSEUDONYMS:
