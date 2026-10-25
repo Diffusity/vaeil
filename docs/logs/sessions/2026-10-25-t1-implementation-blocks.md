@@ -16,3 +16,4 @@ Times are UTC, captured from the tool clock. This records measured blocks separa
 Measured work in this run: 1h 37m 51s (0.54-0.82 of a 2-3h session). This is not final T1 velocity: earlier audit active time is unverified, its 0.5-session budget stays separate, and policy decision/mutations/docs/PR remain pending. Asked for opaque private text + three added tests versus explicit record-only scope. No tests changed after607062b. No PR or local-model work starts before the gate resolves.
 
 | 9 | 2026-10-25 10:32:46 | 2026-10-25 10:46:51 | Approved opaque refinement tests only; valid red 39 failed/35 passed, actual scalar JSON and padded-format leaks; 7 existing functions strengthened, Ruff green. |
+| 10 | 2026-10-25 10:46:51 | 2026-10-25 10:51:43 | Opaque PrivateText cycle: immutable slotted non-str, strict equality/unhashable, redacted formatting, explicit consumers; 39 targeted tests green. |

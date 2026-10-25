@@ -11,8 +11,8 @@ class SelfNameMode(Enum):
 def contains_self_name(text: str, *, identity: MemberIdentity, mode: SelfNameMode) -> bool:
     if not isinstance(text, str) or not isinstance(identity, MemberIdentity) or not isinstance(mode, SelfNameMode):
         raise TypeError("Use text, Member identity and an explicit self-name mode.")
-    name = unicodedata.normalize("NFKC", identity.legal_name).casefold()
-    local = unicodedata.normalize("NFKC", identity.email).casefold().partition("@")[0]
+    name = unicodedata.normalize("NFKC", identity.legal_name.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()).casefold()
+    local = unicodedata.normalize("NFKC", identity.email.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()).casefold().partition("@")[0]
     tokens = frozenset(token for token in re.split(r"[\s._+\-]+", name + " " + local) if len(token) >= 3)
     normalized = unicodedata.normalize("NFKC", text).casefold()
     if mode is SelfNameMode.PSEUDONYM:

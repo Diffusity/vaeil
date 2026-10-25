@@ -4,7 +4,7 @@ from datetime import date
 from vaeil.domain.identity import MemberIdentity
 from vaeil.domain.profile import ValuesProfile, build_values_profile
 from vaeil.domain.pseudonym import Pseudonym
-from vaeil.domain.privacy import PrivateRecord, PrivateText, private_date, reveal_text
+from vaeil.domain.privacy import PrivateRecord, PrivateText, private_date
 
 @dataclass(frozen=True, slots=True)
 class Member(PrivateRecord):
@@ -51,9 +51,9 @@ class RevealedMemberView(PrivateRecord):
     __getstate__ = PrivateRecord.__getstate__
     pseudonym: Pseudonym
     values_profile: ValuesProfile
-    legal_name: str = field(repr=False)
-    email: str = field(repr=False)
-    phone: str | None = field(repr=False)
+    legal_name: PrivateText = field(repr=False)
+    email: PrivateText = field(repr=False)
+    phone: PrivateText | None = field(repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "legal_name", PrivateText(self.legal_name))
@@ -66,9 +66,9 @@ class OwnProfileView(PrivateRecord):
     __getstate__ = PrivateRecord.__getstate__
     pseudonym: Pseudonym
     values_profile: ValuesProfile
-    legal_name: str = field(repr=False)
-    email: str = field(repr=False)
-    phone: str | None = field(repr=False)
+    legal_name: PrivateText = field(repr=False)
+    email: PrivateText = field(repr=False)
+    phone: PrivateText | None = field(repr=False)
     date_of_birth: date = field(repr=False)
 
     def __post_init__(self) -> None:
@@ -123,8 +123,8 @@ def serialize_member_view(view) -> dict:
         },
     }
     if isinstance(view, (RevealedMemberView, OwnProfileView)):
-        result.update(legal_name=reveal_text(view.legal_name), email=reveal_text(view.email),
-                      phone=None if view.phone is None else reveal_text(view.phone))
+        result.update(legal_name=view.legal_name.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE(), email=view.email.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE(),
+                      phone=None if view.phone is None else view.phone.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE())
     if isinstance(view, OwnProfileView):
         result["date_of_birth"] = view.date_of_birth.isoformat()
     return result

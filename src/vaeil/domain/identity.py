@@ -7,9 +7,9 @@ from vaeil.domain.privacy import PrivateRecord, PrivateText, private_date
 class MemberIdentity(PrivateRecord):
     __getstate__ = PrivateRecord.__getstate__
     member_id: str
-    legal_name: str = field(repr=False)
-    email: str = field(repr=False)
-    phone: str | None = field(repr=False)
+    legal_name: PrivateText = field(repr=False)
+    email: PrivateText = field(repr=False)
+    phone: PrivateText | None = field(repr=False)
     date_of_birth: date = field(repr=False)
 
     def __post_init__(self) -> None:
