@@ -70,3 +70,9 @@ The October 24 consolidated instruction supersedes the earlier capacity, Gemini/
 ## 2026-10-25 explicit opaque-value decision
 
 User approved opaque private text/date instead of native scalars, overriding the former plain-value guardrail. Immutable/slotted/non-dataclass wrappers have same-type-only equality, no hashing/native operations and one noisy unwrap method. Exact production sites: authorized encoder, own-name extraction and age gate. Generic export/copy refuses; explicit payload fields remain unchanged. This is an approved refinement, not a new assumption. Rule 5 remains partial. Tests changed before implementation in a separate commit; later changes require approval.
+
+## 2026-10-26 explicit benchmark and moderation amendments
+
+User distinguishes technical Withheld (reason, no delivery, retry) from model NeedsReview Withheld (under review, no same-text resend, Admin release/discard audited). Delivered/Escalated require model approval; only pre-Reveal identifier flags Escalate and model output cannot clear them. Supersedes blanket retry language. Vetting text is unspecified and is an explicit open question, not a new assumed payload.
+
+Labels require independent review: every non-English case by two teammates, English/disputes by Parth, 24-hour review window from sheet handoff. H7 assignment remains proposed. Freeze by commit hash after approved resolutions; unresolved cases excluded/reported separately. Later label objections produce paired included/excluded reports from the same recorded outputs, not reruns. One fixed shared prompt, at most one revision on a separate eight-case development set. Runtime/latency setup may proceed before label freeze; accuracy may not. No tunnels/accounts/other software/models. Named Cloudflare unavailable; ngrok credit/hourly cost unconfirmed; tunnel is rehearsal/viva-only and needs a budget before any provisioning.

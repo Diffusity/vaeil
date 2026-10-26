@@ -1,0 +1,7 @@
+[
+  {"id":"E01","kind":"empty","text":"","harness_result":"NeedsReview","invoke_model":false},
+  {"id":"E02","kind":"whitespace","text":"   \t \n","harness_result":"NeedsReview","invoke_model":false},
+  {"id":"E03","kind":"emoji_only","text":"🙂🌻✨","harness_result":"NeedsReview","invoke_model":false},
+  {"id":"E04","kind":"over_length","text_recipe":"repeat x 4097 times; benchmark guard is 4096 code points, not a product limit","harness_result":"NeedsReview","invoke_model":false},
+  {"id":"E05","kind":"mixed_scripts","text":"Main તને hurt karunga if you refuse.","harness_result":"NeedsReview","invoke_model":true}
+]

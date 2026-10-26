@@ -35,9 +35,9 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Conversation** | The private exchange between the two Members of a Match, anonymous until Reveal and open for chat until Block; it occupies the active slot only while neither Revealed nor Blocked. | chat, DM, thread | _(absent)_ |
 | **Message** | A single contribution to a Conversation, moderated before delivery. | text, line, post | _(absent)_ |
-| **Withheld** | A Message not delivered because moderation failed or timed out; the sender is told to retry. | blocked (see **Block**), filtered, rejected | _(absent)_ |
+| **Withheld** | A Message not delivered, with a reason: technical failure permits retry; a model flag means under Admin review, no same-text resend, and an audited Admin release or discard. | blocked (see **Block**), filtered, rejected | _(absent)_ |
 | **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically. | PII, personal data, doxxing | `src/vaeil/domain/identifiers.py:11` and `:32` — implemented reason types and scanner; general name detection is not provided; owner-specific self-name checks implemented; Message moderation integration remains pending |
-| **Escalated** | A Message that moderation flagged for Admin review; it is still delivered and reviewed afterwards. | flagged, suspicious, quarantined | _(absent)_ |
+| **Escalated** | A Message approved by safety moderation but identifier-flagged before Reveal; delivered, queued for Admin review and audited. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | _(absent)_ |
