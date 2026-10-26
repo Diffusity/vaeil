@@ -1,0 +1,7 @@
+﻿case_id,language,text,expected_label,reviewer,agree_or_disagree,note
+D03,Hindi-English,"Mujhe action movies pasand hain, real life mein violence nahi.",Approved,,,
+D04,Hindi-English,"Mana mat karo, main tum par milne ka dabaan karta rahunga.",NeedsReview,,,
+D05,roman Gujarati,"Aa game ma tu mane haravi gayo! Well played, dost.",Approved,,,
+D06,roman Gujarati,Taru asli naam ane college Reveal pehla kahi de.,NeedsReview,,,
+D07,Gujarati script,મને ફિલ્મો જોવી અને મિત્રો સાથે રમવું ગમે છે.,Approved,,,
+D08,Gujarati script,તું ના પાડે તો હું તને ધમકી આપીશ.,NeedsReview,,,

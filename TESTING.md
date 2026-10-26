@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 401 tests pass: 386 product/domain/boundary cases and 15 tooling cases. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; no API or UI exists yet. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 401 tests pass: 386 product/domain/boundary cases and 15 tooling cases. Verified locally before merging PR #14; Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; no API or UI exists yet. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
@@ -97,3 +97,7 @@ The injected-clock test at `tests/test_invite_redemption.py:152` is no longer we
 ## Punctuation-heavy input regression
 
 `tests/test_identifier_detection.py:147` scans 100 KB of dot- or hyphen-separated clean text in a subprocess with a three-second deadline. Both cases timed out before the fix; after restricting obfuscated-email matching to token starts, direct scans took about 0.04 seconds each and both subprocess tests pass. The deadline includes process startup and is deliberately generous; it catches repeated suffix scanning, rather than enforcing a tight benchmark.
+
+## Synthetic model evaluation: statistical limitation
+
+No accuracy results yet; the 40-case candidate set awaits independent label review and a commit-hash freeze. Each task has only ten review-required cases. Zero unsafe approvals out of ten is weak evidence: even under an ideal independent-binomial assumption, the one-sided 95% upper bound is 1 - 0.05**(1/10), approximately 25.9%. These hand-selected, overlapping-category and language examples are not an independent representative sample, so even that calculation cannot establish general safety. This is a demo gate, not a safety claim. Report per-task/per-language confusion counts, failures and errors, model alone and with deterministic scanner/rules. No post-freeze relabelling/re-running to improve scores: report full-set and case-excluded results side by side if Parth objects later. See docs/research/local-model-benchmark-rubric.md. Rule coverage and the 401-test count are unchanged.

@@ -24,3 +24,9 @@ With the original T1 reservation still held against the approximately 25-slot bu
 Next: start the half-session local-model feasibility note; T2/local T3 can overlap after T1 lands and this review. Re-estimate again after T2, before T4. If T2 exceeds two sessions or local-model setup/adapter/rehearsal needs more than the remaining bound, flag the freeze forecast immediately and propose capacity/deadline adjustment; mandatory safety scope stays. Later tickets remain unpublished until the review and feasibility findings make their estimates real. No teammate assignment is made here.
 
 PR #14 is open against master, not merged. Windows checks passed at head9a02f31. Local-model research has started in docs/research/local-model-feasibility-2026-10-25.md; actual runtime benchmarks and the accuracy-bar/model decision remain pending.
+
+## Post-merge correction — 26 October
+
+PR #14 merged at 2026-10-25 13:44:48 UTC with merge commit `4f9ca80`, after Windows CI passed on final head `6066868`; #8 is closed. Two pre-merge documentation findings were fixed; code and tests did not change. The quoted paragraph above is historical, not current status. Effort before tracking remains unverified; the overnight tool gap is excluded.
+
+T5/T6 now explicitly budget the persistence/login extraction boundaries at +0.5 session each (planning allowance, not measured effort). Remaining non-T12 work is therefore 20-32 sessions. Holding the original T1 reservation leaves roughly 1.5-2.5 optimistic slots for T12/contingency before additional benchmark effort; the upper bound does not fit. This is increased schedule risk, not measured evidence that T1 exceeded its estimate. The authorized benchmark is capped at one session; labels require approval first. T7/T12/T13 cannot yet be honestly re-estimated from measurements. T2/T3 and later publication now follow the benchmark report and velocity update under the latest instruction.
