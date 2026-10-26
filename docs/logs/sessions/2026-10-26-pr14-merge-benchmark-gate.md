@@ -8,6 +8,7 @@
 | 2026-10-25 13:42:26 | 2026-10-25 13:44:48 | Fixed two stale-doc findings, committed/pushed 6066868, verified final-head Windows success, merged PR #14 with a merge commit. |
 | 2026-10-26 04:09:37 | 2026-10-26 04:13:58 | Recovered after overnight tool gap, added T5/T6 explicit unwrap work/allowances and updated existing issues #12/#13; reconciled plan/status evidence. |
 | 2026-10-26 04:13:58 | 2026-10-26 04:15:09 | Validated 40 unique labels and exact scanner flags without a model, corrected schedule arithmetic and wrote merge/benchmark-gate handoff. |
+| 2026-10-26 04:15:09 | 2026-10-26 04:16:05 | Committed docs aac4154, pushed the dedicated branch and opened draft PR #15; Windows checks pending at handoff, GitGuardian passed. This closing log is bookkeeping for that block. |
 
 Merge: `4f9ca807f9ca5a6cc4fa31a32bf413cd9f865864`, two parents `75d4ced` and `6066868`. PR #14 MERGED; #8 CLOSED. Windows CI completed successfully at 2026-10-25 13:44:07 UTC on final head6066868. No squash/rebase or branch deletion; cited implementation/test commits survive. Review result: Standards two stale documentation findings fixed, Spec zero findings; no source/test changes. README/TESTING now record merged status, 401 tests and Rule 5 partial (3/6 domain, 0/6 E2E).
 
