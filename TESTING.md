@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 401 tests pass: 386 product/domain/boundary cases and 15 tooling cases. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; no API or UI exists yet. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 401 tests pass: 386 product/domain/boundary cases and 15 tooling cases. Verified locally before merging PR #14; Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; no API or UI exists yet. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
