@@ -12,7 +12,7 @@ The bounded setup helper actually started at06:47:38, after its06:45:22 safety c
 
 ## Verified preflight
 
-- Actual machine: HP Laptop15s-eq2xxx; Windows11 Home Single Language10.0.26300, 64-bit; 33635885056 bytes RAM. AMD Radeon(TM) Graphics driver31.0.21925.1001. Ryzen5 5500U6C/12T and CPU baseline were verified in the earlier feasibility note.
+- Actual machine: HP Laptop15s-eq2xxx; Windows11 Home Single Language10.0.26300, 64-bit; 33635885056 bytes RAM. AMD Radeon(TM) Graphics driver31.0.21925.1001. Ryzen5 5500U6C/12T hardware was verified in the earlier feasibility note; CPU remains the planned benchmark baseline, with no inference placement or performance verified.
 - Windows GetSystemPowerStatus reports ACLineStatus=0 (battery); battery81%, later73%. Active plan Balanced; only Balanced listed. AC/DC sleep timers are already zero (disabled).
 - This does **not** satisfy the required plugged-in/high-performance measurement conditions. Parth was asked to correct/confirm power; no response verified yet. No timing or sustained-load inference is valid until the checks pass. No attempt to manufacture a missing High performance plan or install a GPU driver.
 - No tunnels, accounts, paid services or other models/software. Official runtime-control sources and pinned installer digest are in ollama-windows-runtime-controls-2026-10-26.md. CPU placement, Vulkan discovery and Qwen3 non-thinking must be reported as unverified until actual runtime evidence exists.
