@@ -112,7 +112,7 @@ def trickling_endpoint(monkeypatch):
                     self.wfile.write(bytes([value]))
                     self.wfile.flush()
                     time.sleep(0.06)  # Keeps idle reads alive while exceeding total budget.
-            except (BrokenPipeError, ConnectionResetError):
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass
             finally:
                 done.set()

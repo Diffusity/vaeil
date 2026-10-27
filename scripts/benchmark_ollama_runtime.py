@@ -6,17 +6,19 @@ Uses the standard library; owns and cleans up its loopback server/process tree.
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 import ctypes
 from datetime import datetime, timezone
 import hashlib
+import http.client
 import json
 import math
 import os
 from pathlib import Path
 import socket
 import subprocess
+import threading
 import time
-import urllib.request
 import winreg
 
 MODELS = ("qwen2.5:1.5b", "llama3.2:1b", "qwen3:1.7b")
@@ -88,11 +90,58 @@ def power_status():
     return result
 
 
-def api(path, body=None, timeout=30):
-    data = None if body is None else json.dumps(body).encode()
-    request = urllib.request.Request("http://127.0.0.1:11434" + path,
-                                     data=data, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+@contextmanager
+def response_stream(path, body, *, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("Request deadline reached before connection.")
+    connection = http.client.HTTPConnection("127.0.0.1", 11434, timeout=remaining)
+    expired = threading.Event()
+    timer = None
+    try:
+        connection.connect()
+        sock = connection.sock  # Retain it even if HTTP/1.0 transfers ownership.
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("Request deadline reached during connection.")
+
+        def expire():
+            expired.set()
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+            connection.close()
+
+        timer = threading.Timer(remaining, expire)
+        timer.daemon = True
+        timer.start()
+        data = None if body is None else json.dumps(body).encode()
+        connection.request("GET" if body is None else "POST", path, body=data,
+                           headers={"Content-Type": "application/json"})
+        with connection.getresponse() as response:
+            if response.status != 200:
+                raise RuntimeError(f"Local runtime returned HTTP {response.status}.")
+            yield response
+        if expired.is_set():
+            raise TimeoutError("Absolute request deadline reached.")
+    except Exception:
+        if expired.is_set():
+            raise TimeoutError("Absolute request deadline reached.") from None
+        raise
+    finally:
+        if timer is not None:
+            timer.cancel()
+        connection.close()
+        if timer is not None:
+            timer.join(timeout=1)
+
+
+def api(path, body=None, timeout=30, *, deadline=None):
+    request_deadline = time.monotonic() + timeout
+    if deadline is not None:
+        request_deadline = min(request_deadline, deadline)
+    with response_stream(path, body, deadline=request_deadline) as response:
         return json.load(response)
 
 
@@ -109,6 +158,7 @@ def call(model, index, backend, prompt, *, deadline):
     if model.startswith("qwen3:"):
         payload["think"] = False
     started = time.perf_counter()
+    call_deadline = min(deadline, time.monotonic() + 30)
     sample = {"model": model, "backend": backend, "index": index, "task": task,
               "started_utc": utc(), "ok": False, "ttft_s": None,
               "content": "", "thinking_chars": 0}
@@ -116,13 +166,10 @@ def call(model, index, backend, prompt, *, deadline):
         remaining = deadline - time.monotonic()
         if remaining < 2:
             raise TimeoutError("Block deadline reached.")
-        request = urllib.request.Request("http://127.0.0.1:11434/api/chat",
-                                         data=json.dumps(payload).encode(),
-                                         headers={"Content-Type": "application/json"})
         final = None
-        with urllib.request.urlopen(request, timeout=min(30, remaining)) as response:
+        with response_stream("/api/chat", payload, deadline=call_deadline) as response:
             for raw in response:
-                if time.monotonic() >= deadline or time.perf_counter() - started > 30:
+                if time.monotonic() >= call_deadline:
                     raise TimeoutError("Experimental 30-second call deadline reached.")
                 chunk = json.loads(raw)
                 if "error" in chunk:
@@ -183,13 +230,16 @@ def assert_port_available():
         raise RuntimeError("Loopback runtime port is occupied or unavailable.") from None
 
 
-def listener_owners():
+def listener_owners(*, deadline=None):
     command = ("$taskOwners=@(Get-NetTCPConnection -LocalPort 11434 -State Listen "
                "-ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' } "
                "| Select-Object -ExpandProperty OwningProcess); "
                "ConvertTo-Json -InputObject $taskOwners -Compress")
+    remaining = 10 if deadline is None else min(10, deadline - time.monotonic())
+    if remaining <= 0:
+        raise TimeoutError("Block deadline reached before listener verification.")
     value = json.loads(subprocess.check_output(
-        ["powershell", "-NoProfile", "-Command", command], text=True, timeout=10))
+        ["powershell", "-NoProfile", "-Command", command], text=True, timeout=remaining))
     return {value} if isinstance(value, int) else set(value)
 
 
@@ -228,26 +278,30 @@ def main():
                GGML_VK_VISIBLE_DEVICES="-1" if args.backend == "cpu" else "0")
     executable = Path(os.environ["LOCALAPPDATA"]) / "Programs/Ollama/ollama.exe"
     assert_port_available()
+    if time.monotonic() >= deadline:
+        raise TimeoutError("Block deadline reached before server startup.")
     with (args.output / "server.log").open("w", encoding="utf-8") as server_log:
         server = subprocess.Popen([str(executable), "serve"], env=env,
                                   stdout=server_log, stderr=server_log,
                                   creationflags=subprocess.CREATE_NO_WINDOW)
         try:
             for _ in range(60):
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Block deadline reached during readiness.")
                 if server.poll() is not None:
                     raise RuntimeError("Owned server exited before readiness.")
                 try:
-                    report["runtime"] = api("/api/version", timeout=1)
+                    report["runtime"] = api("/api/version", timeout=1, deadline=deadline)
                 except Exception:
                     time.sleep(0.5)
                     continue
-                if server.poll() is not None or listener_owners() != {server.pid}:
+                if server.poll() is not None or listener_owners(deadline=deadline) != {server.pid}:
                     raise RuntimeError("Listener is not owned by the created server.")
                 report["listener_owner_pid"] = server.pid
                 break
             else:
                 raise RuntimeError("Owned server did not become ready.")
-            report["tags"] = api("/api/tags")
+            report["tags"] = api("/api/tags", deadline=deadline)
             available = {item["name"] for item in report["tags"]["models"]}
             for model in MODELS:
                 if model not in available:
@@ -255,15 +309,15 @@ def main():
                     save()
                     continue
                 power_status()
-                item = {"model": model, "show": api("/api/show", {"model": model})}
+                item = {"model": model, "show": api("/api/show", {"model": model}, deadline=deadline)}
                 report["models"].append(item)
                 if deadline - time.monotonic() < 70:
                     item["incomplete"] = "Block deadline."
                     break
-                api("/api/chat", {"model": model, "messages": [], "keep_alive": 0})
+                api("/api/chat", {"model": model, "messages": [], "keep_alive": 0}, deadline=deadline)
                 cold = call(model, 0, args.backend, prompt_bytes.decode("utf-8-sig"), deadline=deadline)
                 item["cold"] = cold
-                item["loaded_placement"] = api("/api/ps")
+                item["loaded_placement"] = api("/api/ps", deadline=deadline)
                 loaded = item["loaded_placement"].get("models", [])
                 if args.backend == "cpu" and any(entry.get("size_vram", 0) for entry in loaded):
                     raise RuntimeError("CPU placement verification failed.")
@@ -304,7 +358,7 @@ def main():
                     "last_minute": summary([s for s in sustained if s["sustained_offset_s"] >= elapsed - 60])}
                 save()
                 print(model, "sustained", elapsed, summary(sustained), flush=True)
-                api("/api/chat", {"model": model, "messages": [], "keep_alive": 0})
+                api("/api/chat", {"model": model, "messages": [], "keep_alive": 0}, deadline=deadline)
         except Exception as error:
             report["error_type"] = type(error).__name__
             report["error"] = type(error).__name__ + ": " + str(error)
