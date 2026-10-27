@@ -1,0 +1,1 @@
+time=2026-10-27T19:01:03.257+05:30 level=INFO source=types.go:50 msg="inference compute" id=cpu library=cpu compute="" name=cpu description=cpu libdirs=ollama driver="" pci_id="" type="" total="31.3 GiB" available="22.9 GiB"
