@@ -13,6 +13,7 @@ import json
 import math
 import os
 from pathlib import Path
+import socket
 import subprocess
 import time
 import urllib.request
@@ -173,6 +174,25 @@ def stop_tree(process):
         process.wait(timeout=10)
 
 
+def assert_port_available():
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+            probe.bind(("127.0.0.1", 11434))
+    except OSError:
+        raise RuntimeError("Loopback runtime port is occupied or unavailable.") from None
+
+
+def listener_owners():
+    command = ("$taskOwners=@(Get-NetTCPConnection -LocalPort 11434 -State Listen "
+               "-ErrorAction SilentlyContinue | Where-Object { $_.LocalAddress -eq '127.0.0.1' } "
+               "| Select-Object -ExpandProperty OwningProcess); "
+               "ConvertTo-Json -InputObject $taskOwners -Compress")
+    value = json.loads(subprocess.check_output(
+        ["powershell", "-NoProfile", "-Command", command], text=True, timeout=10))
+    return {value} if isinstance(value, int) else set(value)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("cpu", "vulkan"), required=True)
@@ -207,23 +227,24 @@ def main():
                OLLAMA_IGPU_ENABLE="0" if args.backend == "cpu" else "1",
                GGML_VK_VISIBLE_DEVICES="-1" if args.backend == "cpu" else "0")
     executable = Path(os.environ["LOCALAPPDATA"]) / "Programs/Ollama/ollama.exe"
-    try:
-        api("/api/version", timeout=1)
-    except Exception:
-        pass
-    else:
-        raise RuntimeError("Existing runtime listener: refuse to replace an unowned server.")
+    assert_port_available()
     with (args.output / "server.log").open("w", encoding="utf-8") as server_log:
         server = subprocess.Popen([str(executable), "serve"], env=env,
                                   stdout=server_log, stderr=server_log,
                                   creationflags=subprocess.CREATE_NO_WINDOW)
         try:
             for _ in range(60):
+                if server.poll() is not None:
+                    raise RuntimeError("Owned server exited before readiness.")
                 try:
                     report["runtime"] = api("/api/version", timeout=1)
-                    break
                 except Exception:
                     time.sleep(0.5)
+                    continue
+                if server.poll() is not None or listener_owners() != {server.pid}:
+                    raise RuntimeError("Listener is not owned by the created server.")
+                report["listener_owner_pid"] = server.pid
+                break
             else:
                 raise RuntimeError("Owned server did not become ready.")
             report["tags"] = api("/api/tags")
@@ -285,6 +306,7 @@ def main():
                 print(model, "sustained", elapsed, summary(sustained), flush=True)
                 api("/api/chat", {"model": model, "messages": [], "keep_alive": 0})
         except Exception as error:
+            report["error_type"] = type(error).__name__
             report["error"] = type(error).__name__ + ": " + str(error)
             print(report["error"], flush=True)
         finally:
