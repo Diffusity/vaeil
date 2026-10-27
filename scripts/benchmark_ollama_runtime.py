@@ -164,17 +164,13 @@ def summary(samples):
 
 def stop_tree(process):
     # Root is the PID of the server this script created, never a name-based kill.
-    command = (f"$taskIds=@({int(process.pid)}); $taskSnapshot=@(Get-CimInstance Win32_Process); "
-               "do { $taskCount=$taskIds.Count; $taskIds=@($taskIds+@($taskSnapshot | "
-               "Where-Object { $taskIds -contains [int]$_.ParentProcessId } | "
-               "ForEach-Object { [int]$_.ProcessId }) | Sort-Object -Unique) "
-               "} while ($taskIds.Count -gt $taskCount); "
-               "$taskIds | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }")
-    subprocess.run(["powershell", "-NoProfile", "-Command", command],
-                   capture_output=True, timeout=20)
-    if process.poll() is None:
-        process.kill()
-    process.wait(timeout=10)
+    try:
+        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                       capture_output=True, timeout=15)
+    finally:
+        if process.poll() is None:
+            process.kill()
+        process.wait(timeout=10)
 
 
 def main():
