@@ -249,7 +249,7 @@ def main():
                 if args.backend == "vulkan" and not any(entry.get("size_vram", 0) for entry in loaded):
                     item["incomplete"] = "Vulkan requested but no GPU offload measured."
                     save()
-                    break
+                    continue
                 for concurrency in (1, 2):
                     power_status()
                     samples = []
