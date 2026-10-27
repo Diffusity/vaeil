@@ -1,0 +1,35 @@
+﻿{
+    "Utc":  "2026-10-27T15:10:37.1144701Z",
+    "OS":  {
+               "Caption":  "Microsoft Windows 11 Home Single Language",
+               "Version":  "10.0.26300",
+               "BuildNumber":  "26300",
+               "OSArchitecture":  "64-bit"
+           },
+    "CPU":  {
+                "Name":  "AMD Ryzen 5 5500U with Radeon Graphics         ",
+                "NumberOfCores":  6,
+                "NumberOfLogicalProcessors":  12
+            },
+    "RAM":  {
+                "TotalPhysicalMemory":  33635885056
+            },
+    "GPU":  {
+                "Name":  "AMD Radeon(TM) Graphics",
+                "DriverVersion":  "31.0.21925.1001",
+                "DriverDate":  "\/Date(1779235200000)\/"
+            },
+    "Battery":  {
+                    "BatteryStatus":  2,
+                    "EstimatedChargeRemaining":  100
+                },
+    "BasePlan":  "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+    "ACOverlay":  "ded574b5-45a0-4f42-8737-46345c09c238",
+    "RemainingOllamaProcesses":  [
+
+                                 ],
+    "Listeners":  [
+
+                  ],
+    "StartupShortcutPresent":  false
+}

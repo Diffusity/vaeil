@@ -1,0 +1,320 @@
+[
+  {
+    "backend": "cpu",
+    "model": "qwen2.5:1.5b",
+    "cold_client": 3.089985099970363,
+    "load": 1.5660418,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.1498000999563374,
+      "all_attempt_total_p95_s": 1.1498000999563374,
+      "ttft_p95_s": 0.9115701999980956,
+      "mean_generation_tokens_per_second": 39.04175458515294
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 2.070444500015583,
+      "all_attempt_total_p95_s": 2.070444500015583,
+      "ttft_p95_s": 1.559534200001508,
+      "mean_generation_tokens_per_second": 25.862990203865504
+    },
+    "sustained": {
+      "n": 804,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2370788999833167,
+      "all_attempt_total_p95_s": 1.2370788999833167,
+      "ttft_p95_s": 0.9767473000101745,
+      "mean_generation_tokens_per_second": 36.62769084203482
+    },
+    "sustained_seconds": 600.5619999999763,
+    "first": {
+      "n": 84,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.1429598999675363,
+      "all_attempt_total_p95_s": 1.1429598999675363,
+      "ttft_p95_s": 0.9011418999871239,
+      "mean_generation_tokens_per_second": 37.782522014812166
+    },
+    "last": {
+      "n": 79,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.238688200013712,
+      "all_attempt_total_p95_s": 1.238688200013712,
+      "ttft_p95_s": 0.9791430000332184,
+      "mean_generation_tokens_per_second": 36.2899396766325
+    },
+    "tps_change_percent": -3.950457138871033
+  },
+  {
+    "backend": "cpu",
+    "model": "llama3.2:1b",
+    "cold_client": 4.11866460001329,
+    "load": 1.3503956,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.9193442000541836,
+      "all_attempt_total_p95_s": 1.9193442000541836,
+      "ttft_p95_s": 1.563504700025078,
+      "mean_generation_tokens_per_second": 25.308847117216345
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 3.4660516000003554,
+      "all_attempt_total_p95_s": 3.4660516000003554,
+      "ttft_p95_s": 2.525143200007733,
+      "mean_generation_tokens_per_second": 17.26653145818329
+    },
+    "sustained": {
+      "n": 580,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.833135399967432,
+      "all_attempt_total_p95_s": 1.833135399967432,
+      "ttft_p95_s": 1.4644229000550695,
+      "mean_generation_tokens_per_second": 25.562055322734324
+    },
+    "sustained_seconds": 600.4679999999935,
+    "first": {
+      "n": 58,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.8430796000175178,
+      "all_attempt_total_p95_s": 1.8430796000175178,
+      "ttft_p95_s": 1.4597971999901347,
+      "mean_generation_tokens_per_second": 25.54651982063922
+    },
+    "last": {
+      "n": 58,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.8206865999964066,
+      "all_attempt_total_p95_s": 1.8206865999964066,
+      "ttft_p95_s": 1.4644229000550695,
+      "mean_generation_tokens_per_second": 25.506921674876867
+    },
+    "tps_change_percent": -0.15500407116260106
+  },
+  {
+    "backend": "cpu",
+    "model": "qwen3:1.7b",
+    "cold_client": 4.094045699981507,
+    "load": 1.8387742,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.5450511000235565,
+      "all_attempt_total_p95_s": 1.5450511000235565,
+      "ttft_p95_s": 1.2597709000110626,
+      "mean_generation_tokens_per_second": 30.11365678958093
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 2.943171000049915,
+      "all_attempt_total_p95_s": 2.943171000049915,
+      "ttft_p95_s": 2.139696999976877,
+      "mean_generation_tokens_per_second": 19.858696511061492
+    },
+    "sustained": {
+      "n": 633,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.596703700022772,
+      "all_attempt_total_p95_s": 1.596703700022772,
+      "ttft_p95_s": 1.2238503000116907,
+      "mean_generation_tokens_per_second": 29.738481975247648
+    },
+    "sustained_seconds": 600.375,
+    "first": {
+      "n": 63,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.6289520999998786,
+      "all_attempt_total_p95_s": 1.6289520999998786,
+      "ttft_p95_s": 1.2355638000299223,
+      "mean_generation_tokens_per_second": 29.610627524003743
+    },
+    "last": {
+      "n": 65,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.5002311000134796,
+      "all_attempt_total_p95_s": 1.5002311000134796,
+      "ttft_p95_s": 1.2234107999829575,
+      "mean_generation_tokens_per_second": 29.851317350615272
+    },
+    "tps_change_percent": 0.8128494622966498
+  },
+  {
+    "backend": "vulkan",
+    "model": "qwen2.5:1.5b",
+    "cold_client": 5.079930300009437,
+    "load": 3.5189047,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.179373100050725,
+      "all_attempt_total_p95_s": 1.179373100050725,
+      "ttft_p95_s": 0.8851407000329345,
+      "mean_generation_tokens_per_second": 31.241917932214612
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.9827197999693453,
+      "all_attempt_total_p95_s": 1.9827197999693453,
+      "ttft_p95_s": 1.4538889999967068,
+      "mean_generation_tokens_per_second": 18.205110734938515
+    },
+    "sustained": {
+      "n": 639,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2863809000118636,
+      "all_attempt_total_p95_s": 1.2863809000118636,
+      "ttft_p95_s": 0.9080080999992788,
+      "mean_generation_tokens_per_second": 24.389121721944885
+    },
+    "sustained_seconds": 600.3589999999967,
+    "first": {
+      "n": 66,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.262776599964127,
+      "all_attempt_total_p95_s": 1.262776599964127,
+      "ttft_p95_s": 0.8884944999590516,
+      "mean_generation_tokens_per_second": 25.45364827229995
+    },
+    "last": {
+      "n": 64,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2956649999832734,
+      "all_attempt_total_p95_s": 1.2956649999832734,
+      "ttft_p95_s": 0.9186477999901399,
+      "mean_generation_tokens_per_second": 24.13144567181305
+    },
+    "tps_change_percent": -5.194550448494228
+  },
+  {
+    "backend": "vulkan",
+    "model": "llama3.2:1b",
+    "cold_client": 4.375287399976514,
+    "load": 2.8079796,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.247979900042992,
+      "all_attempt_total_p95_s": 1.247979900042992,
+      "ttft_p95_s": 0.8386963999946602,
+      "mean_generation_tokens_per_second": 22.298735301434494
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.99646410002606,
+      "all_attempt_total_p95_s": 1.99646410002606,
+      "ttft_p95_s": 1.5023202000302263,
+      "mean_generation_tokens_per_second": 16.205539388272253
+    },
+    "sustained": {
+      "n": 734,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2430545000243,
+      "all_attempt_total_p95_s": 1.2430545000243,
+      "ttft_p95_s": 0.8390530999749899,
+      "mean_generation_tokens_per_second": 22.521378865199075
+    },
+    "sustained_seconds": 600.5,
+    "first": {
+      "n": 73,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2484767999849282,
+      "all_attempt_total_p95_s": 1.2484767999849282,
+      "ttft_p95_s": 0.8468815000378527,
+      "mean_generation_tokens_per_second": 22.307497318279264
+    },
+    "last": {
+      "n": 73,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.2449197000241838,
+      "all_attempt_total_p95_s": 1.2449197000241838,
+      "ttft_p95_s": 0.8451722000027075,
+      "mean_generation_tokens_per_second": 22.611359683924917
+    },
+    "tps_change_percent": 1.3621535455555556
+  },
+  {
+    "backend": "vulkan",
+    "model": "qwen3:1.7b",
+    "cold_client": 4.907841700012796,
+    "load": 2.7793926,
+    "c1": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.7041778999846429,
+      "all_attempt_total_p95_s": 1.7041778999846429,
+      "ttft_p95_s": 1.3128494000411592,
+      "mean_generation_tokens_per_second": 24.483603390492412
+    },
+    "c2": {
+      "n": 32,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 2.691789999953471,
+      "all_attempt_total_p95_s": 2.691789999953471,
+      "ttft_p95_s": 1.920680099981837,
+      "mean_generation_tokens_per_second": 16.155055160181846
+    },
+    "sustained": {
+      "n": 586,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.6399832000024617,
+      "all_attempt_total_p95_s": 1.6399832000024617,
+      "ttft_p95_s": 1.3157551000476815,
+      "mean_generation_tokens_per_second": 25.020677516450874
+    },
+    "sustained_seconds": 600.4529999999795,
+    "first": {
+      "n": 58,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.6344368999707513,
+      "all_attempt_total_p95_s": 1.6344368999707513,
+      "ttft_p95_s": 1.3138922000071034,
+      "mean_generation_tokens_per_second": 24.913021498358663
+    },
+    "last": {
+      "n": 59,
+      "failures": 0,
+      "failure_rate": 0.0,
+      "successful_total_p95_s": 1.6449293000041507,
+      "all_attempt_total_p95_s": 1.6449293000041507,
+      "ttft_p95_s": 1.323760700004641,
+      "mean_generation_tokens_per_second": 25.070164606323274
+    },
+    "tps_change_percent": 0.6307669584556974
+  }
+]
