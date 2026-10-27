@@ -1,5 +1,7 @@
 # Local-model runtime attempt — 26 October 2026
 
+Historical26 October attempt only. The later successful CPU/Vulkan measurements and configured-store accounting are in [PR #18](https://github.com/Diffusity/vaeil/pull/18).
+
 ## Status
 
 Setup/latency authorization is separate from accuracy approval. No accuracy comparison is permitted before independent label review, dispute resolution and commit-hash freeze. Candidate labels remain unfrozen. Nothing in this report claims an unevaluated model failed or passed the safety bar.
@@ -8,7 +10,7 @@ Runtime block began04:45:52 UTC with a two-hour deadline06:45:52. Initial downlo
 
 The bounded setup helper actually started at06:47:38, after its06:45:22 safety cutoff, and refused before installation. It finished06:47:42. The attempt's wall-clock span was **2h01m50s**, exceeding the outer window by1m50s; do not call it a completed in-time benchmark or equate all clock gaps with active work. No installation, model pull or inference occurred after the deadline (or before it). Stop/report rather than extend the session silently. A new runtime block requires renewed timebox authorization and corrected power prerequisites.
 
-**Cleanup verified:** Ollama not installed; zero pulled models, zero model files and **0 model bytes**; no owned Ollama processes and no listener on11434. Installer size is not model storage. Runtime version, actual model digests, Vulkan discovery and Qwen3 non-thinking behavior are **not measured**. Official documented support is not substituted for a test on this machine.
+**Cleanup verified for this attempt:** no Ollama installation or model pull was performed; **0 newly downloaded model bytes**; no owned Ollama processes and no listener on11434. The file probe inspected only the default C: model directory. Later discovery of configured D:\Ollama_Models means that probe did not establish the absence of every pre-existing cache; total prior cache storage is unknown. Installer size is separate. Runtime version, actual model digests, Vulkan discovery and Qwen3 non-thinking behavior were **not measured in this attempt**. Official documented support is not substituted for a test on this machine.
 
 ## Verified preflight
 
