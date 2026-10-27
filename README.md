@@ -8,7 +8,7 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 ## Status
 
-Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The merged T1 baseline has 401 passing tests (386 product/domain/boundary and 15 tooling); the original merged baseline was 122.
+Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 406 passing tests (386 product/domain/boundary and 20 tooling); T1 merged with 401, and the earlier baseline was 122. The five new cases guard the benchmark client, not additional product rules.
 
 T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit `4f9ca80`, with **401 passing tests**. It implements the Member/Values Profile pure view, shared self-name checks, ordered profile validation, opaque private scalars and pair-projection isolation. **Rule 5 remains partial**: Conversation lifecycle/authoritative state, HTTP auth/display, persistence and moderated delivery are still future work. The real local-model adapter is not built. T1 tests cover constructor-friendly wrappers, safe diagnostics/export and an exact three-function unwrap allowlist; explicit authorized JSON remains unchanged. Spec: [#7](https://github.com/Diffusity/vaeil/issues/7). T1-T6 are published; later ticket estimates wait for the benchmark-informed velocity review.
 
