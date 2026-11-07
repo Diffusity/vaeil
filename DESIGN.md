@@ -31,7 +31,7 @@ The course asks for three design decisions. Each names the principle it applies,
 ### 2. Anonymity is enforced per Conversation, not globally
 
 - **Principle**: information hiding — Reveal state and identifier detection are scoped to the pair, never to a global Member flag, so one Reveal cannot relax any other Conversation.
-- **Where**: `src/vaeil/domain/member.py:28` and `src/vaeil/domain/member.py:89`. The Conversation aggregate/lifecycle remains T2; T1 implements the pair-context projection seam.
+- **Where**: `src/vaeil/domain/member.py:28` and `src/vaeil/domain/member.py:89` supply the pair-context projection seam; `src/vaeil/domain/conversation.py:36` and `:69` supply T2 lifecycle/state authority in memory.
 - **Before / why**: the first recommendation was to log contact details typed before a Reveal. Rejected because logging lets two Members bypass Reveal Consent and makes Rule 5 untestable. Changed to identifier detection that Escalates the Message (still delivered, Admin-reviewed, audited), then scoped per Conversation so a Reveal only relaxes its own pair.
 
 #### Supporting decision: opaque private values and the extraction boundary
@@ -128,14 +128,14 @@ Gender/orientation compatibility and all Plan B cuts below. Future private prefe
 - The immutable scan result stores only ordered reasons, never matched text or spans. Keeping another copy of identifiers in the audit log or Admin queue is deliberately avoided. Any later span-retention requirement belongs to the moderation slice.
 - Pseudonyms are NFKC-normalized and trimmed for display, then casefolded for uniqueness. They contain 3-20 Unicode letters or decimal digits, underscore or hyphen, start with a letter, and cannot be reserved staff names (`admin`, `moderator`, `system`, `vaeil`, `support`, case-insensitively). Named constants live in `src/vaeil/domain/pseudonym.py:10`.
 - The in-memory directory is only the domain seam. When the repository lands, uniqueness must be enforced atomically with a unique index on the normalized value; checking then inserting without that constraint races during concurrent signups. The current directory does not enforce platform-wide or cross-process uniqueness.
-- General names are not detected. The owner-specific check refuses known name/email tokens; another person's name, ignored short tokens and unfamiliar forms can still pass. Spelled-out numbers, novel obfuscation, identifiers split across Messages, and numeric false positives remain known limits. Rule 5 stays partial until API/UI display, Conversation-state authority and moderation integration are proven.
+- General names are not detected. The owner-specific check refuses known name/email tokens; another person's name, ignored short tokens and unfamiliar forms can still pass. Spelled-out numbers, novel obfuscation, identifiers split across Messages, and numeric false positives remain known limits. Rule 5 stays partial until API/UI display, durable Conversation-state authority and moderation integration are proven.
 
 - No auto-expiry of inactive Conversations.
 - Identifier detection is heuristic: spelled-out numbers, novel obfuscation, and identifiers split across Messages can be missed; long numeric strings can be false positives.
 
 ## Evidence
 
-`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here. Merged slice 1 supports decisions 1 and 3 through the Vetting port and fail-closed wrapper. Merged slice 2 adds identifier scanning and Pseudonym claims, covering part of Rule 5. Pair-projection isolation is tested in T1. Conversation lifecycle/state authority (T2), the real adapter, Rules 3 and 4, and API/UI privacy remain pending. Current coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end; Rule 5 is partial.
+`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here. Merged slice 1 supports decisions 1 and 3 through the Vetting port and fail-closed wrapper. Merged slice 2 adds identifier scanning and Pseudonym claims, covering part of Rule 5. Pair-projection isolation is tested in T1. T2 now supplies in-memory Conversation lifecycle/state authority; the real adapter, Rules 3 and 4, and API/UI privacy remain pending. Current coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end; Rule 5 is partial.
 
 ## Confirmed working scope and local-model decision
 
@@ -172,3 +172,9 @@ The accuracy deadline passed on 1 November. A rules-first human-review baseline 
 ### Human-review baseline approval — 7 November
 
 Parth approved the reduced schedule and manual-review baseline: model-unavailable Applicants enter NeedsReview; technical-Withheld senders may explicitly submit for Admin review. No Message is delivered before an audited human release; pre-Reveal identifier flags retain escalation. Model-flagged content remains under review/no same-text resend; any optional model can only tighten decisions. This is a planned T7/T9 path, not an automatic rules-only safety claim or an implemented feature. The spec records the controlling behavior.
+
+## T2 lifecycle/state authority
+
+`src/vaeil/domain/conversation.py:36` is a frozen/slotted pair-state snapshot. `:54` defines active as unrevealed and unblocked; `:58` keeps Revealed chat open until Block; `:62` disables identifier escalation only for a Revealed pair. `:65` creates T1's existing projection context, without copying identity or changing its allow-list. `ConversationDirectory` at :69 owns in-memory active-slot/permanent-pair checks; `open` :73 follows bilateral Match acceptance in later wiring. `restore` :87 is trusted fixture/persistence input, checks monotonic history, and must not become an unconditional Member-facing Reveal route. T8 still owns consent/threshold enforcement. Shared placement checks :101 run before either write; `block` :113 requires a participant and preserves Reveal. No new clock read, framework dependency, LLM call or private unwrap site. T5 must enforce these storage transitions atomically; this directory is not cross-process safe. No auto-expiry or message-delivery implementation is implied.
+
+T2 tests were written/run red before their corresponding green cycles; projection regressions then verified the existing T1 behavior using directory contexts. The agent implemented/tested the approved seam, ran mutations and independent Standards/Spec reviews; Parth chose the behavior/interfaces and reviews the PR before merge. Those are distinct contributions. Rule 5 remains partial.

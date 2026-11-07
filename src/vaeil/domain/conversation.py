@@ -74,12 +74,7 @@ class ConversationDirectory:
         conversation = Conversation(conversation_id, participant_ids)
         if conversation_id in self._conversations:
             raise ConversationAlreadyExistsError("Conversation ID already exists.")
-        if any(existing.blocked and frozenset(participant_ids) == frozenset(existing.participant_ids)
-               for existing in self._conversations.values()):
-            raise PairBlockedError("This pair cannot open another Conversation.")
-        if any(existing.active and set(participant_ids).intersection(existing.participant_ids)
-               for existing in self._conversations.values()):
-            raise MemberAlreadyActiveError("A Member already has an active Conversation.")
+        self._validate_placement(conversation)
         self._conversations[conversation_id] = conversation
         return conversation
 
@@ -100,6 +95,10 @@ class ConversationDirectory:
             or (previous.blocked and not conversation.blocked)
         ):
             raise InvalidConversationTransitionError("Conversation history cannot be reversed or reassigned.")
+        self._validate_placement(conversation)
+        self._conversations[conversation.conversation_id] = conversation
+
+    def _validate_placement(self, conversation: Conversation) -> None:
         others = [existing for existing in self._conversations.values()
                   if existing.conversation_id != conversation.conversation_id]
         if any(existing.blocked and frozenset(conversation.participant_ids) == frozenset(existing.participant_ids)
@@ -110,7 +109,6 @@ class ConversationDirectory:
             for existing in others
         ):
             raise MemberAlreadyActiveError("A Member already has an active Conversation.")
-        self._conversations[conversation.conversation_id] = conversation
 
     def block(self, conversation_id: str, *, actor_id: str) -> Conversation:
         conversation = self.get(conversation_id)

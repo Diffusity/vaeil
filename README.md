@@ -8,9 +8,9 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 ## Status
 
-Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 406 passing tests (386 product/domain/boundary and 20 tooling); T1 merged with 401, and the earlier baseline was 122. The five new cases guard the benchmark client, not additional product rules.
+Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 452 passing tests (432 product/domain/boundary and 20 tooling); T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
 
-T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit `4f9ca80`, with **401 passing tests**. It implements the Member/Values Profile pure view, shared self-name checks, ordered profile validation, opaque private scalars and pair-projection isolation. **Rule 5 remains partial**: Conversation lifecycle/authoritative state, HTTP auth/display, persistence and moderated delivery are still future work. The real local-model adapter is not built. T1 tests cover constructor-friendly wrappers, safe diagnostics/export and an exact three-function unwrap allowlist; explicit authorized JSON remains unchanged. Spec: [#7](https://github.com/Diffusity/vaeil/issues/7). T1-T6 are published; later ticket estimates wait for the benchmark-informed velocity review.
+T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit `4f9ca80`, with **401 passing tests**. It implements the Member/Values Profile pure view, shared self-name checks, ordered profile validation, opaque private scalars and pair-projection isolation. **Rule 5 remains partial**: T2 adds in-memory Conversation lifecycle/state authority; HTTP auth/display, persistence and moderated delivery remain future work. The real local-model adapter is not built. T1 tests cover constructor-friendly wrappers, safe diagnostics/export and an exact three-function unwrap allowlist; explicit authorized JSON remains unchanged. Spec: [#7](https://github.com/Diffusity/vaeil/issues/7). T1-T6 are published; later ticket estimates wait for the benchmark-informed velocity review.
 
 ## Remaining schedule (confirmed dates/capacity; estimates under review)
 
@@ -54,3 +54,5 @@ After setup, run all development checks with `.venv\Scripts\python.exe scripts/c
 ## Licence
 
 See `LICENSE`.
+
+T2 implements pair-scoped lifecycle, active-slot exclusion, monotonic trusted restoration and permanent Block exclusion. The current reduced schedule/human-review baseline is approved; the 7 November recovery proposal still has a 4.5-session capacity gap. See `docs/audit/t2-velocity.md` before T4. Model accuracy has not been measured; no live model is required by the approved human-review baseline.

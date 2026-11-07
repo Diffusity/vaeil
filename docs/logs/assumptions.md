@@ -92,3 +92,7 @@ New runtime gate: exact GO, 90 active minutes, stage reports; finish current ste
 ## 2026-11-07 schedule and human-review baseline approved
 
 Parth explicitly approves the reduced schedule and human-review baseline, including the proposed manual-message review submission and audited Admin release/discard path. This supersedes the pending-approval wording above. Automatic scanner-clean delivery/admission remains prohibited; local model is optional and only tightens. Schedule approval permits T2/T3 work with approved overlap; it does not supply missing teammate hours, certify a resolved 4.5-session gap, authorize provisioning or substitute for exact GO. New public T2/T3 seams are proposed separately for the TDD seam-confirmation gate.
+
+## 2026-11-07 T2/T3 interfaces approved and T2 implementation
+
+Parth approved docs/specs/t2-t3-seams.md and explicitly invoked implement for T2. T2 uses the approved in-memory ConversationDirectory, trusted monotonic restore and existing projection context. No unconditional Reveal route or early consent/moderation implementation; T5 owns atomic durable transitions. Tests/mutations and review land on the current feature branch; no T3 code started by the T2-only request. No model GO or provisioning authorization inferred.
