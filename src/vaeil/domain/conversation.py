@@ -4,6 +4,14 @@ from dataclasses import dataclass, replace
 from vaeil.domain.member import ConversationRevealState
 
 
+class InvalidConversationError(Exception):
+    """Use a nonempty ID, distinct participant pair and Boolean state."""
+
+
+class ConversationAlreadyExistsError(Exception):
+    """A Conversation ID cannot be reused by open."""
+
+
 class ConversationNotFoundError(Exception):
     """The Conversation does not exist in this directory."""
 
@@ -27,6 +35,17 @@ class Conversation:
     revealed: bool = False
     blocked: bool = False
 
+    def __post_init__(self) -> None:
+        pair = self.participant_ids
+        if (
+            not isinstance(self.conversation_id, str) or not self.conversation_id
+            or not isinstance(pair, tuple) or len(pair) != 2
+            or any(not isinstance(member, str) or not member for member in pair)
+            or pair[0] == pair[1]
+            or type(self.revealed) is not bool or type(self.blocked) is not bool
+        ):
+            raise InvalidConversationError("Use a Conversation ID, distinct Member pair and Boolean state.")
+
     @property
     def active(self) -> bool:
         return not self.revealed and not self.blocked
@@ -48,13 +67,15 @@ class ConversationDirectory:
         self._conversations: dict[str, Conversation] = {}
 
     def open(self, conversation_id: str, *, participant_ids: tuple[str, str]) -> Conversation:
+        conversation = Conversation(conversation_id, participant_ids)
+        if conversation_id in self._conversations:
+            raise ConversationAlreadyExistsError("Conversation ID already exists.")
         if any(existing.blocked and frozenset(participant_ids) == frozenset(existing.participant_ids)
                for existing in self._conversations.values()):
             raise PairBlockedError("This pair cannot open another Conversation.")
         if any(existing.active and set(participant_ids).intersection(existing.participant_ids)
                for existing in self._conversations.values()):
             raise MemberAlreadyActiveError("A Member already has an active Conversation.")
-        conversation = Conversation(conversation_id, participant_ids)
         self._conversations[conversation_id] = conversation
         return conversation
 

@@ -84,3 +84,62 @@ def test_outsider_block_is_refused_without_state_change():
     assert directory.get("ab") == original
     with pytest.raises(MemberAlreadyActiveError):
         directory.open("ac", participant_ids=("a", "c"))
+
+
+@pytest.mark.parametrize("conversation_id,pair,revealed,blocked", [
+    ("", ("a", "b"), False, False),
+    (None, ("a", "b"), False, False),
+    ([], ("a", "b"), False, False),
+    ("ab", ("a", "a"), False, False),
+    ("ab", ("a", ""), False, False),
+    ("ab", ("a", 2), False, False),
+    ("ab", ("a",), False, False),
+    ("ab", ("a", "b", "c"), False, False),
+    ("ab", ["a", "b"], False, False),
+    ("ab", None, False, False),
+    ("ab", ("a", "b"), 1, False),
+    ("ab", ("a", "b"), False, 0),
+], ids=["empty-id", "none-id", "list-id", "same-member", "empty-member", "nonstring-member",
+        "short-pair", "long-pair", "mutable-pair", "none-pair", "nonbool-reveal", "nonbool-block"])
+def test_conversation_refuses_invalid_shapes_and_flags(conversation_id, pair, revealed, blocked):
+    from vaeil.domain.conversation import InvalidConversationError
+
+    with pytest.raises(InvalidConversationError):
+        Conversation(conversation_id, pair, revealed=revealed, blocked=blocked)
+
+
+def test_duplicate_id_cannot_overwrite_or_release_slots():
+    from vaeil.domain.conversation import ConversationAlreadyExistsError, MemberAlreadyActiveError
+
+    directory = ConversationDirectory()
+    original = directory.open("ab", participant_ids=("a", "b"))
+    with pytest.raises(ConversationAlreadyExistsError):
+        directory.open("ab", participant_ids=("c", "d"))
+    assert directory.get("ab") == original
+    with pytest.raises(MemberAlreadyActiveError):
+        directory.open("be", participant_ids=("b", "e"))
+    assert directory.open("cd", participant_ids=("c", "d")).active
+
+
+@pytest.mark.parametrize("pair", [("a", "c"), ("c", "a"), ("b", "c"), ("c", "b")])
+def test_either_participant_slot_is_checked_in_either_order(pair):
+    from vaeil.domain.conversation import MemberAlreadyActiveError
+
+    directory = ConversationDirectory()
+    directory.open("ab", participant_ids=("a", "b"))
+    with pytest.raises(MemberAlreadyActiveError):
+        directory.open("next", participant_ids=pair)
+
+
+@pytest.mark.parametrize("operation", ["get", "block"])
+def test_unknown_conversation_has_a_distinct_safe_error(operation):
+    from vaeil.domain.conversation import ConversationNotFoundError
+
+    directory = ConversationDirectory()
+    with pytest.raises(ConversationNotFoundError) as caught:
+        if operation == "get":
+            directory.get("private-canary")
+        else:
+            directory.block("private-canary", actor_id="actor-canary")
+    assert "private-canary" not in str(caught.value)
+    assert "actor-canary" not in str(caught.value)
