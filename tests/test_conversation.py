@@ -143,3 +143,66 @@ def test_unknown_conversation_has_a_distinct_safe_error(operation):
             directory.block("private-canary", actor_id="actor-canary")
     assert "private-canary" not in str(caught.value)
     assert "actor-canary" not in str(caught.value)
+
+
+@pytest.mark.parametrize("old,new", [
+    (Conversation("ab", ("a", "b"), revealed=True), Conversation("ab", ("a", "b"))),
+    (Conversation("ab", ("a", "b"), blocked=True), Conversation("ab", ("a", "b"))),
+    (Conversation("ab", ("a", "b")), Conversation("ab", ("a", "c"))),
+    (Conversation("ab", ("a", "b")), Conversation("ab", ("b", "a"))),
+], ids=["reverse-reveal", "reverse-block", "replace-participant", "reorder-participants"])
+def test_restore_cannot_reverse_history_or_change_participants(old, new):
+    from vaeil.domain.conversation import InvalidConversationTransitionError
+
+    directory = ConversationDirectory()
+    directory.restore(old)
+    with pytest.raises(InvalidConversationTransitionError):
+        directory.restore(new)
+    assert directory.get("ab") == old
+
+
+def test_restore_cannot_bypass_active_slots_and_failed_restore_consumes_nothing():
+    from vaeil.domain.conversation import MemberAlreadyActiveError, ConversationNotFoundError
+
+    directory = ConversationDirectory()
+    original = directory.open("ab", participant_ids=("a", "b"))
+    with pytest.raises(MemberAlreadyActiveError):
+        directory.restore(Conversation("ac", ("a", "c")))
+    assert directory.get("ab") == original
+    with pytest.raises(ConversationNotFoundError):
+        directory.get("ac")
+    assert directory.open("cd", participant_ids=("c", "d")).active
+
+
+@pytest.mark.parametrize("pair", [("a", "b"), ("b", "a")])
+@pytest.mark.parametrize("revealed", [False, True])
+def test_restore_cannot_bypass_permanent_block(pair, revealed):
+    from vaeil.domain.conversation import PairBlockedError, ConversationNotFoundError
+
+    directory = ConversationDirectory()
+    directory.restore(Conversation("ab", ("a", "b"), blocked=True))
+    with pytest.raises(PairBlockedError):
+        directory.restore(Conversation("again", pair, revealed=revealed))
+    with pytest.raises(ConversationNotFoundError):
+        directory.get("again")
+    assert directory.get("ab").blocked
+
+
+@pytest.mark.parametrize("invalid", [None, {}, "private-canary"])
+def test_restore_requires_a_conversation_and_does_not_echo_input(invalid):
+    from vaeil.domain.conversation import InvalidConversationError
+
+    with pytest.raises(InvalidConversationError) as caught:
+        ConversationDirectory().restore(invalid)
+    assert "private-canary" not in str(caught.value)
+
+
+def test_restore_is_idempotent_and_allows_independent_nonactive_history():
+    directory = ConversationDirectory()
+    active = directory.open("ac", participant_ids=("a", "c"))
+    directory.restore(active)
+    revealed = Conversation("ab", ("a", "b"), revealed=True)
+    directory.restore(revealed)
+    directory.restore(revealed)
+    assert directory.get("ac") == active
+    assert directory.get("ab") == revealed

@@ -28,6 +28,10 @@ class ConversationActorError(Exception):
     """Only a participant may Block the Conversation."""
 
 
+class InvalidConversationTransitionError(Exception):
+    """History cannot reverse Reveal/Block or replace participants."""
+
+
 @dataclass(frozen=True, slots=True)
 class Conversation:
     conversation_id: str
@@ -87,6 +91,25 @@ class ConversationDirectory:
 
     def restore(self, conversation: Conversation) -> None:
         """Restore trusted fixtures/state; this is not a public Reveal command."""
+        if not isinstance(conversation, Conversation):
+            raise InvalidConversationError("Restore a validated Conversation.")
+        previous = self._conversations.get(conversation.conversation_id)
+        if previous is not None and (
+            previous.participant_ids != conversation.participant_ids
+            or (previous.revealed and not conversation.revealed)
+            or (previous.blocked and not conversation.blocked)
+        ):
+            raise InvalidConversationTransitionError("Conversation history cannot be reversed or reassigned.")
+        others = [existing for existing in self._conversations.values()
+                  if existing.conversation_id != conversation.conversation_id]
+        if any(existing.blocked and frozenset(conversation.participant_ids) == frozenset(existing.participant_ids)
+               for existing in others):
+            raise PairBlockedError("This pair cannot open another Conversation.")
+        if conversation.active and any(
+            existing.active and set(conversation.participant_ids).intersection(existing.participant_ids)
+            for existing in others
+        ):
+            raise MemberAlreadyActiveError("A Member already has an active Conversation.")
         self._conversations[conversation.conversation_id] = conversation
 
     def block(self, conversation_id: str, *, actor_id: str) -> Conversation:
