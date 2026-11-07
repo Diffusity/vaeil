@@ -1,5 +1,7 @@
 # Local-model runtime attempt — 26 October 2026
 
+Historical26 October attempt only. All pending-state statements below describe that attempt, not today's task gates. **Current status (7 November):** later CPU/Vulkan measurements are complete; unchanged scored labels frozen at76e915a/tag labels-v1-reviewed-2026-11-07 with attested Vatsal/Nevil review; application-note vetting input and human-review baseline approved. T2 is implemented; optional T12 does not block T3. Accuracy remains unmeasured, new runtime waits for exact GO/90-active-minute scope, no tunnel provisioned. Current plan: [recovery approval](../audit/schedule-recovery-2026-11-07.md); live adapter draft: [T12](../specs/tickets/t12.md).
+
 Historical26 October attempt only. The later successful CPU/Vulkan measurements and configured-store accounting are in [PR #18](https://github.com/Diffusity/vaeil/pull/18).
 
 ## Status
