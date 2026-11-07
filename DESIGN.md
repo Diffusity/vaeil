@@ -31,7 +31,7 @@ The course asks for three design decisions. Each names the principle it applies,
 ### 2. Anonymity is enforced per Conversation, not globally
 
 - **Principle**: information hiding — Reveal state and identifier detection are scoped to the pair, never to a global Member flag, so one Reveal cannot relax any other Conversation.
-- **Where**: `src/vaeil/domain/member.py:28` and `src/vaeil/domain/member.py:89`. The Conversation aggregate/lifecycle remains T2; T1 implements the pair-context projection seam.
+- **Where**: `src/vaeil/domain/member.py:28` and `src/vaeil/domain/member.py:89` supply the pair-context projection seam; `src/vaeil/domain/conversation.py:36` and `:69` supply T2 lifecycle/state authority in memory.
 - **Before / why**: the first recommendation was to log contact details typed before a Reveal. Rejected because logging lets two Members bypass Reveal Consent and makes Rule 5 untestable. Changed to identifier detection that Escalates the Message (still delivered, Admin-reviewed, audited), then scoped per Conversation so a Reveal only relaxes its own pair.
 
 #### Supporting decision: opaque private values and the extraction boundary
@@ -128,14 +128,14 @@ Gender/orientation compatibility and all Plan B cuts below. Future private prefe
 - The immutable scan result stores only ordered reasons, never matched text or spans. Keeping another copy of identifiers in the audit log or Admin queue is deliberately avoided. Any later span-retention requirement belongs to the moderation slice.
 - Pseudonyms are NFKC-normalized and trimmed for display, then casefolded for uniqueness. They contain 3-20 Unicode letters or decimal digits, underscore or hyphen, start with a letter, and cannot be reserved staff names (`admin`, `moderator`, `system`, `vaeil`, `support`, case-insensitively). Named constants live in `src/vaeil/domain/pseudonym.py:10`.
 - The in-memory directory is only the domain seam. When the repository lands, uniqueness must be enforced atomically with a unique index on the normalized value; checking then inserting without that constraint races during concurrent signups. The current directory does not enforce platform-wide or cross-process uniqueness.
-- General names are not detected. The owner-specific check refuses known name/email tokens; another person's name, ignored short tokens and unfamiliar forms can still pass. Spelled-out numbers, novel obfuscation, identifiers split across Messages, and numeric false positives remain known limits. Rule 5 stays partial until API/UI display, Conversation-state authority and moderation integration are proven.
+- General names are not detected. The owner-specific check refuses known name/email tokens; another person's name, ignored short tokens and unfamiliar forms can still pass. Spelled-out numbers, novel obfuscation, identifiers split across Messages, and numeric false positives remain known limits. Rule 5 stays partial until API/UI display, durable Conversation-state authority and moderation integration are proven.
 
 - No auto-expiry of inactive Conversations.
 - Identifier detection is heuristic: spelled-out numbers, novel obfuscation, and identifiers split across Messages can be missed; long numeric strings can be false positives.
 
 ## Evidence
 
-`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here. Merged slice 1 supports decisions 1 and 3 through the Vetting port and fail-closed wrapper. Merged slice 2 adds identifier scanning and Pseudonym claims, covering part of Rule 5. Pair-projection isolation is tested in T1. Conversation lifecycle/state authority (T2), the real adapter, Rules 3 and 4, and API/UI privacy remain pending. Current coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end; Rule 5 is partial.
+`file:line` citations land as slices land: the six rules in `TESTING.md`'s rule table, and the three decisions plus the boundary here. Merged slice 1 supports decisions 1 and 3 through the Vetting port and fail-closed wrapper. Merged slice 2 adds identifier scanning and Pseudonym claims, covering part of Rule 5. Pair-projection isolation is tested in T1. T2 now supplies in-memory Conversation lifecycle/state authority; the real adapter, Rules 3 and 4, and API/UI privacy remain pending. Current coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end; Rule 5 is partial.
 
 ## Confirmed working scope and local-model decision
 
@@ -153,7 +153,7 @@ Render/Neon accounts are Parth-owned. T4 adds teammates where free collaboration
 
 ## 26 October approved moderation outcomes and tunnel constraints
 
-Model-flagged Withheld is not an Escalated delivery or a technical retry: it stays under review, cannot be resent as the same text, and requires an audited Admin release/discard. Technical failures remain retry-friendly. T7 pins the outcome/reason matrix and T9 includes this Admin queue. The exact vetting text is undefined in the spec/current Applicant and remains an open question; no production input is inferred from the benchmark snippets.
+Model-flagged Withheld is not an Escalated delivery or a technical retry: it stays under review, cannot be resent as the same text, and requires an audited Admin release/discard. Technical failures remain retry-friendly. T7 pins the outcome/reason matrix and T9 includes this Admin queue. The application-note decision below resolves the former vetting-input question; existing code has not yet implemented it.
 
 No owned Cloudflare domain: named Tunnel is excluded. Candidate is ngrok Free assigned dev domain, only during rehearsals/viva. Dashboard shows $0 of $5 and 7 March 2027 expiry; whether this means unused credit and the endpoint hourly cost await the Free credit breakdown, not an assumption of $5 available. T12 must budget active rehearsal/viva hours plus margin against confirmed credit. If unaffordable, propose the all-local demo or Quick Tunnel (changing URL requires updating Render environment config and rechecking authentication during rehearsal). Nothing provisioned.
 
@@ -162,3 +162,19 @@ No owned Cloudflare domain: named Tunnel is excluded. Candidate is ngrok Free as
 Native Windows Ollama0.40.11 completed the authorized CPU and Vulkan timing protocols on the actual laptop; the integrated Radeon device was discovered and offload verified with process-local OLLAMA_IGPU_ENABLE=1. All three candidates met the short-call latency/failure bars on both paths. The [report](docs/research/local-model-runtime-results-2026-10-27.md) separates client/load/first-token timings, concurrent calls, ten-minute load and unmeasured safety accuracy. CPU is a sufficient runtime recommendation; final model choice still depends on the frozen accuracy gate, not speed alone. No production adapter or new unwrap site exists.
 
 Codex prepared the reproducible client, installed/pulled only the authorized runtime/models, measured and preserved synthetic evidence, and stopped the owned servers. Parth selected candidates and acceptance bars, authorized the work, changed the power setting and approved labels. Required independent label-review coverage has not been recorded; no completed teammate review is claimed. Proposed8-second end-to-end deadline/cap1/queue2 remain T12 review items, not adopted settings. Short fixed inputs/native API measurements do not establish arbitrary-length or OpenAI-compatible transport behavior. No tunnel/account/paid service was provisioned.
+
+## Application note and fallback decision — 7 November
+
+T6 will validate a required 20–500-code-point application note after trim and NFKC, without control characters or truncation. Age precedes Invite consumption; scanner and whole-word self-name checks precede save/model. Vetting receives only that note, no identity, DOB, Invite code or wrapped fields. Refused contact content uses a remove-contact-details message without echoing input. The stored note is untrusted, Admin-visible for NeedsReview, excluded from all Match views and included in canary tests. Model output remains the fixed Approved/NeedsReview enum; every failure or approved unsupported-language policy hit is NeedsReview, all Admin decisions audited. Exact future T6 call sites/citations land with implementation; no extra unwrap sites are approved here.
+
+The accuracy deadline passed on 1 November. A rules-first human-review baseline is proposed in docs/audit/schedule-recovery-2026-11-07.md. A scanner-clean note/message is not by itself a safety approval. Manual message review needs an explicit submission route and audited release; this proposal must not quietly turn technical Withheld into model-approved delivery. Local inference is optional and may only tighten decisions. No real-model accuracy or unsupported-language policy is claimed.
+
+### Human-review baseline approval — 7 November
+
+Parth approved the reduced schedule and manual-review baseline: model-unavailable Applicants enter NeedsReview; technical-Withheld senders may explicitly submit for Admin review. No Message is delivered before an audited human release; pre-Reveal identifier flags retain escalation. Model-flagged content remains under review/no same-text resend; any optional model can only tighten decisions. This is a planned T7/T9 path, not an automatic rules-only safety claim or an implemented feature. The spec records the controlling behavior.
+
+## T2 lifecycle/state authority
+
+`src/vaeil/domain/conversation.py:36` is a frozen/slotted pair-state snapshot. `:54` defines active as unrevealed and unblocked; `:58` keeps Revealed chat open until Block; `:62` disables identifier escalation only for a Revealed pair. `:65` creates T1's existing projection context, without copying identity or changing its allow-list. `ConversationDirectory` at :69 owns in-memory active-slot/permanent-pair checks; `open` :73 follows bilateral Match acceptance in later wiring. `restore` :87 is trusted fixture/persistence input, checks monotonic history, and must not become an unconditional Member-facing Reveal route. T8 still owns consent/threshold enforcement. Shared placement checks :101 run before either write; `block` :113 requires a participant and preserves Reveal. No new clock read, framework dependency, LLM call or private unwrap site. T5 must enforce these storage transitions atomically; this directory is not cross-process safe. No auto-expiry or message-delivery implementation is implied.
+
+T2 tests were written/run red before their corresponding green cycles; projection regressions then verified the existing T1 behavior using directory contexts. The agent implemented/tested the approved seam, ran mutations and independent Standards/Spec reviews; Parth chose the behavior/interfaces and reviews the PR before merge. Those are distinct contributions. Rule 5 remains partial.
