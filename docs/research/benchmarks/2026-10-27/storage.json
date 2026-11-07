@@ -1,0 +1,27 @@
+{
+  "model_root": "D:\\Ollama_Models",
+  "method": "Authorized manifests plus deduplicated referenced blobs; unrelated/preexisting files excluded. No model contents rehashed during measurements.",
+  "logical_bytes": 3666459306,
+  "win32_reported_storage_bytes": 3666459306,
+  "unique_blobs": 18,
+  "per_model": [
+    {
+      "tag": "llama3.2:1b",
+      "manifest_sha256": "728ac54eed40c4c447b407828c1f1c633033657245fe8fd42931efc7eab30743",
+      "referenced_blob_bytes": 1321099189,
+      "manifest_bytes": 1023
+    },
+    {
+      "tag": "qwen2.5:1.5b",
+      "manifest_sha256": "f2b0a490f661d58f20c4b98e5797ecf55e6e96293a88b71e96e7cc389f658f7e",
+      "referenced_blob_bytes": 986062749,
+      "manifest_bytes": 1020
+    },
+    {
+      "tag": "qwen3:1.7b",
+      "manifest_sha256": "0f45bae8cd2fec097cf09b400b078cf42388a1f5702f4058d2d6d641a09db46d",
+      "referenced_blob_bytes": 1359294303,
+      "manifest_bytes": 1022
+    }
+  ]
+}
