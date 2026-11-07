@@ -1,4 +1,4 @@
-# Freeze recovery proposal — approval required before T2
+# Freeze recovery — approved 7 November
 
 Five sessions/week; feature freeze 28 November, viva 5 December; 29 November–4 December rehearsal/fixes only. As of 7 November there are **21 days / 7 × 5 = 15 build slots** through 27 November. Do not assume a sixteenth session on freeze day or unused October slots carried forward. Sessions are 2–3 focused hours. No T2/T3 implementation starts from this proposal.
 
@@ -47,3 +47,7 @@ Accuracy was not complete/reported by 1 November. The baseline therefore uses de
 | 6 | Same 18+ check before Invite consumption |
 
 The explicit manual-review submission route is a **proposal needing approval**, not existing behavior: an unavailable model currently creates technical Withheld, not a model-review queue item. A live fake Approved adapter would demonstrate plumbing, not satisfy a real safety decision. Optional local inference can only tighten a deterministic/human baseline; approve its exact policy separately after evidence. Product AI claims and evaluation must disclose when the demo is human-reviewed. No model run before GO, no tunnel provisioning.
+
+## Approval recorded
+
+Parth: “i approve of the reduced schedule and the human - review baseline”. The proposal, including manual message submission/release, is approved; prospective language above describes the proposal as presented. T2/T3 may start through the TDD seam gate. Capacity gap is a retained risk, not an extra-hours commitment or proof it fits. No model run before exact GO.
