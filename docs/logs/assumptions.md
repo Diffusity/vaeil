@@ -76,3 +76,23 @@ User approved opaque private text/date instead of native scalars, overriding the
 User distinguishes technical Withheld (reason, no delivery, retry) from model NeedsReview Withheld (under review, no same-text resend, Admin release/discard audited). Delivered/Escalated require model approval; only pre-Reveal identifier flags Escalate and model output cannot clear them. Supersedes blanket retry language. Vetting text is unspecified and is an explicit open question, not a new assumed payload.
 
 Labels require independent review: every non-English case by two teammates, English/disputes by Parth, 24-hour review window from sheet handoff. H7 assignment remains proposed. Freeze by commit hash after approved resolutions; unresolved cases excluded/reported separately. Later label objections produce paired included/excluded reports from the same recorded outputs, not reruns. One fixed shared prompt, at most one revision on a separate eight-case development set. Runtime/latency setup may proceed before label freeze; accuracy may not. No tunnels/accounts/other software/models. Named Cloudflare unavailable; ngrok credit/hourly cost unconfirmed; tunnel is rehearsal/viva-only and needs a budget before any provisioning.
+
+## 2026-10-27 label approval and renewed runtime evidence
+
+Parth changed the power setting and approved all labels to move forward. Recorded approval does not invent the names/coverage of required independent reviewers or define missing vetting text. The renewed same-scope runtime block completed before its two-hour deadline: Ollama0.40.11, exactly the three authorized tags, CPU and actual Vulkan offload. This proves short-call runtime feasibility, not safety accuracy or a chosen production model. Cap1/queue2/deadline8s and CPU as default are recommendations for later review, not adopted product decisions. No tunnel/account provisioning or new unwrap site. Raw synthetic evidence and exact timing/cleanup history are linked from the27 October runtime report; unrelated cache was preserved.
+
+## 2026-11-07 superseding consolidated reply
+
+Parth confirms Vatsal and Nevil reviewed non-English labels; all teammates found no disagreements and Parth approves English/all labels. Attestation only, actual review dates/sheets unavailable. Freeze unchanged scored cases by commit/tag; changed edge/development cases require another teammate check before second freeze. All V cases already satisfy 20–500 normalized code points; no scored labels/text changed.
+
+Vetting input is solely the required Applicant application note: trim/NFKC 20–500, controls refused, no truncation, age/scanner/whole-word self-name before vetting. Never send wrapped identity/DOB/Invite code to model; note remains untrusted and outside Match views. T6 tests and implementation pending. This replaces the earlier undefined-input record.
+
+New runtime gate: exact GO, 90 active minutes, stage reports; finish current step then stop on overrun, no new download-abort guard, no system power changes. No run started. Accuracy deadline 1 November passed; rules-first baseline applies, but manual message submission/release mechanism and revised schedule await approval. Existing safety rules cannot be weakened implicitly. PR18 merge authorized if only reviewed docs/tests/benchmark tooling and green final Windows head; verified and merged with merge commit 7ef3ad60f44af678ef93826d8e159458a56ab2d3. No T2/T3 starts before schedule approval, no new tickets/assignments/provisioning.
+
+## 2026-11-07 schedule and human-review baseline approved
+
+Parth explicitly approves the reduced schedule and human-review baseline, including the proposed manual-message review submission and audited Admin release/discard path. This supersedes the pending-approval wording above. Automatic scanner-clean delivery/admission remains prohibited; local model is optional and only tightens. Schedule approval permits T2/T3 work with approved overlap; it does not supply missing teammate hours, certify a resolved 4.5-session gap, authorize provisioning or substitute for exact GO. New public T2/T3 seams are proposed separately for the TDD seam-confirmation gate.
+
+## 2026-11-07 T2/T3 interfaces approved and T2 implementation
+
+Parth approved docs/specs/t2-t3-seams.md and explicitly invoked implement for T2. T2 uses the approved in-memory ConversationDirectory, trusted monotonic restore and existing projection context. No unconditional Reveal route or early consent/moderation implementation; T5 owns atomic durable transitions. Tests/mutations and review land on the current feature branch; no T3 code started by the T2-only request. No model GO or provisioning authorization inferred.

@@ -1,0 +1,4 @@
+# Generated measurements remain available, but collapse by default in GitHub review.
+docs/research/benchmarks/**/*.json linguist-generated=true
+docs/research/benchmarks/**/*.jsonl linguist-generated=true
+docs/research/benchmarks/**/*.log linguist-generated=true

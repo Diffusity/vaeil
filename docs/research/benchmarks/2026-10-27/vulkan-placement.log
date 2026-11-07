@@ -1,0 +1,7 @@
+time=2026-10-27T19:35:08.534+05:30 level=INFO source=types.go:32 msg="inference compute" id=0 filter_id=0 library=Vulkan compute=0.0 name=Vulkan0 description="AMD Radeon(TM) Graphics" libdirs=ollama,vulkan driver=0.0 pci_id="" type=iGPU total="15.9 GiB" available="15.1 GiB"
+time=2026-10-27T19:35:09.225+05:30 level=INFO source=sched.go:665 msg="gpu memory" id=0 library=Vulkan available="14.7 GiB" free="15.1 GiB" minimum="457.0 MiB" overhead="0 B"
+load_tensors: offloaded 29/29 layers to GPU
+time=2026-10-27T19:46:00.427+05:30 level=INFO source=sched.go:665 msg="gpu memory" id=0 library=Vulkan available="14.7 GiB" free="15.1 GiB" minimum="457.0 MiB" overhead="0 B"
+load_tensors: offloaded 17/17 layers to GPU
+time=2026-10-27T19:56:54.812+05:30 level=INFO source=sched.go:665 msg="gpu memory" id=0 library=Vulkan available="14.7 GiB" free="15.1 GiB" minimum="457.0 MiB" overhead="0 B"
+load_tensors: offloaded 29/29 layers to GPU
