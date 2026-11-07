@@ -206,3 +206,65 @@ def test_restore_is_idempotent_and_allows_independent_nonactive_history():
     directory.restore(revealed)
     assert directory.get("ac") == active
     assert directory.get("ab") == revealed
+
+
+def test_directory_reveal_contexts_preserve_identity_isolation_across_sequential_pairs():
+    from vaeil.domain import (
+        Member, MemberIdentity, Pseudonym, build_values_profile,
+        RelationshipIntent, LifeStage, Interest, CoreValue, CommunicationStyle,
+        PaceAndLifestyle, project_member_for_viewer, serialize_member_view,
+        PreRevealMemberView, RevealedMemberView, SubjectNotParticipantError,
+    )
+    from datetime import date
+
+    identity = MemberIdentity("a", "PrivateCanaryName", "private-canary@example.invalid", None, date(1987, 3, 14))
+    profile = build_values_profile(
+        owner=identity, relationship_intent=RelationshipIntent.LONG_TERM,
+        life_stage=LifeStage.UNDERGRADUATE, interests=[Interest.READING],
+        values=[CoreValue.HONESTY], communication_style=CommunicationStyle.DIRECT,
+        pace_and_lifestyle=PaceAndLifestyle.QUIET_AND_ROUTINE, about="",
+    )
+    member = Member(identity, Pseudonym("Comet"), profile)
+    directory = ConversationDirectory()
+    directory.open("ab", participant_ids=("a", "b"))
+    directory.restore(Conversation("ab", ("a", "b"), revealed=True))
+    directory.open("ac", participant_ids=("a", "c"))
+
+    ab, ac = directory.get("ab"), directory.get("ac")
+    revealed_view = project_member_for_viewer(member, viewer_id="b", conversation=ab.reveal_state())
+    anonymous_view = project_member_for_viewer(member, viewer_id="c", conversation=ac.reveal_state())
+    assert type(revealed_view) is RevealedMemberView
+    assert type(anonymous_view) is PreRevealMemberView
+    assert serialize_member_view(revealed_view)["legal_name"] == "PrivateCanaryName"
+    payload = serialize_member_view(anonymous_view)
+    assert set(payload) == {"pseudonym", "values_profile"}
+    for canary in ("PrivateCanaryName", "private-canary@example.invalid", "1987-03-14"):
+        assert canary not in repr(payload)
+    assert not ab.identifier_escalation_required
+    assert ac.identifier_escalation_required
+    outsider = Conversation("de", ("d", "e"))
+    with pytest.raises(SubjectNotParticipantError):
+        project_member_for_viewer(member, viewer_id="d", conversation=outsider.reveal_state())
+
+
+def test_pure_reveal_contexts_need_no_active_slot_sequence():
+    revealed_ab = Conversation("ab", ("a", "b"), revealed=True)
+    anonymous_ac = Conversation("ac", ("a", "c"))
+    assert revealed_ab.reveal_state().revealed is True
+    assert anonymous_ac.reveal_state().revealed is False
+    assert anonymous_ac.identifier_escalation_required
+
+
+def test_invalid_open_cannot_reserve_an_id_or_slot_and_errors_do_not_echo_input():
+    from vaeil.domain.conversation import InvalidConversationError, ConversationActorError
+
+    directory = ConversationDirectory()
+    with pytest.raises(InvalidConversationError) as invalid:
+        directory.open("private-id-canary", participant_ids=("private-name-canary", "private-name-canary"))
+    original = directory.open("private-id-canary", participant_ids=("a", "b"))
+    with pytest.raises(ConversationActorError) as outsider:
+        directory.block("private-id-canary", actor_id="private-actor-canary")
+    assert directory.get("private-id-canary") == original
+    for caught in (invalid, outsider):
+        for canary in ("private-id-canary", "private-name-canary", "private-actor-canary"):
+            assert canary not in str(caught.value)
