@@ -1,14 +1,18 @@
 """Same-origin demo application; admission and real-data APIs arrive in T6."""
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 from datetime import date
+from pathlib import Path
 
 from vaeil.domain import (
     MemberIdentity, Member, Pseudonym, build_values_profile, RelationshipIntent,
     LifeStage, Interest, CoreValue, CommunicationStyle, PaceAndLifestyle,
     ConversationRevealState, project_member_for_viewer, serialize_member_view,
 )
+
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
 def demo_member() -> Member:
@@ -30,8 +34,24 @@ def create_app() -> FastAPI:
     context = ConversationRevealState("demo-pair", ("demo-subject", "demo-viewer"), False)
 
     @app.get("/api/demo/member")
-    def anonymous_member():
+    def anonymous_member(request: Request):
+        if request.query_params:
+            raise HTTPException(400, "This fictional demo does not accept parameters.")
         view = project_member_for_viewer(member, viewer_id="demo-viewer", conversation=context)
         return JSONResponse(serialize_member_view(view), headers={"Cache-Control": "no-store"})
 
+    @app.get("/api/health")
+    def health():
+        return {"status": "ok"}
+
+    @app.get("/")
+    def index():
+        index_file = FRONTEND_DIST / "index.html"
+        if not index_file.is_file():
+            return PlainTextResponse("Build the demo first: npm.cmd run build --prefix frontend", status_code=503)
+        return FileResponse(index_file, headers={"Cache-Control": "no-store"})
+
+    assets = FRONTEND_DIST / "assets"
+    if assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets), name="assets")
     return app
