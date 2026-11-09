@@ -16,13 +16,15 @@ T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit 
 
 Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; proposed deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Provisioning remains approval-gated.
 
-| Week | Proposed focus |
+The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 is the current local increment; deployment still needs approval.
+
+| Week | Historical proposed focus |
 | --- | --- |
 | Oct 26-Nov 1 | Combined identity/profile/Pseudonym self-name work, Conversation isolation and local skeleton; review velocity after T1, overlap Conversation/local skeleton, review again after T2 before deployment |
 | Nov 2-8 | Early free deployment; one shared SQLite/Postgres repository, shared contract suite, persistence and audit foundation |
 | Nov 9-15 | Auth/profile APIs; Messages/fake moderation and timeout/busy paths; teammate profile/chat pages after APIs merge |
 | Nov 16-22 | Reveal and Admin console; deployed six-rule checkpoint with synthetic fixtures/current adapter |
-| Nov 23-29 | Matching, Block/Report and seed integration; feature freeze Nov 28. Local-model safety integration starts immediately after Messages, targeting Nov 21 |
+| Nov 23-29 | Matching, Block/Report and seed integration; feature freeze Nov 28. Local-model integration is optional/deferred under the approved human-review baseline, not a required November milestone |
 | Nov 30-Dec 4 | Rehearsal and fixes only (Nov 29-Dec 4); no new features |
 
 Working scope is Plan B: drop conversational Onboarding, re-ranking, Icebreakers, explanation text, progress UI, Report submission UI, polish and a second adapter unless velocity permits. Protect all six rules, Admin console, Reveal and Report handling. Feature freeze **28 November**; **29 November-4 December: rehearsal/fixes only**. Five sessions/week is a tight optimistic plan; reviews after T1/T2 immediately report slippage. Teammates accepted H1-H6 but remain unassigned.
