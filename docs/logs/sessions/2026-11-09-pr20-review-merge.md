@@ -1,0 +1,7 @@
+# PR20 final review and merge
+
+Observed review block **2026-11-09 17:30:49–17:31:36 Asia/Calcutta**, elapsed47s including tools/review waits, not certified human active time. CI/merge handoff follows separately. Earlier T1/audit active time remains unverified.
+
+User explicitly requests code-review, fixes and merge of the openPR, then percentage progress. Inventory only PR20; fixedbase2794a56274b98fd0324b2469857bd20103ca6c1e, head2304b310184a077c0b3f48f3feba9437f7c9d429. Independent Standards0 and Spec0 actionablefindings. No product/test change needed. Existing final Windows verifies463Python+4browser/typecheck/build. Record the subsequent explicit teamcapacity pledge in assumptions/velocity; no ownership/provision/model authorization inferred. Final updatedheadCI must pass before mergecommit.
+
+Progress reporting uses required delivery milestones: T1,T2,T3 completed after this merge out of12required T1-T11+T13, optionalT12excluded =>25%. This is a milestone proxy, not effortweighted or a completion/safety claim. Earlier baseline slices are incorporated prerequisites, not extra denominator padding. Rules1,2,6 have domain evidence; Rule5partial;0/6complete-ruleE2E. Required remainingT4deployment,T5persistence/audit,T6auth/admission,T7messages/humanreview,T8Reveal,T9Admin,T10Matching,T11Block/Report,T13seed/evaluation. NextT4 needs separate provisioningapproval; no re-interview or localmodelblocker.
