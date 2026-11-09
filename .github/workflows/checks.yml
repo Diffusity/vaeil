@@ -19,9 +19,11 @@ jobs:
           python-version: '3.11'
           cache: pip
       - name: Install development dependencies
-        run: python -m pip install -e ".[dev]"
+        run: |
+          python -m venv .venv
+          .venv\Scripts\python.exe -m pip install -e ".[dev]"
       - name: Lint, validate assumptions, and test
-        run: python scripts/check.py
+        run: .venv\Scripts\python.exe scripts/check.py
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
