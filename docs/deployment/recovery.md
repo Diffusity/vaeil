@@ -1,0 +1,11 @@
+# Vaeil demo: recovery and rehearsal (prepared, not yet deployed)
+
+Owner: Parth. Hosts: proposed Render Free web + Neon Free. Live URL/service/project identifiers, actual access restrictions and measured cold-start/RAM evidence are pending. Never put credentials here. Only fictional data in T4; in-memory records are not durable until T5.
+
+1. From a clean reviewed revision, connect Parth's repo to a Render Free Docker service using render.yaml. Before applying, verify Free explicitly and refuse paid/disk/database addons or billing fallback. Build Dockerfile; PORT comes from Render. Health `/api/health`; UI `/`; one identity route `/api/demo/member`.
+2. Create/reconnect a Neon Free project. Keep TLS connection string in the password manager and Render DATABASE_URL secret, not a screenshot, log or Git. No Render free Postgres. Never overwrite/delete an existing database as a recovery step. T5 will add migrations/backups and durable application state.
+3. Deploy the reviewed revision manually; check build/runtime logs without copying secrets. Verify health, planned readiness, exact anonymous payload and fictional UI; demonstrate failed DB connectivity leaves health/demo available. Roll back to the last known-good revision if image/startup fails.
+4. Before demo day, request the service, allow the Render pre-React cold-start page to finish, then wake DB with bounded readiness. Check the fictional page and retry feedback. Do not run continuous pings. Rehearse after actual idle sleep; record timings, free quota, RAM and failure behavior. Do not claim startup behavior from local tests.
+5. Add teammates as collaborators only where free plans permit; otherwise document owner-only access and an owner-led recovery drill. Credentials shared through a password manager. Never share Parth's login password to bypass a collaborator limit. No invitations without confirmed teammate identities/authorization.
+
+No laptop tunnel/model is needed for this slice. If optional T12 is restored, its secret-authenticated tunnel setup and laptop warm-up checklist belong to that separately approved path. Future auth/session secrets stay outside repo; rotate any accidentally exposed secret rather than documenting it here.
