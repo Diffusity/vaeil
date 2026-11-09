@@ -32,3 +32,12 @@ test('shows a retry-friendly HTTP failure and recovers', async ({ page }) => {
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.getByRole('heading', { name: 'Comet' })).toBeVisible();
 });
+
+test('invalid success payload is handled as a load failure', async ({ page }) => {
+  await page.route('**/api/demo/member', route => route.fulfill({
+    status: 200, contentType: 'application/json', body: JSON.stringify({ legal_name: 'UnexpectedPrivateCanary' }),
+  }));
+  await page.goto('/');
+  await expect(page.getByRole('alert')).toContainText('Could not load the demo');
+  await expect(page.locator('body')).not.toContainText('UnexpectedPrivateCanary');
+});
