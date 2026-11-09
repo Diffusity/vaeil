@@ -3,10 +3,10 @@ name = "vaeil"
 version = "0.1.0"
 description = "Vaeil — values-based matching with AI-assisted safety"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["fastapi==0.162.2", "uvicorn==0.54.0"]
 
 [project.optional-dependencies]
-dev = ["pytest==9.1.1", "ruff==0.14.1"]
+dev = ["pytest==9.1.1", "ruff==0.14.1", "httpx==0.28.1"]
 
 [build-system]
 requires = ["setuptools>=65.5"]

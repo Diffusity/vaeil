@@ -96,3 +96,11 @@ Parth explicitly approves the reduced schedule and human-review baseline, includ
 ## 2026-11-07 T2/T3 interfaces approved and T2 implementation
 
 Parth approved docs/specs/t2-t3-seams.md and explicitly invoked implement for T2. T2 uses the approved in-memory ConversationDirectory, trusted monotonic restore and existing projection context. No unconditional Reveal route or early consent/moderation implementation; T5 owns atomic durable transitions. Tests/mutations and review land on the current feature branch; no T3 code started by the T2-only request. No model GO or provisioning authorization inferred.
+
+## 2026-11-09 T3 implementation and capacity evidence
+
+User explicitly invoked implement for T3 at approvedinterfaces; no new definition or approval gate added. Public endpoint remains fixed fictionalanonymousdata, noauth/registration orarbitraryviewer/Revealinput, no newunwrap. SameoriginFastAPI+React/Vite, pinneddeps andnpm lockfile, TypeScript+HTTP/browserchecks. Fiveapplication-runcommandsverified innewclone usingpython3.11.2 (pylauncher unavailable); no database/modelsetup. User asksifgapcanbeclosed, notpermissiontocutmandatoryscope. Forecast now4.5-5.5sessions afterreservingT3; teammatehoursquestionpending, nocapacityassumed. No newmodelGO or provisioning/assignment/mergeapproval inferred.
+
+## 2026-11-09 team capacity confirmation and PR20 merge authorization
+
+Parth confirms teammates can contribute the extra required hours to cover the estimated session gap. Record this as a collective additional-capacity commitment (roughly9-16.5hours in the current forecast), not measured delivery, individual hours or assignments. Allocate genuinely additional suitable work and retain lead review; H1-H3 already excluded from leadbaseline cannot be counted twice. Domaincore/audit ownership restrictions remain. Parth explicitly authorizes review/fix/merge of openPR20 aftergreenfinalCI usingmergecommit; no T4provision ormodelGO inferred.

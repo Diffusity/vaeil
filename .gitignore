@@ -12,3 +12,7 @@ dist/
 
 # Local environment
 .env
+node_modules/
+frontend/dist/
+test-results/
+playwright-report/
