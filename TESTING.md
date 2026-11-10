@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 478 Python tests pass: 458 product/domain/boundary cases and 20 tooling cases; four separate browser tests pass. The20 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 479 Python tests pass: 458 product/domain/boundary cases and 21 tooling cases; four separate browser tests pass. The21 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
@@ -122,4 +122,5 @@ Frontend TypeScript is checked by `npm.cmd run typecheck --prefix frontend`. Pyt
 
 ## T4 readiness and container preparation
 
-15new cases in `tests/test_readiness.py`: HTTP matrix/outage isolation:25; cache/deadline/env redaction:43,:68,:92; workerCLI verifiedTLS/read-only/cleanup:105,:145; actual stalled interpreter killed/reaped:161; image asset directory:189; cache expiry/concurrent refusal:200,:221. Full local478Python+4browser evidence and review/red runs are in docs/audit/t4-evidence.md. No old tests or unwrap site changed. Linux CI builds the nonroot Docker image and probes real HTML/assets/API/outage under512MiB/0.1CPU; that is not proof of Render/Neon quota fit or coldstart. T4 live deployment is access-blocked and remains incomplete. Rule5partial,3/6domain0/6complete-ruleE2E unchanged.
+15new cases in `tests/test_readiness.py`: HTTP matrix/outage isolation:25; cache/deadline/env redaction:43,:68,:92; workerCLI verifiedTLS/read-only/cleanup:105,:145; actual stalled interpreter killed/reaped:161; image asset directory:189; cache expiry/concurrent refusal:200,:221. Full local479Python+4browser evidence and review/red runs are in docs/audit/t4-evidence.md. No old tests or unwrap site changed. Linux CI builds the nonroot Docker image and probes real HTML/assets/API/outage under512MiB/0.1CPU; that is not proof of Render/Neon quota fit or coldstart. T4 live deployment is access-blocked and remains incomplete. Rule5partial,3/6domain0/6complete-ruleE2E unchanged.
+

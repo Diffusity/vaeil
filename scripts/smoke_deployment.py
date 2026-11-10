@@ -32,7 +32,7 @@ def main():
             status, body = read(origin + "/api/health")
             if status == 200 and json.loads(body) == {"status": "ok"}:
                 break
-        except (URLError, TimeoutError, ValueError):
+        except (URLError, TimeoutError, ConnectionError, ValueError):
             pass
         time.sleep(1)
     else:
@@ -58,3 +58,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
