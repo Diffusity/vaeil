@@ -18,7 +18,7 @@ jobs:
         run: docker build -t vaeil-t4 .
       - name: Smoke test image under database failure
         run: |
-          docker run -d --name vaeil-t4 -e DATABASE_URL=invalid-test-configuration -p 127.0.0.1:8766:10000 vaeil-t4
+          docker run -d --name vaeil-t4 --memory 512m --cpus 0.1 -e DATABASE_URL=invalid-test-configuration -p 127.0.0.1:8766:10000 vaeil-t4
           python3 scripts/smoke_deployment.py http://127.0.0.1:8766 --expect-database-unavailable
           test "$(docker exec vaeil-t4 id -u)" != "0"
           docker stats --no-stream --format '{{.MemUsage}}' vaeil-t4

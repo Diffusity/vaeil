@@ -56,6 +56,8 @@ def test_real_probe_uses_a_deadline_and_caches_repeated_checks(monkeypatch):
     assert len(calls) == 1
     command, options = calls[0]
     assert "PrivateSecretOne" not in repr(command)
+    if sys.platform == "win32":
+        assert "-I" in command and "-S" in command
     assert options["timeout"] <= 3
     assert options["stdout"] == subprocess.DEVNULL
     assert options["stderr"] == subprocess.DEVNULL

@@ -20,7 +20,7 @@ def _worker_command() -> list[str]:
     if sys.platform == "win32":
         # A venv exe redirects to another process. Launch the actual interpreter
         # directly and load this venv's packages, so timeout reaps the real worker.
-        return [getattr(sys, "_base_executable", sys.executable), "-I", "-c",
+        return [getattr(sys, "_base_executable", sys.executable), "-I", "-S", "-c",
                 "import runpy,site,sys;site.addsitedir(sys.argv[1]);"
                 "runpy.run_module('vaeil.adapters.database_probe',run_name='__main__')",
                 sysconfig.get_path("purelib")]
