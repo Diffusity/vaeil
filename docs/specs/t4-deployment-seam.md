@@ -1,4 +1,4 @@
-# T4 implementation preparation — 9 November
+# T4 implementation seam — prepared9November, approved10November
 
 Canonical ticket #11: Early zero-cost deployed skeleton and cold-start checks. T3 merged f47d768; second velocity review exists. No resource created, purchase, account access, credential collection or provisioning performed. Dockerfile/render.yaml are reviewable proposals, not deployed evidence. Local Docker availability/build verification remains to be established before claiming image success.
 
@@ -17,3 +17,7 @@ One Render Free Docker web service, building React with Node24 and running Pytho
 Stages for human account work, after explicit free-only provisioning approval: (1) confirm Render/Neon free-plan eligibility and billing caps/no-card behavior, (2) create Neon project and obtain TLS connection string privately, (3) authorize repository and create Render Free service from reviewed deployment revision, set DATABASE_URL privately, (4) verify public origin/health/ready/fictional view then real sleep/wake and quota/RAM, (5) record service/project identifiers and continuity access without secrets. Named teammates/collaborator invites require actual identities; none invented. No tunnel/model needed in T4.
 
 The deployment instruction names the implementation task, but #11 retains a separate explicit provisioning gate. New public readiness seam is not in T3's approved interfaces; TDD skill requires its confirmation before new tests. No product readiness code/stubs/tests added during preparation.
+
+## Implementation status — 10 November
+
+Parth explicitly approved this readiness seam and free-only provisioning. Readiness code/tests now exist; the earlier preparation/gate paragraphs are historical. The3-second worker deadline begins after OS process creation, with spawn/kill overhead separately acknowledged; no real-time HTTP SLA is promised. Database work remainsread-onlyandno data persistence is inferred. Both browser-controlroutes failkernelassetsinitialization; userwillrestoreaccess, so no cloudresources/livechecks yet. T4remainsincomplete pendingimageCIandliveevidence.

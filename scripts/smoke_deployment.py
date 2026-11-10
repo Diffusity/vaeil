@@ -3,6 +3,7 @@
 import argparse
 import json
 import time
+import re
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 from urllib.parse import urlsplit
@@ -38,6 +39,10 @@ def main():
         raise SystemExit("Service did not become healthy; check host status privately.")
     status, page = read(origin + "/")
     assert status == 200 and '<div id="root">' in page
+    assets = re.findall(r'(?:src|href)="(/assets/[^\"]+)"', page)
+    assert assets
+    for asset in assets:
+        assert read(origin + asset)[0] == 200
     status, body = read(origin + "/api/demo/member")
     data = json.loads(body)
     assert status == 200 and set(data) == {"pseudonym", "values_profile"}
