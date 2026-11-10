@@ -31,3 +31,9 @@ Each final source mutation is run alone via `pytest -q tests/test_readiness.py`,
 - Confirm collaborator limits and identities before invitations; credentials in password manager, never logs/repo/chat. Recovery note docs/deployment/recovery.md.
 
 No Docker executable is installed locally. Container build/non-root/asset/outage smoke is delegated to the ordinary Linux CI job, not claimed before its run. T4 remains partial even if that job passes.
+
+## Final local verification/access status
+
+Final source (including-I-S) passed full478Python/4browser/strict TypeScript/build again; local real-server smoke verified HTML/staticassets,anonymousAPI,health andready503duringintentionalbadDBconfig, then stopped its exact owned process tree. No listeners8000/8765/8768 remained. This is not image/Neon/Render evidence. Standards/Spec final rechecks report no residual findings after graded-doc fixes.
+
+Last successful remote branch push3ca3b69a146ddbca522b88dafc6e424f6d0d54c5 includes implementation fixes and imageCIdefinition. Local510076c5971bd6fbcbb6645e6b5f52eca536b53f adds final DESIGN wording/citation fixes; later handoff docs are also local. Push retry failedconnectionresetthenDNSresolution forgithub.com; connected GitHub create-PR fallbackreturned403Resource notaccessiblebyintegration. **No draftPRwascreated; no containerCIrun or imagebuild is claimed.** Restore GitHub access, pushremainingcommits, open refs-onlydraftPR and runfullWindows/containerCI, then approvedaccountsideprovisioning/livechecks. No repeat provisioningapprovalneeded.
