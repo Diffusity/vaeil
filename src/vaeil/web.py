@@ -1,10 +1,11 @@
 """Same-origin demo application; admission and real-data APIs arrive in T6."""
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import date
 from pathlib import Path
+from vaeil.adapters.readiness import check_database_ready
 
 from vaeil.domain import (
     MemberIdentity, Member, Pseudonym, build_values_profile, RelationshipIntent,
@@ -43,6 +44,13 @@ def create_app() -> FastAPI:
     @app.get("/api/health")
     def health():
         return {"status": "ok"}
+
+    @app.get("/api/ready")
+    async def ready(available: bool = Depends(check_database_ready)):
+        return JSONResponse(
+            {"status": "ready" if available else "unavailable"},
+            status_code=200 if available else 503, headers={"Cache-Control": "no-store"},
+        )
 
     @app.get("/")
     def index():
