@@ -5,6 +5,10 @@ import pytest
 import subprocess
 import asyncio
 import inspect
+import runpy
+import sys
+import time
+from contextlib import contextmanager
 
 
 def probe_result(probe):
@@ -92,3 +96,85 @@ def test_missing_database_configuration_never_launches_a_worker(monkeypatch):
 
     monkeypatch.setattr(subprocess, "run", forbidden)
     assert probe_result(readiness.check_database_ready) is False
+
+
+@pytest.mark.parametrize("row,expected", [((1,), 0), ((0,), 1), (None, 1)])
+def test_worker_cli_only_probes_read_only_verified_tls_and_closes_resources(row, expected, monkeypatch):
+    import psycopg
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:WorkerPrivateCanary@db.invalid/demo?sslmode=disable")
+    observed = []
+
+    class Cursor:
+        def execute(self, sql):
+            observed.append(sql)
+
+        def fetchone(self):
+            return row
+
+    class Connection:
+        @contextmanager
+        def cursor(self):
+            try:
+                yield Cursor()
+            finally:
+                observed.append("cursor closed")
+
+    @contextmanager
+    def connect(dsn, **options):
+        assert options["sslmode"] == "verify-full"
+        assert options["sslrootcert"]
+        assert options["connect_timeout"] <= 2
+        assert "statement_timeout=2000" in options["options"]
+        assert "default_transaction_read_only=on" in options["options"]
+        try:
+            yield Connection()
+        finally:
+            observed.append("connection closed")
+
+    monkeypatch.setattr(psycopg, "connect", connect)
+    with pytest.raises(SystemExit) as exit_result:
+        runpy.run_module("vaeil.adapters.database_probe", run_name="__main__")
+    assert exit_result.value.code == expected
+    assert observed == ["SELECT 1", "cursor closed", "connection closed"]
+
+
+def test_worker_exception_text_is_never_printed(monkeypatch, capsys):
+    import psycopg
+
+    monkeypatch.setenv("DATABASE_URL", "WorkerPrivateCanary")
+
+    def unavailable(*args, **kwargs):
+        raise RuntimeError("WorkerPrivateCanary")
+
+    monkeypatch.setattr(psycopg, "connect", unavailable)
+    with pytest.raises(SystemExit) as result:
+        runpy.run_module("vaeil.adapters.database_probe", run_name="__main__")
+    assert result.value.code == 1
+    output = capsys.readouterr()
+    assert "WorkerPrivateCanary" not in output.out + output.err
+
+
+def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch):
+    from vaeil.adapters import readiness
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://TimeoutChildCanary@db.invalid/demo")
+    real_run = subprocess.run
+    children = []
+    real_popen = subprocess.Popen
+
+    def track_child(*args, **kwargs):
+        child = real_popen(*args, **kwargs)
+        children.append(child)
+        return child
+
+    def stalled_worker(command, **kwargs):
+        return real_run([sys.executable, "-c", "import time; time.sleep(30)"], **kwargs)
+
+    monkeypatch.setattr(subprocess, "Popen", track_child)
+    monkeypatch.setattr(subprocess, "run", stalled_worker)
+    started = time.monotonic()
+    assert probe_result(readiness.check_database_ready) is False
+    assert time.monotonic() - started < 6  # OS launch/kill overhead, not a3-second performance claim
+    assert len(children) == 1
+    assert children[0].poll() is not None
