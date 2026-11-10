@@ -10,6 +10,7 @@ import sys
 import time
 from contextlib import contextmanager
 import threading
+import json
 
 
 def probe_result(probe):
@@ -155,13 +156,14 @@ def test_worker_exception_text_is_never_printed(monkeypatch, capsys):
     assert "WorkerPrivateCanary" not in output.out + output.err
 
 
-def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch):
+def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch, tmp_path):
     from vaeil.adapters import readiness
 
     monkeypatch.setenv("DATABASE_URL", "postgresql://TimeoutChildCanary@db.invalid/demo")
     real_run = subprocess.run
     children = []
     real_popen = subprocess.Popen
+    pid_file = tmp_path / "actual-worker-pid"
 
     def track_child(*args, **kwargs):
         child = real_popen(*args, **kwargs)
@@ -169,7 +171,8 @@ def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch):
         return child
 
     def stalled_worker(command, **kwargs):
-        return real_run([sys.executable, "-c", "import time; time.sleep(30)"], **kwargs)
+        code = "import os,time;from pathlib import Path;Path(" + repr(str(pid_file)) + ").write_text(str(os.getpid()));time.sleep(30)"
+        return real_run([command[0], "-c", code], **kwargs)
 
     monkeypatch.setattr(subprocess, "Popen", track_child)
     monkeypatch.setattr(subprocess, "run", stalled_worker)
@@ -177,7 +180,19 @@ def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch):
     assert probe_result(readiness.check_database_ready) is False
     assert time.monotonic() - started < 6  # OS launch/kill overhead, not a3-second performance claim
     assert len(children) == 1
+    assert int(pid_file.read_text()) == children[0].pid  # actual interpreter, not a venv redirector
     assert children[0].poll() is not None
+
+
+def test_packaged_app_uses_explicit_frontend_directory(monkeypatch, tmp_path):
+    import os
+
+    monkeypatch.setenv("VAEIL_FRONTEND_DIR", str(tmp_path))
+    result = subprocess.run(
+        [sys.executable, "-c", "import json;from vaeil.web import FRONTEND_DIST;print(json.dumps(str(FRONTEND_DIST)))"],
+        env=dict(os.environ), capture_output=True, text=True, timeout=10, check=True,
+    )
+    assert json.loads(result.stdout) == str(tmp_path)
 
 
 def test_probe_cache_expires_without_being_extended_by_cache_hits(monkeypatch):

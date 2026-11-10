@@ -6,7 +6,7 @@ COPY frontend/ ./
 RUN npm run typecheck && npm run build
 
 FROM python:3.11-slim-bookworm
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 VAEIL_FRONTEND_DIR=/app/frontend/dist
 WORKDIR /app
 COPY pyproject.toml ./
 COPY src/ ./src/

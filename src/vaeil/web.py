@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import date
 from pathlib import Path
+import os
 from vaeil.adapters.readiness import check_database_ready
 
 from vaeil.domain import (
@@ -13,7 +14,9 @@ from vaeil.domain import (
     ConversationRevealState, project_member_for_viewer, serialize_member_view,
 )
 
-FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+FRONTEND_DIST = Path(os.environ.get(
+    "VAEIL_FRONTEND_DIR", str(Path(__file__).resolve().parents[2] / "frontend" / "dist"),
+))
 
 
 def demo_member() -> Member:

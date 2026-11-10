@@ -4,6 +4,7 @@ import hashlib
 import os
 import subprocess
 import sys
+import sysconfig
 import threading
 import time
 
@@ -13,6 +14,17 @@ _lock = threading.Lock()
 _cached_key = None
 _cached_until = 0.0
 _cached_result = False
+
+
+def _worker_command() -> list[str]:
+    if sys.platform == "win32":
+        # A venv exe redirects to another process. Launch the actual interpreter
+        # directly and load this venv's packages, so timeout reaps the real worker.
+        return [getattr(sys, "_base_executable", sys.executable), "-I", "-c",
+                "import runpy,site,sys;site.addsitedir(sys.argv[1]);"
+                "runpy.run_module('vaeil.adapters.database_probe',run_name='__main__')",
+                sysconfig.get_path("purelib")]
+    return [sys.executable, "-m", "vaeil.adapters.database_probe"]
 
 
 def check_database_ready() -> bool:
@@ -32,7 +44,7 @@ def check_database_ready() -> bool:
         environment["DATABASE_URL"] = dsn
         try:
             result = subprocess.run(
-                [sys.executable, "-m", "vaeil.adapters.database_probe"],
+                _worker_command(),
                 env=environment, timeout=PROBE_TIMEOUT_SECONDS,
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                 creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
