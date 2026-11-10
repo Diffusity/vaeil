@@ -9,6 +9,7 @@ import runpy
 import sys
 import time
 from contextlib import contextmanager
+import threading
 
 
 def probe_result(probe):
@@ -62,7 +63,6 @@ def test_real_probe_uses_a_deadline_and_caches_repeated_checks(monkeypatch):
 
 @pytest.mark.parametrize("failure", ["exit", "timeout", "spawn"])
 def test_probe_failures_do_not_leak_secrets_into_http_or_logs(failure, monkeypatch, caplog, capsys):
-    from vaeil.adapters import readiness
     from vaeil.web import create_app
 
     secret = "PrivateReadinessCanary" + failure
@@ -178,3 +178,50 @@ def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch):
     assert time.monotonic() - started < 6  # OS launch/kill overhead, not a3-second performance claim
     assert len(children) == 1
     assert children[0].poll() is not None
+
+
+def test_probe_cache_expires_without_being_extended_by_cache_hits(monkeypatch):
+    from vaeil.adapters import readiness
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://CacheExpiryCanary@db.invalid/demo")
+    now = [100.0]
+    calls = []
+    monkeypatch.setattr(time, "monotonic", lambda: now[0])
+
+    def worker(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0 if len(calls) == 1 else 1)
+
+    monkeypatch.setattr(subprocess, "run", worker)
+    assert probe_result(readiness.check_database_ready) is True
+    now[0] = 129
+    assert probe_result(readiness.check_database_ready) is True
+    now[0] = 131
+    assert probe_result(readiness.check_database_ready) is False
+    assert len(calls) == 2
+
+
+def test_concurrent_probe_does_not_queue_more_database_workers(monkeypatch):
+    from vaeil.adapters import readiness
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://ConcurrentCanary@db.invalid/demo")
+    started, release = threading.Event(), threading.Event()
+    calls, results = [], []
+
+    def worker(command, **kwargs):
+        calls.append(command)
+        started.set()
+        assert release.wait(2)
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(subprocess, "run", worker)
+    thread = threading.Thread(target=lambda: results.append(probe_result(readiness.check_database_ready)))
+    thread.start()
+    try:
+        assert started.wait(1)
+        assert probe_result(readiness.check_database_ready) is False
+    finally:
+        release.set()
+        thread.join(3)
+    assert not thread.is_alive()
+    assert len(calls) == 1 and results == [True]
