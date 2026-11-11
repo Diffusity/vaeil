@@ -1,0 +1,5 @@
+# T5 repository implementation — 11 November 2026
+
+Observed start23:37:16 Asia/Calcutta after explicit seam approval. User asks recommended order: CI fix, live T4checks, review, retro, then T5. T4code/docsreview0residual, latestd14764bWindows/container/securitygreen. T4actualhostsleep/loader,paid-onlyRAMvisibility,ownerrotationconfirmationremainacceptancegates; no merge/issueclosure. Userrotationokayacknowledgementnotcompletion.
+
+Createdcodex/t5-persistence independentlyfrommergedmasterf47d768, preservingunrelateduntrackedhistoricalfiles. Approvedseamcommittedhere, notinT4PR. Cycle1red missingpersistence module and exactfourthmapper site. Green9targeted1localPostgresskip afterexplicitmapping/transactions. Newtestimportfixedtosameexistingprivateclasses (nostrictnesschange). AddeddisposablePostgresCI; noPostgressoftwareinstalledlocally, productionneverusedbycontracts. NoT5completionclaim; nextcyclesuniqueness/audit/Conversation/sessions/mutations. Endtimestampfollowsathandoff; activeeffortexcludeswaits.
