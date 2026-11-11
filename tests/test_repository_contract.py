@@ -7,6 +7,7 @@ from urllib.parse import urlsplit, urlunsplit
 import pytest
 
 from vaeil import domain as d
+from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateText, PrivateDate
 
 
@@ -124,3 +125,121 @@ def test_concurrent_normalized_claims_commit_exactly_one_owner(repository_url):
     with ThreadPoolExecutor(max_workers=2) as pool:
         results = list(pool.map(claim, [("one", "Comet"), ("two", "ＣOMET")]))
     assert sorted(results) == ["saved", "taken"]
+
+
+def seed_participants(repository):
+    with repository.transaction() as transaction:
+        for member_id, name in [("one", "Comet"), ("two", "Aurora"), ("three", "Nebula")]:
+            transaction.add_member(example_member(member_id, name))
+        transaction.commit()
+
+
+def test_conversation_projection_round_trip_stays_pair_scoped(repository_url):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        seed_participants(repository)
+        with repository.transaction() as transaction:
+            transaction.store_conversation(c.Conversation("ab", ("one", "two"), revealed=True))
+            transaction.store_conversation(c.Conversation("ac", ("one", "three")))
+            transaction.commit()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            member = transaction.get_member("one")
+            ab = transaction.get_conversation("ab")
+            ac = transaction.get_conversation("ac")
+    assert isinstance(d.project_member_for_viewer(member, viewer_id="two", conversation=ab.reveal_state()), d.RevealedMemberView)
+    assert isinstance(d.project_member_for_viewer(member, viewer_id="three", conversation=ac.reveal_state()), d.PreRevealMemberView)
+    assert ac.active and ab.open_for_chat and not ab.active
+
+
+@pytest.mark.parametrize("previous,candidate", [
+    (c.Conversation("ab", ("one", "two"), revealed=True), c.Conversation("ab", ("one", "two"))),
+    (c.Conversation("ab", ("one", "two"), blocked=True), c.Conversation("ab", ("one", "two"))),
+    (c.Conversation("ab", ("one", "two")), c.Conversation("ab", ("one", "three"))),
+], ids=["reveal-regression", "block-regression", "participant-change"])
+def test_durable_conversation_refuses_reversal_or_reassignment(repository_url, previous, candidate):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        seed_participants(repository)
+        with repository.transaction() as transaction:
+            transaction.store_conversation(previous)
+            transaction.commit()
+        with pytest.raises(c.InvalidConversationTransitionError):
+            with repository.transaction() as transaction:
+                transaction.store_conversation(candidate)
+                transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.get_conversation("ab") == previous
+
+
+def test_durable_block_frees_slot_but_excludes_the_pair(repository_url):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        seed_participants(repository)
+        with repository.transaction() as transaction:
+            transaction.store_conversation(c.Conversation("ab", ("one", "two"), blocked=True))
+            transaction.commit()
+        with pytest.raises(c.PairBlockedError):
+            with repository.transaction() as transaction:
+                transaction.store_conversation(c.Conversation("ab-new", ("two", "one")))
+        with repository.transaction() as transaction:
+            transaction.store_conversation(c.Conversation("ac", ("one", "three")))
+            transaction.commit()
+
+
+def test_concurrent_active_conversation_opens_have_one_winner(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        seed_participants(repository)
+    ready = Barrier(2)
+
+    def store(conversation):
+        with open_repository(repository_url) as repository:
+            ready.wait(timeout=10)
+            try:
+                with repository.transaction() as transaction:
+                    transaction.store_conversation(conversation)
+                    transaction.commit()
+                return "saved"
+            except c.MemberAlreadyActiveError:
+                return "active-conflict"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(store, [c.Conversation("ab", ("one", "two")), c.Conversation("ac", ("one", "three"))]))
+    assert sorted(results) == ["active-conflict", "saved"]
+
+
+def test_concurrent_stale_reveal_and_block_cannot_reverse_state(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        seed_participants(repository)
+        with repository.transaction() as transaction:
+            transaction.store_conversation(c.Conversation("ab", ("one", "two")))
+            transaction.commit()
+    ready = Barrier(2)
+
+    def store(conversation):
+        with open_repository(repository_url) as repository:
+            ready.wait(timeout=10)
+            try:
+                with repository.transaction() as transaction:
+                    transaction.store_conversation(conversation)
+                    transaction.commit()
+                return "saved"
+            except c.InvalidConversationTransitionError:
+                return "stale"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(store, [c.Conversation("ab", ("one", "two"), revealed=True),
+                                       c.Conversation("ab", ("one", "two"), blocked=True)]))
+    assert sorted(results) == ["saved", "stale"]
+

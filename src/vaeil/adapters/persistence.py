@@ -2,10 +2,11 @@
 from contextlib import contextmanager
 from datetime import date
 
-from sqlalchemy import Column, Date, JSON, MetaData, String, Table, create_engine, event, insert, select
+from sqlalchemy import Boolean, Column, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from vaeil import domain as d
+from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateDate, PrivateText
 from vaeil.domain.repository import MemberNotFoundError, RepositoryError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
@@ -22,6 +23,19 @@ members = Table(
     Column("normalized_pseudonym", String, nullable=False, unique=True),
     Column("profile", JSON, nullable=False),
 )
+
+conversations = Table(
+    "conversations", metadata,
+    Column("conversation_id", String, primary_key=True),
+    Column("participant_one", String, ForeignKey("members.member_id"), nullable=False),
+    Column("participant_two", String, ForeignKey("members.member_id"), nullable=False),
+    Column("revealed", Boolean, nullable=False),
+    Column("blocked", Boolean, nullable=False),
+)
+
+
+def row_to_conversation(row) -> c.Conversation:
+    return c.Conversation(row["conversation_id"], (row["participant_one"], row["participant_two"]), row["revealed"], row["blocked"])
 
 
 def encode_private_value(value: PrivateText | PrivateDate) -> str | date:
@@ -72,6 +86,22 @@ class SqlUnitOfWork:
         if row is None:
             raise MemberNotFoundError("Member not found.")
         return row_to_member(row)
+
+    def store_conversation(self, conversation: c.Conversation) -> None:
+        existing = tuple(row_to_conversation(row) for row in self.connection.execute(select(conversations)).mappings())
+        c.validate_conversation_storage(conversation, existing)
+        values = dict(conversation_id=conversation.conversation_id,
+                      participant_one=conversation.participant_ids[0], participant_two=conversation.participant_ids[1],
+                      revealed=conversation.revealed, blocked=conversation.blocked)
+        previous = any(item.conversation_id == conversation.conversation_id for item in existing)
+        statement = update(conversations).where(conversations.c.conversation_id == conversation.conversation_id) if previous else insert(conversations)
+        self.connection.execute(statement.values(**values))
+
+    def get_conversation(self, conversation_id: str) -> c.Conversation:
+        row = self.connection.execute(select(conversations).where(conversations.c.conversation_id == conversation_id)).mappings().first()
+        if row is None:
+            raise c.ConversationNotFoundError("Conversation not found.")
+        return row_to_conversation(row)
 
     def commit(self) -> None:
         self.connection.commit()
