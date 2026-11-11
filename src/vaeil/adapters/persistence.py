@@ -2,13 +2,13 @@
 from contextlib import contextmanager
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, insert, select, update
+from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, delete, insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateDate, PrivateText
-from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError
+from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
@@ -42,6 +42,13 @@ audit_events = Table(
     Column("kind", String, nullable=False),
     Column("reason_codes", JSON, nullable=False),
 )
+sessions = Table(
+    "server_sessions", metadata,
+    Column("token_digest", String, primary_key=True),
+    Column("principal_id", String, nullable=False),
+    Column("expires_at", String, nullable=False),
+)
+
 # Database guards are dialect DDL, not separate repository implementations.
 for operation in ("UPDATE", "DELETE"):
     event.listen(audit_events, "after_create", DDL(
@@ -146,6 +153,22 @@ class SqlUnitOfWork:
         return tuple(AuditEvent(row["event_id"], datetime.fromisoformat(row["occurred_at"]), row["actor_id"],
                                 row["subject_id"], AuditKind(row["kind"]),
                                 tuple(d.IdentifierReason(reason) for reason in row["reason_codes"])) for row in rows)
+
+    def put_session(self, session: StoredSession) -> None:
+        if not isinstance(session, StoredSession):
+            raise TypeError("Store a typed server session.")
+        digest = encode_private_value(session.token_digest)
+        values = dict(token_digest=digest, principal_id=session.principal_id, expires_at=session.expires_at.isoformat())
+        result = self.connection.execute(update(sessions).where(sessions.c.token_digest == digest).values(**values))
+        if result.rowcount == 0:
+            self.connection.execute(insert(sessions).values(**values))
+
+    def get_session(self, token_digest: str) -> StoredSession | None:
+        row = self.connection.execute(select(sessions).where(sessions.c.token_digest == token_digest)).mappings().first()
+        return None if row is None else StoredSession(row["token_digest"], row["principal_id"], datetime.fromisoformat(row["expires_at"]))
+
+    def delete_session(self, token_digest: str) -> None:
+        self.connection.execute(delete(sessions).where(sessions.c.token_digest == token_digest))
 
     def commit(self) -> None:
         self.connection.commit()

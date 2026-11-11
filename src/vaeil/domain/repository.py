@@ -1,9 +1,10 @@
 """Owned transaction boundary; concrete database code belongs in adapters."""
 from contextlib import AbstractContextManager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from vaeil.domain.identifiers import IdentifierReason
+from vaeil.domain.privacy import PrivateRecord, PrivateText
 from typing import Protocol
 
 from vaeil.domain.member import Member
@@ -54,6 +55,21 @@ class AuditEvent:
         object.__setattr__(self, "occurred_at", self.occurred_at.astimezone(timezone.utc))
 
 
+@dataclass(frozen=True, slots=True)
+class StoredSession(PrivateRecord):
+    __getstate__ = PrivateRecord.__getstate__
+    token_digest: PrivateText = field(repr=False)
+    principal_id: str
+    expires_at: datetime
+
+    def __post_init__(self):
+        if (not isinstance(self.principal_id, str) or not self.principal_id
+                or not isinstance(self.expires_at, datetime) or self.expires_at.utcoffset() is None):
+            raise TypeError("Use a principal ID and an aware expiry timestamp.")
+        object.__setattr__(self, "token_digest", PrivateText(self.token_digest))
+        object.__setattr__(self, "expires_at", self.expires_at.astimezone(timezone.utc))
+
+
 class UnitOfWork(Protocol):
     def add_member(self, member: Member) -> None: ...
     def get_member(self, member_id: str) -> Member: ...
@@ -61,6 +77,9 @@ class UnitOfWork(Protocol):
     def get_conversation(self, conversation_id: str) -> Conversation: ...
     def append_audit(self, event: AuditEvent) -> None: ...
     def list_audit(self, *, subject_id: str) -> tuple[AuditEvent, ...]: ...
+    def put_session(self, session: StoredSession) -> None: ...
+    def get_session(self, token_digest: str) -> StoredSession | None: ...
+    def delete_session(self, token_digest: str) -> None: ...
     def commit(self) -> None: ...
 
 

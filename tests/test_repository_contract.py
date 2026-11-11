@@ -367,3 +367,57 @@ def test_audit_shape_refuses_arbitrary_private_payload_and_pins_required_decisio
     }
     with pytest.raises(TypeError):
         audit_event(reason_codes=("privatecanaryzxq@example.invalid",))
+
+
+def stored_session():
+    from datetime import datetime, timezone
+    from vaeil.domain.repository import StoredSession
+
+    return StoredSession("a" * 64, "account-one", datetime(2026, 12, 5, 12, tzinfo=timezone.utc))
+
+
+def test_server_session_is_durable_explicit_and_deletable(repository_url):
+    from vaeil.adapters.persistence import open_repository
+
+    session = stored_session()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.put_session(session)
+            transaction.commit()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            restored = transaction.get_session("a" * 64)
+            assert restored == session
+            assert isinstance(restored.token_digest, PrivateText)
+            assert "a" * 64 not in repr(restored)
+            assert transaction.get_session("b" * 64) is None
+        with repository.transaction() as transaction:
+            transaction.delete_session("a" * 64)
+            transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.get_session("a" * 64) is None
+
+
+def test_session_write_rolls_back_without_commit(repository_url):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.put_session(stored_session())
+        with repository.transaction() as transaction:
+            assert transaction.get_session("a" * 64) is None
+
+
+def test_session_is_frozen_slotted_and_refuses_generic_export():
+    from dataclasses import FrozenInstanceError, asdict
+    import pickle
+    from vaeil.domain.privacy import PrivateSerializationError
+
+    session = stored_session()
+    assert not hasattr(session, "__dict__")
+    with pytest.raises(FrozenInstanceError):
+        session.principal_id = "changed"
+    for export in (asdict, pickle.dumps):
+        with pytest.raises(PrivateSerializationError) as error:
+            export(session)
+        assert "a" * 64 not in str(error.value)
