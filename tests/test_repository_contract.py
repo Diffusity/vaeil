@@ -447,3 +447,46 @@ def test_sql_logging_never_copies_private_parameters(repository_url, caplog):
             transaction.commit()
     for canary in ("PrivateCanaryZXQ", "privatecanaryzxq@example.invalid", "+919876543210", "1987-03-14", "a" * 64):
         assert canary not in caplog.text
+
+
+def test_failed_transaction_cannot_commit_even_if_caller_catches_the_error(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import MemberNotFoundError, RepositoryError
+
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.append_audit(audit_event())
+            with pytest.raises(d.PseudonymTakenError):
+                transaction.add_member(example_member("two", "COMET"))
+            with pytest.raises(RepositoryError):
+                transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == ()
+            with pytest.raises(MemberNotFoundError):
+                transaction.get_member("one")
+
+
+def test_committed_unit_of_work_cannot_start_an_unlocked_second_transaction(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import RepositoryError
+
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.commit()
+            with pytest.raises(RepositoryError):
+                transaction.add_member(example_member("two", "Aurora"))
+
+
+def test_default_repository_url_is_local_sqlite_without_database_install(tmp_path, monkeypatch):
+    from vaeil.adapters.persistence import open_repository
+
+    monkeypatch.chdir(tmp_path)
+    with open_repository() as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.commit()
+    with open_repository() as repository:
+        with repository.transaction() as transaction:
+            assert transaction.get_member("one") == example_member()

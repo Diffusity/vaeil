@@ -103,37 +103,33 @@ def row_to_member(row) -> d.Member:
 
 class SqlUnitOfWork:
     def __init__(self, connection):
-        self.connection = connection
+        self._connection = connection
+        self._failed = False
+        self._committed = False
 
     def add_member(self, member: d.Member) -> None:
-        if self.connection.execute(select(members.c.member_id).where(members.c.member_id == member.identity.member_id)).first():
+        if self._execute(select(members.c.member_id).where(members.c.member_id == member.identity.member_id)).first():
             raise d.PseudonymAlreadySetError("Pseudonym is fixed once set.")
-        try:
-            self.connection.execute(insert(members).values(**member_to_row(member)))
-        except IntegrityError as error:
-            constraint = getattr(getattr(error.orig, "diag", None), "constraint_name", "") or ""
-            if "normalized_pseudonym" in constraint or "members.normalized_pseudonym" in str(error.orig):
-                raise d.PseudonymTakenError("Pseudonym is already taken.") from None
-            raise RepositoryError("Member could not be stored.") from None
+        self._execute(insert(members).values(**member_to_row(member)))
 
     def get_member(self, member_id: str) -> d.Member:
-        row = self.connection.execute(select(members).where(members.c.member_id == member_id)).mappings().first()
+        row = self._execute(select(members).where(members.c.member_id == member_id)).mappings().first()
         if row is None:
             raise MemberNotFoundError("Member not found.")
         return row_to_member(row)
 
     def store_conversation(self, conversation: c.Conversation) -> None:
-        existing = tuple(row_to_conversation(row) for row in self.connection.execute(select(conversations)).mappings())
+        existing = tuple(row_to_conversation(row) for row in self._execute(select(conversations)).mappings())
         c.validate_conversation_storage(conversation, existing)
         values = dict(conversation_id=conversation.conversation_id,
                       participant_one=conversation.participant_ids[0], participant_two=conversation.participant_ids[1],
                       revealed=conversation.revealed, blocked=conversation.blocked)
         previous = any(item.conversation_id == conversation.conversation_id for item in existing)
         statement = update(conversations).where(conversations.c.conversation_id == conversation.conversation_id) if previous else insert(conversations)
-        self.connection.execute(statement.values(**values))
+        self._execute(statement.values(**values))
 
     def get_conversation(self, conversation_id: str) -> c.Conversation:
-        row = self.connection.execute(select(conversations).where(conversations.c.conversation_id == conversation_id)).mappings().first()
+        row = self._execute(select(conversations).where(conversations.c.conversation_id == conversation_id)).mappings().first()
         if row is None:
             raise c.ConversationNotFoundError("Conversation not found.")
         return row_to_conversation(row)
@@ -141,14 +137,14 @@ class SqlUnitOfWork:
     def append_audit(self, event: AuditEvent) -> None:
         if not isinstance(event, AuditEvent):
             raise TypeError("Append a typed audit event.")
-        self.connection.execute(insert(audit_events).values(
+        self._execute(insert(audit_events).values(
             event_id=event.event_id, occurred_at=event.occurred_at.isoformat(), actor_id=event.actor_id,
             subject_id=event.subject_id, kind=event.kind.value,
             reason_codes=[reason.value for reason in event.reason_codes],
         ))
 
     def list_audit(self, *, subject_id: str) -> tuple[AuditEvent, ...]:
-        rows = self.connection.execute(select(audit_events).where(audit_events.c.subject_id == subject_id)
+        rows = self._execute(select(audit_events).where(audit_events.c.subject_id == subject_id)
                                        .order_by(audit_events.c.occurred_at, audit_events.c.event_id)).mappings()
         return tuple(AuditEvent(row["event_id"], datetime.fromisoformat(row["occurred_at"]), row["actor_id"],
                                 row["subject_id"], AuditKind(row["kind"]),
@@ -159,29 +155,51 @@ class SqlUnitOfWork:
             raise TypeError("Store a typed server session.")
         digest = encode_private_value(session.token_digest)
         values = dict(token_digest=digest, principal_id=session.principal_id, expires_at=session.expires_at.isoformat())
-        result = self.connection.execute(update(sessions).where(sessions.c.token_digest == digest).values(**values))
+        result = self._execute(update(sessions).where(sessions.c.token_digest == digest).values(**values))
         if result.rowcount == 0:
-            self.connection.execute(insert(sessions).values(**values))
+            self._execute(insert(sessions).values(**values))
 
     def get_session(self, token_digest: str) -> StoredSession | None:
-        row = self.connection.execute(select(sessions).where(sessions.c.token_digest == token_digest)).mappings().first()
+        row = self._execute(select(sessions).where(sessions.c.token_digest == token_digest)).mappings().first()
         return None if row is None else StoredSession(row["token_digest"], row["principal_id"], datetime.fromisoformat(row["expires_at"]))
 
     def delete_session(self, token_digest: str) -> None:
-        self.connection.execute(delete(sessions).where(sessions.c.token_digest == token_digest))
+        self._execute(delete(sessions).where(sessions.c.token_digest == token_digest))
+
+    def _execute(self, statement):
+        if self._failed or self._committed:
+            raise RepositoryError("The transaction is no longer usable.")
+        try:
+            return self._connection.execute(statement)
+        except SQLAlchemyError as error:
+            self._failed = True
+            original = getattr(error, "orig", None)
+            constraint = getattr(getattr(original, "diag", None), "constraint_name", "") or ""
+            if isinstance(error, IntegrityError) and (
+                "normalized_pseudonym" in constraint or "members.normalized_pseudonym" in str(original)
+            ):
+                raise d.PseudonymTakenError("Pseudonym is already taken.") from None
+            raise RepositoryError("Repository operation failed.") from None
 
     def commit(self) -> None:
-        self.connection.commit()
+        if self._failed or self._committed:
+            raise RepositoryError("The transaction cannot be committed.")
+        try:
+            self._connection.commit()
+            self._committed = True
+        except SQLAlchemyError:
+            self._failed = True
+            raise RepositoryError("Repository commit failed.") from None
 
 
 class SqlRepository:
     def __init__(self, engine):
-        self.engine = engine
+        self._engine = engine
 
     @contextmanager
     def transaction(self):
         try:
-            with self.engine.connect() as connection:
+            with self._engine.connect() as connection:
                 try:
                     if connection.dialect.name == "postgresql":
                         # Database-scoped transaction lock, shared across app processes.
@@ -196,7 +214,7 @@ class SqlRepository:
 
 
 @contextmanager
-def open_repository(url: str):
+def open_repository(url: str = "sqlite:///vaeil.sqlite"):
     engine = None
     try:
         if url.startswith(("postgresql://", "postgres://")):
