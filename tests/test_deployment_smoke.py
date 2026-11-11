@@ -34,3 +34,32 @@ def test_smoke_retries_startup_connection_reset(monkeypatch):
     smoke.main()
     assert urls[:2] == ["http://127.0.0.1:8766/api/health"] * 2
     assert len(urls) == 7
+
+
+def test_smoke_waits_for_bounded_readiness_result(monkeypatch):
+    from contextlib import contextmanager
+
+    spec = importlib.util.spec_from_file_location(
+        "smoke_readiness", Path(__file__).parents[1] / "scripts/smoke_deployment.py"
+    )
+    smoke = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(smoke)
+
+    class Response:
+        status = 503
+
+        def read(self):
+            return b'{"status":"unavailable"}'
+
+    @contextmanager
+    def delayed_response(url, *, timeout):
+        # External server completes at its documented ten-second worker bound.
+        if timeout <= 10:
+            raise TimeoutError("Client abandoned the bounded readiness result")
+        assert timeout <= 15
+        yield Response()
+
+    monkeypatch.setattr(smoke, "urlopen", delayed_response)
+    assert smoke.read("http://127.0.0.1:8766/api/ready") == (
+        503, '{"status":"unavailable"}'
+    )

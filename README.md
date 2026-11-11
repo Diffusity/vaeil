@@ -10,7 +10,7 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 ## Status
 
-Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 479 passing Python tests (458 product/domain/boundary and 21 tooling), plus four browser tests; T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
+Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 480 passing Python tests (458 product/domain/boundary and 22 tooling), plus four browser tests; T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
 
 T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit `4f9ca80`, with **401 passing tests**. It implements the Member/Values Profile pure view, shared self-name checks, ordered profile validation, opaque private scalars and pair-projection isolation. **Rule 5 remains partial**: T2 adds in-memory Conversation lifecycle/state authority; HTTP auth/display, persistence and moderated delivery remain future work. The real local-model adapter is not built. T1 tests cover constructor-friendly wrappers, safe diagnostics/export and an exact three-function unwrap allowlist; explicit authorized JSON remains unchanged. Spec: [#7](https://github.com/Diffusity/vaeil/issues/7). T1-T6 are published; later ticket estimates wait for the benchmark-informed velocity review.
 
@@ -64,5 +64,6 @@ T2 implements pair-scoped lifecycle, active-slot exclusion, monotonic trusted re
 T3 adds the local same-origin synthetic demo: health and anonymous Member endpoints, a real React rendering path, loading/error/retry states and HTTP/browser privacy checks. It is not the authenticated pre-Reveal product flow; Rule5 stays partial.
 
 T4 is in progress: `/api/ready` reports200/503 independently of health and caches the bounded read-only DB probe for30seconds. With no DATABASE_URL locally it returns503 while the demo works. The five local commands are unchanged. Proposed Docker/Render deployment and recovery are in `docs/deployment/recovery.md`; **no live deployment is verified yet**. Free-only provisioning is approved; account-browser access is currently unavailable.
+
 
 

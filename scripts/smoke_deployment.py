@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 
 def read(url):
     try:
-        with urlopen(url, timeout=5) as response:
+        with urlopen(url, timeout=15) as response:
             return response.status, response.read().decode()
     except HTTPError as error:
         return error.code, error.read().decode()
@@ -58,4 +58,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
