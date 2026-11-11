@@ -6,6 +6,8 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 **Demo only — do not enter real personal details.** Future registration carries the same notice. Keep this notice until a consent and deletion plan exists; Render and Neon store app data. Seed personas are fictional. Local-model outside-user stretch requires uptime and consent planning.
 
+**Live fictional demo:** [vaeil-demo.onrender.com](https://vaeil-demo.onrender.com). Health, anonymous payload and real database readiness smoke passed on 11 November; T4 sleep/wake, outage and continuity acceptance remain pending.
+
 ## Status
 
 Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 479 passing Python tests (458 product/domain/boundary and 21 tooling), plus four browser tests; T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
@@ -14,9 +16,9 @@ T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit 
 
 ## Remaining schedule (confirmed dates/capacity; estimates under review)
 
-Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; proposed deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Provisioning remains approval-gated.
+Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Free-only provisioning was approved and the fictional demo is live.
 
-The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 is the current local increment; deployment still needs approval.
+The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 is merged; T4 is deployed on its feature branch and remains under acceptance review.
 
 | Week | Historical proposed focus |
 | --- | --- |
@@ -62,4 +64,5 @@ T2 implements pair-scoped lifecycle, active-slot exclusion, monotonic trusted re
 T3 adds the local same-origin synthetic demo: health and anonymous Member endpoints, a real React rendering path, loading/error/retry states and HTTP/browser privacy checks. It is not the authenticated pre-Reveal product flow; Rule5 stays partial.
 
 T4 is in progress: `/api/ready` reports200/503 independently of health and caches the bounded read-only DB probe for30seconds. With no DATABASE_URL locally it returns503 while the demo works. The five local commands are unchanged. Proposed Docker/Render deployment and recovery are in `docs/deployment/recovery.md`; **no live deployment is verified yet**. Free-only provisioning is approved; account-browser access is currently unavailable.
+
 
