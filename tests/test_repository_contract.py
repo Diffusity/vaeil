@@ -243,3 +243,127 @@ def test_concurrent_stale_reveal_and_block_cannot_reverse_state(repository_url):
                                        c.Conversation("ab", ("one", "two"), blocked=True)]))
     assert sorted(results) == ["saved", "stale"]
 
+
+
+def audit_event(event_id="event-one", **changes):
+    from datetime import datetime, timezone
+    from vaeil.domain.repository import AuditEvent, AuditKind
+
+    fields = dict(event_id=event_id, occurred_at=datetime(2026, 11, 1, 12, tzinfo=timezone.utc),
+                  actor_id="admin-one", subject_id="one", kind=AuditKind.ADMISSION_APPROVED,
+                  reason_codes=())
+    fields.update(changes)
+    return AuditEvent(**fields)
+
+
+def test_domain_and_audit_commit_or_rollback_together(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import MemberNotFoundError
+
+    event = audit_event()
+    with open_repository(repository_url) as repository:
+        with pytest.raises(RuntimeError):
+            with repository.transaction() as transaction:
+                transaction.add_member(example_member())
+                transaction.append_audit(event)
+                raise RuntimeError("synthetic abort")
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == ()
+            with pytest.raises(MemberNotFoundError):
+                transaction.get_member("one")
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.append_audit(event)
+            transaction.commit()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            assert transaction.get_member("one") == example_member()
+            assert transaction.list_audit(subject_id="one") == (event,)
+
+
+def test_context_exit_without_commit_leaves_no_domain_or_audit_write(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import MemberNotFoundError
+
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.append_audit(audit_event())
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == ()
+            with pytest.raises(MemberNotFoundError):
+                transaction.get_member("one")
+
+
+def test_constraint_failure_rolls_back_earlier_domain_and_audit_writes(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import MemberNotFoundError
+
+    with open_repository(repository_url) as repository:
+        with pytest.raises(d.PseudonymTakenError):
+            with repository.transaction() as transaction:
+                transaction.add_member(example_member())
+                transaction.append_audit(audit_event())
+                transaction.add_member(example_member("two", "COMET"))
+                transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == ()
+            with pytest.raises(MemberNotFoundError):
+                transaction.get_member("one")
+
+
+@pytest.mark.parametrize("operation", ["UPDATE audit_events SET actor_id = 'changed'", "DELETE FROM audit_events"])
+def test_database_refuses_audit_update_and_delete(repository_url, operation):
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.exc import DBAPIError
+    from vaeil.adapters.persistence import open_repository
+
+    event = audit_event()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.append_audit(event)
+            transaction.commit()
+        engine = create_engine(repository_url.replace("postgresql://", "postgresql+psycopg://"), hide_parameters=True)
+        try:
+            with pytest.raises(DBAPIError):
+                with engine.begin() as connection:
+                    connection.execute(text(operation))
+        finally:
+            engine.dispose()
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == (event,)
+            assert not hasattr(transaction, "update_audit") and not hasattr(transaction, "delete_audit")
+
+
+def test_duplicate_audit_id_never_replaces_the_original(repository_url):
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import AuditKind, RepositoryError
+
+    original = audit_event()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.append_audit(original)
+            transaction.commit()
+        with pytest.raises(RepositoryError):
+            with repository.transaction() as transaction:
+                transaction.append_audit(audit_event(kind=AuditKind.ADMISSION_REJECTED))
+                transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == (original,)
+
+
+def test_audit_shape_refuses_arbitrary_private_payload_and_pins_required_decisions():
+    from dataclasses import fields
+    from vaeil.domain.repository import AuditEvent, AuditKind
+
+    assert {field.name for field in fields(AuditEvent)} == {
+        "event_id", "occurred_at", "actor_id", "subject_id", "kind", "reason_codes"
+    }
+    assert {kind.value for kind in AuditKind} >= {
+        "invite_redeemed", "vetting_approved", "vetting_needs_review", "identifier_escalated",
+        "conversation_revealed", "conversation_blocked", "report_submitted",
+        "admission_approved", "admission_rejected", "queue_approved", "queue_rejected",
+        "message_released", "message_discarded",
+    }
+    with pytest.raises(TypeError):
+        audit_event(reason_codes=("privatecanaryzxq@example.invalid",))

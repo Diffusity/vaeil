@@ -1,14 +1,14 @@
 """One SQLAlchemy Core implementation for local SQLite and deployed PostgreSQL."""
 from contextlib import contextmanager
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import Boolean, Column, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, insert, select, update
+from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateDate, PrivateText
-from vaeil.domain.repository import MemberNotFoundError, RepositoryError
+from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
@@ -32,6 +32,34 @@ conversations = Table(
     Column("revealed", Boolean, nullable=False),
     Column("blocked", Boolean, nullable=False),
 )
+
+audit_events = Table(
+    "audit_events", metadata,
+    Column("event_id", String, primary_key=True),
+    Column("occurred_at", String, nullable=False),
+    Column("actor_id", String),
+    Column("subject_id", String, nullable=False),
+    Column("kind", String, nullable=False),
+    Column("reason_codes", JSON, nullable=False),
+)
+# Database guards are dialect DDL, not separate repository implementations.
+for operation in ("UPDATE", "DELETE"):
+    event.listen(audit_events, "after_create", DDL(
+        f"CREATE TRIGGER audit_no_{operation.lower()} BEFORE {operation} ON audit_events "
+        "BEGIN SELECT RAISE(ABORT, 'Audit events are append-only.'); END"
+    ).execute_if(dialect="sqlite"))
+event.listen(audit_events, "after_create", DDL(
+    "CREATE FUNCTION vaeil_audit_append_only() RETURNS trigger LANGUAGE plpgsql AS $$ "
+    "BEGIN RAISE EXCEPTION 'Audit events are append-only.'; END; $$"
+).execute_if(dialect="postgresql"))
+event.listen(audit_events, "after_create", DDL(
+    "CREATE TRIGGER audit_no_mutation BEFORE UPDATE OR DELETE ON audit_events "
+    "FOR EACH ROW EXECUTE FUNCTION vaeil_audit_append_only()"
+).execute_if(dialect="postgresql"))
+event.listen(audit_events, "after_create", DDL(
+    "CREATE TRIGGER audit_no_truncate BEFORE TRUNCATE ON audit_events "
+    "FOR EACH STATEMENT EXECUTE FUNCTION vaeil_audit_append_only()"
+).execute_if(dialect="postgresql"))
 
 
 def row_to_conversation(row) -> c.Conversation:
@@ -102,6 +130,22 @@ class SqlUnitOfWork:
         if row is None:
             raise c.ConversationNotFoundError("Conversation not found.")
         return row_to_conversation(row)
+
+    def append_audit(self, event: AuditEvent) -> None:
+        if not isinstance(event, AuditEvent):
+            raise TypeError("Append a typed audit event.")
+        self.connection.execute(insert(audit_events).values(
+            event_id=event.event_id, occurred_at=event.occurred_at.isoformat(), actor_id=event.actor_id,
+            subject_id=event.subject_id, kind=event.kind.value,
+            reason_codes=[reason.value for reason in event.reason_codes],
+        ))
+
+    def list_audit(self, *, subject_id: str) -> tuple[AuditEvent, ...]:
+        rows = self.connection.execute(select(audit_events).where(audit_events.c.subject_id == subject_id)
+                                       .order_by(audit_events.c.occurred_at, audit_events.c.event_id)).mappings()
+        return tuple(AuditEvent(row["event_id"], datetime.fromisoformat(row["occurred_at"]), row["actor_id"],
+                                row["subject_id"], AuditKind(row["kind"]),
+                                tuple(d.IdentifierReason(reason) for reason in row["reason_codes"])) for row in rows)
 
     def commit(self) -> None:
         self.connection.commit()
