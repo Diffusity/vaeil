@@ -1,6 +1,6 @@
 """One read-only connectivity attempt. DSN via environment, exit status only.
 
-The parent kills/reaps this process after three seconds, including DNS/connect/
+The parent kills/reaps this process after ten seconds, including DNS/connect/
 query/cleanup work after process creation. It never exposes captured diagnostics.
 """
 
@@ -27,3 +27,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

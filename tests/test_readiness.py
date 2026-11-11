@@ -58,7 +58,7 @@ def test_real_probe_uses_a_deadline_and_caches_repeated_checks(monkeypatch):
     assert "PrivateSecretOne" not in repr(command)
     if sys.platform == "win32":
         assert "-I" in command and "-S" in command
-    assert options["timeout"] <= 3
+    assert options["timeout"] == 10
     assert options["stdout"] == subprocess.DEVNULL
     assert options["stderr"] == subprocess.DEVNULL
     assert options["env"]["DATABASE_URL"].endswith("@db.invalid/demo")
@@ -162,6 +162,8 @@ def test_real_worker_timeout_kills_and_reaps_a_stalled_child(monkeypatch, tmp_pa
     from vaeil.adapters import readiness
 
     monkeypatch.setenv("DATABASE_URL", "postgresql://TimeoutChildCanary@db.invalid/demo")
+    # Keep the process-cleanup regression fast; production deadline is pinned separately.
+    monkeypatch.setattr(readiness, "PROBE_TIMEOUT_SECONDS", 3)
     real_run = subprocess.run
     children = []
     real_popen = subprocess.Popen
@@ -242,3 +244,5 @@ def test_concurrent_probe_does_not_queue_more_database_workers(monkeypatch):
         thread.join(3)
     assert not thread.is_alive()
     assert len(calls) == 1 and results == [True]
+
+

@@ -8,7 +8,7 @@ import sysconfig
 import threading
 import time
 
-PROBE_TIMEOUT_SECONDS = 3
+PROBE_TIMEOUT_SECONDS = 10
 PROBE_CACHE_SECONDS = 30
 _lock = threading.Lock()
 _cached_key = None
@@ -57,3 +57,4 @@ def check_database_ready() -> bool:
         return available
     finally:
         _lock.release()
+
