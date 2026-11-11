@@ -1,0 +1,86 @@
+{
+  "results": [
+    {
+      "mutation": "remove normalized unique index",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_concurrent_normalized_claims_commit_exactly_one_owner"
+    },
+    {
+      "mutation": "remove normalized key",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_normalized_pseudonym_has_one_durable_owner"
+    },
+    {
+      "mutation": "allow second Pseudonym overwrite",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_normalized_pseudonym_has_one_durable_owner"
+    },
+    {
+      "mutation": "commit instead of rollback",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_domain_and_audit_commit_or_rollback_together"
+    },
+    {
+      "mutation": "commit audit/domain early",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_constraint_failure_rolls_back_earlier_domain_and_audit_writes"
+    },
+    {
+      "mutation": "allow audit UPDATE",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_database_refuses_audit_update_and_delete"
+    },
+    {
+      "mutation": "allow audit DELETE",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_database_refuses_audit_update_and_delete"
+    },
+    {
+      "mutation": "omit active Conversation exclusion",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_concurrent_active_conversation_opens_have_one_winner"
+    },
+    {
+      "mutation": "omit monotonic Conversation guard",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_durable_conversation_refuses_reversal_or_reassignment"
+    },
+    {
+      "mutation": "restore a plain private value",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_member_round_trip_survives_new_repository_with_wrappers"
+    },
+    {
+      "mutation": "leak SQL bound parameters",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_sql_logging_never_copies_private_parameters"
+    },
+    {
+      "mutation": "permit commit after database failure",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_failed_transaction_cannot_commit_even_if_caller_catches_the_error"
+    },
+    {
+      "mutation": "unwrap outside the approved mapper",
+      "backend": "architecture",
+      "killed": true,
+      "test": "tests/test_private_unwrap_boundary.py::test_production_unwrap_sites_are_exactly_the_approved_functions"
+    }
+  ],
+  "restored_sha256": {
+    "src\\vaeil\\adapters\\persistence.py": "28794553f32481f2800b15f51f5d94c46101a253d55282023daa5aefed08ef5b",
+    "src\\vaeil\\domain\\conversation.py": "152ebae23742fecc851844c62bdca2f52d47b70e1765487eec61b5d5790f40a8"
+  }
+}

@@ -16,3 +16,7 @@ node_modules/
 frontend/dist/
 test-results/
 playwright-report/
+
+# Default local repository; never commit application data
+/vaeil.sqlite
+/vaeil.sqlite-*

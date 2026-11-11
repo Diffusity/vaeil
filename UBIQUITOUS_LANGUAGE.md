@@ -10,7 +10,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:9` |
 | **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | `src/vaeil/domain/member.py:9` — complete-profile projection input; admission wiring remains T6 |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:33`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic storage uniqueness remains T5 |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:60`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic storage uniqueness at `src/vaeil/adapters/persistence.py:110` |
 
 ## Onboarding & vetting
 
@@ -42,7 +42,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | `src/vaeil/domain/conversation.py:113`; domain lifecycle only, API/Report wiring pending |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
-| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | _(absent)_ |
+| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:40`, `src/vaeil/adapters/persistence.py:137`; business-event emission remains in later workflows |
 
 ## Relationships
 
