@@ -64,3 +64,63 @@ def test_member_round_trip_survives_new_repository_with_wrappers(repository_url,
     for canary in ("PrivateCanaryZXQ", "privatecanaryzxq@example.invalid", "+919876543210", "1987-03-14"):
         assert canary not in repr(restored) + str(restored) + caplog.text
 
+
+
+@pytest.mark.parametrize("equivalent", ["cOmEt", "Ｃomet", " Comet "])
+def test_normalized_pseudonym_has_one_durable_owner(repository_url, equivalent):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.commit()
+        with pytest.raises(d.PseudonymTakenError):
+            with repository.transaction() as transaction:
+                transaction.add_member(example_member("two", equivalent))
+                transaction.commit()
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member("two", "Aurora"))
+            transaction.commit()
+        with pytest.raises(d.PseudonymAlreadySetError):
+            with repository.transaction() as transaction:
+                transaction.add_member(example_member("two", "Nebula"))
+                transaction.commit()
+        with repository.transaction() as transaction:
+            assert transaction.get_member("two").pseudonym == d.Pseudonym("Aurora")
+
+
+@pytest.mark.parametrize("candidate", ["ab", "1comet", "co.met", "admin", "x1234567890", "PrivateCanaryZXQstar"])
+def test_storage_reuses_pseudonym_format_reserved_identifier_and_self_name_rules(repository_url, candidate):
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url) as repository:
+        with pytest.raises(d.InvalidPseudonymError):
+            with repository.transaction() as transaction:
+                transaction.add_member(example_member(pseudonym=candidate))
+                transaction.commit()
+
+
+def test_concurrent_normalized_claims_commit_exactly_one_owner(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+    from vaeil.adapters.persistence import open_repository
+
+    with open_repository(repository_url):
+        pass
+    ready = Barrier(2)
+
+    def claim(pair):
+        member_id, name = pair
+        with open_repository(repository_url) as repository:
+            ready.wait(timeout=10)
+            try:
+                with repository.transaction() as transaction:
+                    transaction.add_member(example_member(member_id, name))
+                    transaction.commit()
+                return "saved"
+            except d.PseudonymTakenError:
+                return "taken"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(claim, [("one", "Comet"), ("two", "ＣOMET")]))
+    assert sorted(results) == ["saved", "taken"]

@@ -2,12 +2,13 @@
 from contextlib import contextmanager
 from datetime import date
 
-from sqlalchemy import Column, Date, JSON, MetaData, String, Table, create_engine, insert, select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import Column, Date, JSON, MetaData, String, Table, create_engine, event, insert, select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from vaeil import domain as d
 from vaeil.domain.privacy import PrivateDate, PrivateText
 from vaeil.domain.repository import MemberNotFoundError, RepositoryError
+from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
 members = Table(
@@ -18,6 +19,7 @@ members = Table(
     Column("phone", String),
     Column("date_of_birth", Date, nullable=False),
     Column("pseudonym", String, nullable=False),
+    Column("normalized_pseudonym", String, nullable=False, unique=True),
     Column("profile", JSON, nullable=False),
 )
 
@@ -30,12 +32,13 @@ def encode_private_value(value: PrivateText | PrivateDate) -> str | date:
 
 
 def member_to_row(member: d.Member) -> dict:
+    pseudonym = validate_pseudonym_candidate(member.identity.member_id, member.pseudonym.value, identity=member.identity)
     identity, profile = member.identity, member.values_profile
     return dict(
         member_id=identity.member_id, legal_name=encode_private_value(identity.legal_name),
         email=encode_private_value(identity.email),
         phone=None if identity.phone is None else encode_private_value(identity.phone),
-        date_of_birth=encode_private_value(identity.date_of_birth), pseudonym=member.pseudonym.value,
+        date_of_birth=encode_private_value(identity.date_of_birth), pseudonym=pseudonym.value, normalized_pseudonym=pseudonym.value.casefold(),
         profile=dict(relationship_intent=profile.relationship_intent.value, life_stage=profile.life_stage.value,
                      interests=sorted(item.value for item in profile.interests),
                      values=sorted(item.value for item in profile.values),
@@ -54,7 +57,15 @@ class SqlUnitOfWork:
         self.connection = connection
 
     def add_member(self, member: d.Member) -> None:
-        self.connection.execute(insert(members).values(**member_to_row(member)))
+        if self.connection.execute(select(members.c.member_id).where(members.c.member_id == member.identity.member_id)).first():
+            raise d.PseudonymAlreadySetError("Pseudonym is fixed once set.")
+        try:
+            self.connection.execute(insert(members).values(**member_to_row(member)))
+        except IntegrityError as error:
+            constraint = getattr(getattr(error.orig, "diag", None), "constraint_name", "") or ""
+            if "normalized_pseudonym" in constraint or "members.normalized_pseudonym" in str(error.orig):
+                raise d.PseudonymTakenError("Pseudonym is already taken.") from None
+            raise RepositoryError("Member could not be stored.") from None
 
     def get_member(self, member_id: str) -> d.Member:
         row = self.connection.execute(select(members).where(members.c.member_id == member_id)).mappings().first()
@@ -75,6 +86,11 @@ class SqlRepository:
         try:
             with self.engine.connect() as connection:
                 try:
+                    if connection.dialect.name == "postgresql":
+                        # Database-scoped transaction lock, shared across app processes.
+                        # The small demo serializes repository transactions rather than
+                        # risking check/insert races for multi-row Conversation rules.
+                        connection.exec_driver_sql("SELECT pg_advisory_xact_lock(843590001)")
                     yield SqlUnitOfWork(connection)
                 finally:
                     connection.rollback()
@@ -89,6 +105,15 @@ def open_repository(url: str):
         if url.startswith(("postgresql://", "postgres://")):
             url = "postgresql+psycopg://" + url.split("://", 1)[1]
         engine = create_engine(url, echo=False, hide_parameters=True)
+        if engine.dialect.name == "sqlite":
+            @event.listens_for(engine, "connect")
+            def configure_sqlite(connection, _):
+                connection.isolation_level = None
+                connection.execute("PRAGMA foreign_keys=ON")
+
+            @event.listens_for(engine, "begin")
+            def begin_sqlite(connection):
+                connection.exec_driver_sql("BEGIN IMMEDIATE")
         metadata.create_all(engine)
         yield SqlRepository(engine)
     except SQLAlchemyError:
