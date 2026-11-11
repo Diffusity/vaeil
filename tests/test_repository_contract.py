@@ -421,3 +421,29 @@ def test_session_is_frozen_slotted_and_refuses_generic_export():
         with pytest.raises(PrivateSerializationError) as error:
             export(session)
         assert "a" * 64 not in str(error.value)
+
+
+def test_malformed_connection_configuration_has_safe_error_and_traceback():
+    import traceback
+    from vaeil.adapters.persistence import open_repository
+    from vaeil.domain.repository import RepositoryError
+
+    canary = "PrivateConfigurationCanary"
+    with pytest.raises(RepositoryError) as error:
+        with open_repository("postgresql://user:password@localhost:" + canary + "/database"):
+            pytest.fail("Invalid configuration must not open a repository")
+    assert canary not in str(error.value) + "".join(traceback.format_exception(error.value))
+
+
+def test_sql_logging_never_copies_private_parameters(repository_url, caplog):
+    import logging
+    from vaeil.adapters.persistence import open_repository
+
+    caplog.set_level(logging.INFO, logger="sqlalchemy.engine.Engine")
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.add_member(example_member())
+            transaction.put_session(stored_session())
+            transaction.commit()
+    for canary in ("PrivateCanaryZXQ", "privatecanaryzxq@example.invalid", "+919876543210", "1987-03-14", "a" * 64):
+        assert canary not in caplog.text

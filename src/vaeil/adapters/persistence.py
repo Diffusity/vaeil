@@ -201,7 +201,10 @@ def open_repository(url: str):
     try:
         if url.startswith(("postgresql://", "postgres://")):
             url = "postgresql+psycopg://" + url.split("://", 1)[1]
-        engine = create_engine(url, echo=False, hide_parameters=True)
+        try:
+            engine = create_engine(url, echo=False, hide_parameters=True)
+        except (SQLAlchemyError, ValueError, TypeError):
+            raise RepositoryError("Repository configuration is invalid.") from None
         if engine.dialect.name == "sqlite":
             @event.listens_for(engine, "connect")
             def configure_sqlite(connection, _):
@@ -218,3 +221,4 @@ def open_repository(url: str):
     finally:
         if engine is not None:
             engine.dispose()
+
