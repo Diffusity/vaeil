@@ -6,7 +6,7 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 **Demo only — do not enter real personal details.** Future registration carries the same notice. Keep this notice until a consent and deletion plan exists; Render and Neon store app data. Seed personas are fictional. Local-model outside-user stretch requires uptime and consent planning.
 
-**Live fictional demo:** [vaeil-demo.onrender.com](https://vaeil-demo.onrender.com). Health, anonymous payload and real database readiness smoke passed on 11 November; T4 sleep/wake, outage and continuity acceptance remain pending.
+**Live fictional demo:** [vaeil-demo.onrender.com](https://vaeil-demo.onrender.com). Health, anonymous payload and real database readiness smoke passed on 11 November; Live outage and owner-led recovery also passed. Actual host spin-down/platform-loader capture, live RAM visibility and rotation confirmation remain pending.
 
 ## Status
 
@@ -64,6 +64,7 @@ T2 implements pair-scoped lifecycle, active-slot exclusion, monotonic trusted re
 T3 adds the local same-origin synthetic demo: health and anonymous Member endpoints, a real React rendering path, loading/error/retry states and HTTP/browser privacy checks. It is not the authenticated pre-Reveal product flow; Rule5 stays partial.
 
 T4 is in progress: `/api/ready` reports200/503 independently of health and caches the bounded read-only DB probe for30seconds. With no DATABASE_URL locally it returns503 while the demo works. The five local commands are unchanged. The fictional Render/Neon deployment and live healthy/outage/recovery smoke are verified; recovery is in `docs/deployment/recovery.md`. Actual host spin-down/platform loader, live RAM visibility and credential-rotation confirmation remain acceptance gaps; #11 stays open.
+
 
 
 
