@@ -72,11 +72,11 @@ Also ratified and binding:
 
 Storage sits behind a repository port and time behind a Clock port — secondary seams, mentioned but not cited as the boundary.
 
-## Free-stack persistence and deployment (approved architecture, not provisioned)
+## Free-stack persistence and deployment
 
 Hosting budget is $0. PostgreSQL is the deployed database; SQLite stays the default local/test connection URL so the five-command PowerShell run needs no database install. One SQLAlchemy Core repository implementation and one contract suite must work against both databases, including concurrent normalized-Pseudonym uniqueness, rollback and append-only audit. Use an isolated PostgreSQL service for CI contracts rather than spending the production free quota on every run. Render's ephemeral filesystem cannot hold deployed SQLite or durable sessions.
 
-Free-only stack approved10November; live provisioning awaits restored browser access: Render Free FastAPI serves built React assets and relative API routes from one origin; Neon Free stores PostgreSQL data. No separate frontend deployment or CORS configuration. Exclude Render's expiring free Postgres. The deployed skeleton needs health/readiness checks, first-request loading feedback, and a checklist to wake the app and database before the viva. Cold starts, quota exhaustion, and external-traffic suspension can cause downtime; Render discourages production use of its free instances. This is a course-demo candidate, not an availability guarantee. Current official-source limits and unresolved app-specific Terms/AUP eligibility are in `docs/research/free-hosting-verification-2026-10-24.md`.
+Free-only stack approved10November and the fictional skeleton is deployed: Render Free FastAPI serves built React assets and relative API routes from one origin; Neon Free stores PostgreSQL data. No separate frontend deployment or CORS configuration. Exclude Render's expiring free Postgres. The deployed skeleton needs health/readiness checks, first-request loading feedback, and a checklist to wake the app and database before the viva. Cold starts, quota exhaustion, and external-traffic suspension can cause downtime; Render discourages production use of its free instances. This is a course-demo candidate, not an availability guarantee. Current official-source limits and unresolved app-specific Terms/AUP eligibility are in `docs/research/free-hosting-verification-2026-10-24.md`.
 
 ## AI use
 
@@ -149,7 +149,7 @@ Use an authenticated laptop proxy/tunnel, environment-held secret on every deplo
 
 Gender/orientation are out of scope and a known limitation: Matching is values-only. Future private match preferences belong outside public profile/view types. Complete profiles require 1-5 distinct frozenset selections per list; T10 enforces complete-profile Matching eligibility. Stable enum codes, frontend labels, trimmed NFKC About <=280 code points, controls refused. Pseudonym self-name uses substring; About whole-word. Mark/market is accepted; Will/will is a documented false positive with rephrase feedback. Revealed views preserve the public fields; pre-Reveal keeps exactly two, with frozen/slotted/redacted records and no private references, per the approved T1 seam.
 
-Render/Neon accounts are Parth-owned. T4 adds teammates where free collaboration allows, password-manager credential sharing outside the repo, and a one-page redeploy-from-scratch recovery note. Free-only provisioning approval was received10November; browser-tool initialization currently blocks account access.
+Render/Neon accounts are owner-operated. On11November Parth deferred collaborator invitations and password-manager storage. T4 supplies a one-page redeploy-from-scratch recovery note; the owner-led configuration restoration/redeploy was exercised. Do not imply teammate access or independent recovery. Healthy/outage/recovery smoke passed; actual Render spin-down/platform loader and live RAM measurement remain unproven. A browser-tool secret exposure requires owner rotation confirmation; no private URL belongs in docs.
 
 ## 26 October approved moderation outcomes and tunnel constraints
 
@@ -188,4 +188,5 @@ T2 tests were written/run red before their corresponding green cycles; projectio
 ## T4 readiness — implemented diagnostic, deployment incomplete
 
 `src/vaeil/adapters/readiness.py:30` is an infrastructure-only dependency: minimal-env worker with DSN off argv,10-second postspawn timeout (approved11November),30-second hashed-key cache and nonqueued lock. `database_probe.py:13` uses verify-full with certifi roots, read-only SELECT1 and closed resources; failures produce generic unavailable without copied exceptions. Windows direct base interpreter-I-Splusvenvsite avoids venv-launcher orphaning and global dependency precedence; synthetic PID regression verifies actual worker reaped. No domain/unwrap change. `/api/health` and synthetic demo remain independent. Docker supplies explicit VAEIL_FRONTEND_DIR so wheel installation does not mislocate assets. Container CI and live cold-start/free-plan/Neon proof are separate; do not claim persistence from readiness. The fictional demo is deployed; real database readiness, sleep/wake and outage acceptance remain under verification.
+
 

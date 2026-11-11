@@ -18,10 +18,14 @@ Stages for human account work, after explicit free-only provisioning approval: (
 
 The deployment instruction names the implementation task, but #11 retains a separate explicit provisioning gate. New public readiness seam is not in T3's approved interfaces; TDD skill requires its confirmation before new tests. No product readiness code/stubs/tests added during preparation.
 
-## Implementation status — 10 November
+## Historical implementation status — 10 November
 
 Parth explicitly approved this readiness seam and free-only provisioning. Readiness code/tests now exist; the earlier preparation/gate paragraphs are historical. The3-second worker deadline begins after OS process creation, with spawn/kill overhead separately acknowledged; no real-time HTTP SLA is promised. Database work remainsread-onlyandno data persistence is inferred. Both browser-controlroutes failkernelassetsinitialization; userwillrestoreaccess, so no cloudresources/livechecks yet. T4remainsincomplete pendingimageCIandliveevidence.
 
 ## 11 November diagnostic amendment
 User approved a bounded10-second worker deadline after direct-URL redeployment still produced ready503 in3.411s. SQL/connecttimeouts remain2s, cache30s, one worker/no queue. Production timeout regression red3!=10 then green; real-child cleanup test injects3s and retains its original<6s bound/PID checks, so cleanup coverage is not loosened. Browser restored and fictional site deployed; prior access-blocked paragraphs are historical. Healthy database and cold-start evidence still pending.
+
+
+## Current acceptance status — 11 November
+Livehealthy/outage/recovery smoke pass. CI7fd4ad0 green; full480Python. ActualRender spin-down/platformloader notcaptured, FreeRAMgraphs paid-only, ownerrotationconfirmationpending. Owner-onlycontinuity and deferredpasswordmanager/invites are explicit11November decisions. Priorpreparation/accessblockparagraphs are historical, not current blockers.
 
