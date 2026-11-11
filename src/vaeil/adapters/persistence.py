@@ -50,6 +50,11 @@ sessions = Table(
 )
 
 # Database guards are dialect DDL, not separate repository implementations.
+event.listen(audit_events, "after_create", DDL(
+    "CREATE TRIGGER audit_no_replace BEFORE INSERT ON audit_events "
+    "WHEN EXISTS (SELECT 1 FROM audit_events WHERE event_id = NEW.event_id) "
+    "BEGIN SELECT RAISE(ABORT, 'Audit event IDs cannot be replaced.'); END"
+).execute_if(dialect="sqlite"))
 for operation in ("UPDATE", "DELETE"):
     event.listen(audit_events, "after_create", DDL(
         f"CREATE TRIGGER audit_no_{operation.lower()} BEFORE {operation} ON audit_events "

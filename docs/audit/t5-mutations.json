@@ -43,6 +43,12 @@
       "test": "tests/test_repository_contract.py::test_database_refuses_audit_update_and_delete"
     },
     {
+      "mutation": "allow replacement of an audit event",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_database_cannot_replace_an_existing_audit_event"
+    },
+    {
       "mutation": "omit active Conversation exclusion",
       "backend": "sqlite",
       "killed": true,
@@ -80,7 +86,7 @@
     }
   ],
   "restored_sha256": {
-    "src\\vaeil\\adapters\\persistence.py": "28794553f32481f2800b15f51f5d94c46101a253d55282023daa5aefed08ef5b",
-    "src\\vaeil\\domain\\conversation.py": "152ebae23742fecc851844c62bdca2f52d47b70e1765487eec61b5d5790f40a8"
+    "src\\vaeil\\adapters\\persistence.py": "c6c61d547964717e8212a5c2821f81e56e98303631b0a37afff9f7018eb56f3e",
+    "src\\vaeil\\domain\\conversation.py": "ff299ef5676028938f2a9f917a28eb0ea7adbc6551308495f685ad24b6644276"
   }
 }

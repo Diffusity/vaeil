@@ -17,7 +17,7 @@ def main() -> None:
           for reason in ("EMAIL", "HANDLE", "OBFUSCATED_EMAIL", "URL")],
         ("threshold 9", DETECTION, "MIN_PHONE_DIGITS = 10", "MIN_PHONE_DIGITS = 9"),
         ("threshold 11", DETECTION, "MIN_PHONE_DIGITS = 10", "MIN_PHONE_DIGITS = 11"),
-        ("remove casefold", PSEUDONYMS, "key = value.casefold()", "key = value"),
+        ("remove casefold", PSEUDONYMS, "key = pseudonym.value.casefold()", "key = pseudonym.value"),
         ("remove NFKC", PSEUDONYMS, 'unicodedata.normalize("NFKC", candidate).strip()', "candidate.strip()"),
         ("remove identifier check", PSEUDONYMS, "if scan_identifiers(value).is_flagged:", "if False:"),
         ("remove fixed-once guard", PSEUDONYMS, "if member_id in self._members:", "if False:"),

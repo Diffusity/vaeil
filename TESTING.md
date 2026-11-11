@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 498 Python tests pass locally: 478 product/domain/storage/boundary cases and 20 tooling cases; 29 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; 29 PostgreSQL variants are explicitly skipped locally and run in disposable-database CI; four separate browser tests pass. The20 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 499 Python tests pass locally: 479 product/domain/storage/boundary cases and 20 tooling cases; 30 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; 30 PostgreSQL variants are explicitly skipped locally and run in disposable-database CI; four separate browser tests pass. The20 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
@@ -126,9 +126,9 @@ Frontend TypeScript is checked by `npm.cmd run typecheck --prefix frontend`. Pyt
 
 The same contract runs against file SQLite and disposable PostgreSQL18 in CI. SQLite on Windows needs no database install. Postgres fixtures refuse non-loopback URLs and create/drop isolated test databases. Production Neon is never a routine test fixture. Timestamp inputs are fixed; no real clock or live model is used. This is infrastructure evidence, not a newly completed product rule.
 
-New exact unwrap site: `src/vaeil/adapters/persistence.py:80`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects a wrong mapper function or wrong module. Generic private serialization remains refused.
+New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects a wrong mapper function or wrong module. Generic private serialization remains refused.
 
-Run `python scripts/mutate_persistence.py` alone. Locally12database mutations plus1shared AST mutation were killed, with exact source bytes restored; PostgreSQL matrix is wired into CI and is not claimed green before its run finishes. Results: docs/audit/t5-mutations.json. Deployed survival remains gated on T4; #12 stays open and Rule5 stays partial.
+Run `python scripts/mutate_persistence.py` alone. Locally13database mutations plus1shared AST mutation were killed, with exact source bytes restored; PostgreSQL matrix is wired into CI and is not claimed green before its run finishes. Results: docs/audit/t5-mutations.json. Deployed survival remains gated on T4; #12 stays open and Rule5 stays partial.
 
 ## T5 shared SQL contract
 
@@ -136,6 +136,8 @@ Run `python scripts/mutate_persistence.py` alone. Locally12database mutations pl
 
 The same contract runs against file SQLite and disposable PostgreSQL18 in CI. Fixtures refuse non-loopback Postgres URLs and create/drop isolated test databases; production Neon is never a routine fixture. Fixed timestamp inputs and no live model. These are infrastructure checks, not a newly completed product rule.
 
-New exact unwrap site: `src/vaeil/adapters/persistence.py:80`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects wrong mapper functions/modules. Generic private serialization remains refused.
+New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects wrong mapper functions/modules. Generic private serialization remains refused.
 
-Run `python scripts/mutate_persistence.py` alone. Locally12database mutations plus1shared AST mutation were killed and exact source bytes restored; PostgreSQL matrix is wired into CI and is not claimed green before completion. Results: docs/audit/t5-mutations.json. Deployed survival waits for T4 acceptance; #12 stays open and Rule5 stays partial.
+Run `python scripts/mutate_persistence.py` alone. Locally13database mutations plus1shared AST mutation were killed and exact source bytes restored; PostgreSQL matrix is wired into CI and is not claimed green before completion. Results: docs/audit/t5-mutations.json. Deployed survival waits for T4 acceptance; #12 stays open and Rule5 stays partial.
+
+Final review regression: `tests/test_repository_contract.py:495` refuses SQLite INSERT OR REPLACE and PostgreSQL conflict-update replacement at the raw storage boundary. The prior guards alone were bypassable on SQLite; the new duplicate-ID insert guard closes that gap.

@@ -490,3 +490,29 @@ def test_default_repository_url_is_local_sqlite_without_database_install(tmp_pat
     with open_repository() as repository:
         with repository.transaction() as transaction:
             assert transaction.get_member("one") == example_member()
+
+
+def test_database_cannot_replace_an_existing_audit_event(repository_url):
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.exc import DBAPIError
+    from vaeil.adapters.persistence import open_repository
+
+    event = audit_event()
+    with open_repository(repository_url) as repository:
+        with repository.transaction() as transaction:
+            transaction.append_audit(event)
+            transaction.commit()
+        engine = create_engine(repository_url.replace("postgresql://", "postgresql+psycopg://"), hide_parameters=True)
+        statement = "INSERT " + ("OR REPLACE " if repository_url.startswith("sqlite") else "")
+        statement += ("INTO audit_events (event_id, occurred_at, actor_id, subject_id, kind, reason_codes) "
+                      "VALUES (:event_id, :occurred_at, 'changed', 'one', 'admission_rejected', '[]')")
+        if not repository_url.startswith("sqlite"):
+            statement += " ON CONFLICT (event_id) DO UPDATE SET actor_id = EXCLUDED.actor_id"
+        try:
+            with pytest.raises(DBAPIError):
+                with engine.begin() as connection:
+                    connection.execute(text(statement), {"event_id": event.event_id, "occurred_at": event.occurred_at.isoformat()})
+        finally:
+            engine.dispose()
+        with repository.transaction() as transaction:
+            assert transaction.list_audit(subject_id="one") == (event,)

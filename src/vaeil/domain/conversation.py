@@ -74,7 +74,7 @@ class ConversationDirectory:
         conversation = Conversation(conversation_id, participant_ids)
         if conversation_id in self._conversations:
             raise ConversationAlreadyExistsError("Conversation ID already exists.")
-        self._validate_placement(conversation)
+        validate_conversation_storage(conversation, tuple(self._conversations.values()))
         self._conversations[conversation_id] = conversation
         return conversation
 
@@ -88,9 +88,6 @@ class ConversationDirectory:
         """Restore trusted fixtures/state; this is not a public Reveal command."""
         validate_conversation_storage(conversation, tuple(self._conversations.values()))
         self._conversations[conversation.conversation_id] = conversation
-
-    def _validate_placement(self, conversation: Conversation) -> None:
-        validate_conversation_storage(conversation, tuple(self._conversations.values()))
 
     def block(self, conversation_id: str, *, actor_id: str) -> Conversation:
         conversation = self.get(conversation_id)
