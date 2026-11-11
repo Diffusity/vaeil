@@ -108,3 +108,6 @@ Parth confirms teammates can contribute the extra required hours to cover the es
 ## 2026-11-10 T4 seam and provisioning approved
 
 Parth explicitly approves both readiness interface and free-only Render/Neon provisioning and invokes implementT4. No repeat approval is required for that scope. No purchases/paid upgrades or model/tunnel authorization. Both browser-controlroutes failkernelassetsinitialization and noAPIcredentialsconfigured; userwillrestoreaccess. Liveprovisioning remains technicallyblocked; codereadiness tests do not close#11. Workerprocessisolation implements theapprovedboundedDBprobe without globalWindowsloopchanges; source/tests and imageCI evidence are separate from vendor/livechecks.
+
+## 2026-11-11 continuity scope decision
+Parth defers teammate collaborator invitations and password-manager storage as unnecessary for the current demo. This supersedes the earlier mandatory invite/storage procedure for T4. Continuity is owner-operated through existing Render/Neon access; do not claim teammate access or password-manager escrow. Secrets remain outside Git/logs/chat. No account password sharing or new access grants inferred.

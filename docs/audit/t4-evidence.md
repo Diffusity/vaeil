@@ -43,3 +43,18 @@ Last successful remote branch push3ca3b69a146ddbca522b88dafc6e424f6d0d54c5 inclu
 11November: approved10s worker budget red3!=10 then green479Python20.46s. Actual-child cleanup keeps injected3s/<6s/PIDassertions; no safety check removed. Finalcode4ce56bd Windows/container/securityCIgreen run43015627583, manuallydeployed. Publicready returned200 ready in5.504s; fullpublicsmoke thenPASSHTML/assets/anonymouspayload/health/readiness. This supports prior3sbudget being too short; no precise worker-phase timings claimed. No diagnostic logging needed. Live coldstart/outage/RAM/continuity acceptance stillpending, issue11open. No model/tunnel or persistence added.
 
 11November follow-up: docs-only0408bf9 CI uncovered a smokeclient deadline mismatch: urlopen5s expired before10sworker returned. Regressiontest at externalHTTPboundary raisesTimeoutError for<=10s; redobserved, green with15sclientbound. Full480Python21.22s/Ruff/assumptionsgreen. No server/domainlimit changed; finalimageCI rerun follows.
+
+## Live acceptance attempt — 11 November
+
+| Check | Observed result | Limit |
+| --- | --- | --- |
+| Public healthy smoke | PASS on7fd4ad0 after restoration: HTML/assets, exact anonymous payload, health200, ready200 | Fictional endpoint only; no persistence claim |
+| Idle interval | No agent public requests from17:26:59 until17:43; browser profile available after7.811s including tool overhead; subsequent ready2004.958s | Same host instance remained in logs; neither actual Render sleep nor platform loader captured. This is an idle-return check, not proof of spin-down/wake. |
+| Live DB outage | Reversible loopback-only connection fixture; smoke with expected-unavailable passed: ready503 while health/demo/assets200 | Simulated connection failure, no database data changed |
+| Recovery | First restore did not persist; corrected edit was verified saved, manually redeployed; healthy full smoke PASS | Require save completion before deployment, not just clicking Save |
+| RAM/quota | Constrained CI512MiB/0.1CPU smoke passed; earlier memory sample34.16MiB. Live demo operates on Free | Free dashboard hides live RAM/CPU graphs behind paid upgrade; no paid plan added and no live peak claimed |
+| Continuity | Owner-led configuration restore/redeploy succeeded; one-page recovery note exists | User explicitly deferred collaborators and password-manager storage; owner-account access required |
+
+Browser accessibility unexpectedly returned a private URL even after visually masking it. No URL is recorded here or in Git. User was asked to rotate the database password and replace the Render secret; rotation confirmation pending. Secret fields will not be read again. This is a tool-output incident, not evidence of a public app response leak.
+
+T4 remains open: actual host spin-down/platform-loading capture and credential-rotation confirmation remain gates. Do not close#11 or claim all acceptance is green. The final code review assesses these gaps separately from code correctness.
