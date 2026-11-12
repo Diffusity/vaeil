@@ -12,6 +12,8 @@ P2 README current-status paragraph contradicted the live evidence; final DESIGN 
 
 Acceptance remains partial: actual Render spin-down/platform loader was not captured, live RAM graphs require a paid plan, and owner credential-rotation completion is not confirmed. These are disclosed gates, not silently marked done. Keep#11 open and PR21 draft. The480Python/4browser checks and Windows/container/security CI on29a1bb1 are green; later evidence-only commits trigger their own CI.
 
+12November follow-up: rotation is now owner-confirmed, and public readiness/full smoke passed afterward. The unchanged product code also passed480Python tests, strict TypeScript and four browser tests again. This supersedes only the rotation-pending statement above; no new code-review finding, sleep evidence or live RAM measurement is claimed.
+
 ## Review outcome
 
 Standards0 residual; Spec0 residual. All reported code/docs findings resolved. No merge performed or merge-readiness claimed while operational acceptance remains open.

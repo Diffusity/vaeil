@@ -1,5 +1,7 @@
 # T4 code/deployment evidence — incomplete live acceptance
 
+**Current update, 12 November:** owner confirms the Neon password was changed. Public readiness returned200 in8.034seconds and the complete healthy deployment smoke passed afterward. Earlier rotation-pending statements below are historical. Actual host spin-down/platform-loader evidence remains outstanding; live RAM graphs are unavailable on Free and no upgrade is planned. PR21 remains unmerged pending the acceptance/review gate. See docs/logs/sessions/2026-11-12-deployment-gates.md.
+
 Ticket #11, approved readiness interface and free-only provisioning10November. No repeat approval is needed. Dockerfile/Render blueprint and recovery note are prepared, not proof a service exists. Browser/session control fails to initialize with `failed to write kernel assets: The system cannot find the path specified (os error3)` on both supported routes. No configured Render/Neon API credentials were found (presence check only, no values printed). Parth is restoring browser access. Live URL, Neon connection, actual plan/billing eligibility, cold starts, memory and collaborator access remain **unverified**. Do not close #11 or raise milestone progress to4/12 from code-only work.
 
 ## Red/green and review
