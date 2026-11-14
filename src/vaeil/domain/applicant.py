@@ -10,6 +10,7 @@ class Applicant(PrivateRecord):
     # Frozen/slotted dataclasses otherwise generate a generic state exporter.
     __getstate__ = PrivateRecord.__getstate__
     date_of_birth: PrivateDate = field(repr=False)
+    application_note: str = field(default="", repr=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "date_of_birth", private_date(self.date_of_birth))

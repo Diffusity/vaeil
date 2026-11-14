@@ -16,14 +16,14 @@ class Verdict(Enum):
 class VettingModel(Protocol):
     """Port for the LLM vetting boundary; adapters translate model output."""
 
-    def vet(self, applicant: Applicant) -> Verdict:
+    def vet(self, application_note: str) -> Verdict:
         ...
 
 
 def vet(applicant: Applicant, model: VettingModel) -> Verdict:
     """Run vetting, failing closed to NeedsReview on any port misbehaviour."""
     try:
-        verdict = model.vet(applicant)
+        verdict = model.vet(applicant.application_note)
     except Exception:
         return Verdict.NEEDS_REVIEW
 
