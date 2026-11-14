@@ -1,4 +1,4 @@
-"""Same-origin demo application; admission and real-data APIs arrive in T6."""
+"""Same-origin fictional demo and explicitly authorized admission APIs."""
 
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse

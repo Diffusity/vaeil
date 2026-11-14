@@ -8,18 +8,18 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Invite** | A code that grants its holder the right to apply for membership; Vaeil is invite-only. Admin-issued in the MVP; Member-issued Invites are a planned extension. | invitation, referral code, signup code | `src/vaeil/domain/invite.py:33` |
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:9` |
-| **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | `src/vaeil/domain/member.py:9` — complete-profile projection input; admission wiring remains T6 |
-| **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:71`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic normalized unique index at `src/vaeil/adapters/persistence.py:23` |
+| **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | `src/vaeil/domain/member.py:9` — complete-profile projection input; T6 admission authority at `src/vaeil/application/admission.py:79`; admitted principal may precede complete Onboarding |
+| **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | `src/vaeil/domain/authentication.py:10`, `src/vaeil/application/admission.py:158` — seeded role and admission API; console remains T9 |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:71`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic normalized unique index at `src/vaeil/adapters/persistence.py:27` |
 
 ## Onboarding & vetting
 
 | Term | Definition | Aliases to avoid | Named in code at |
 | ---- | ---------- | ---------------- | ---------------- |
-| **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:23` |
-| **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:9` |
-| **Values Profile** | A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding. | bio, profile, personality test | `src/vaeil/domain/profile.py:95`, `:104` — validated complete profiles; form/API remains pending |
-| **Onboarding** | The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope. | setup, intake, signup flow | _(absent)_ |
+| **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:24` |
+| **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:10` |
+| **Values Profile** | A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding. | bio, profile, personality test | `src/vaeil/domain/profile.py:95`, `:150` — complete factory; private drafts at `:159`, T6 own-profile API implemented, teammate form remains pending |
+| **Onboarding** | The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope. | setup, intake, signup flow | `src/vaeil/domain/profile.py:159`, `src/vaeil/application/admission.py:181` — private draft/complete-profile API; form UI remains H1 |
 
 ## Matching
 
@@ -42,7 +42,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | `src/vaeil/domain/conversation.py:92`; domain lifecycle only, API/Report wiring pending |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
-| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:40`, `src/vaeil/adapters/persistence.py:142`; business-event emission remains in later workflows |
+| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:44`, `src/vaeil/adapters/persistence.py:240`; T6 emits Invite/Vetting/human-admission events; Message/Reveal/Report events remain later workflows |
 
 ## Relationships
 
@@ -88,4 +88,4 @@ Resolved — winners recorded (kept here as findings):
 | Canonical term | Called in code | Location | Note |
 | -------------- | -------------- | -------- | ---- |
 
-Slices 1-2 implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. T1 adds Member, Values Profile, the self-name check, and pair-scoped identity views. T2 adds in-memory Conversation lifecycle/state authority; T3/T4 supply the fictional transport and T5 implements persistent normalized uniqueness; authenticated transport and deployed survival remain pending. Rule 5 stays partial. The self-name check is implemented, but general real-name detection is not promised; see `DESIGN.md` for the heuristic limits.
+Slices 1-2 implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. T1 adds Member, Values Profile, the self-name check, and pair-scoped identity views. T2 adds in-memory Conversation lifecycle/state authority; T3/T4 supply the fictional transport and T5 implements persistent normalized uniqueness; T6 adds authenticated admission/session/own-profile transport; isolated restart survival is verified, T6 deployment and Match/Conversation transport remain pending. Rule 5 stays partial. The self-name check is implemented, but general real-name detection is not promised; see `DESIGN.md` for the heuristic limits.

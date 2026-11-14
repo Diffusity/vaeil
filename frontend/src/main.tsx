@@ -75,7 +75,7 @@ function App() {
       </>}
     </section>
     <AdmissionPanel />
-    <footer>Local walking skeleton · values-based matching · human safety review planned</footer>
+    <footer>Values-based matching · human admission review</footer>
   </main>;
 }
 
