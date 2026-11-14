@@ -1,0 +1,7 @@
+# T6 seam proposal — 14 November 2026
+
+Working block started approximately12:49 Asia/Calcutta. User requests all recommendations: include pending merge log, lift hold/propose T6 seam before tests, use implement only after seam approval and confirm teammate ownership. Read current repository policies, issue13, approved storage seam, identity/profile/Invite/Applicant/vetting/clock/unwrap code and forecast. No product code/tests/stubs changed.
+
+Found two interface gaps and exposed them in proposal: existing port passes DOB-bearing Applicant rather than note-only; complete Member storage does not represent pre-Onboarding admitted principal/draft. Proposed note-only port and separate private principal/draft storage preserve product ordering and existing complete Member invariants. Exact proposed fifthunwrapsite authentication.verify_password, not added to test/code. Security settings explicitly proposed for approval. Estimate risk disclosed; minimum schedule gap not solved.
+
+Owner says teammates are open to proposed H4Nevil/H5Vatsal/H6Tej ownerships. Hours and GitHub usernames remain absent; no assignments/messages/invitations or claimed delivered capacity. H4 schema inputs, H5 spec scripts and H6 merged citation inventory can start independently once task handoff is accepted. Human task estimates are not measured delivery. Pending prior merge/CI/end log entry included in this docs-only branch. No new agent tooling, provider or provisioning.
