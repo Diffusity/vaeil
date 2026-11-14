@@ -69,6 +69,9 @@ def attach_admission_routes(app, provider):
     def apply(body: dict = Body(...), application=Depends(provider)):
         exact(body, {"legal_name", "email", "date_of_birth", "invite_code", "password", "application_note"}, {"phone"})
         try:
+            for value in body.values():
+                if isinstance(value, str):
+                    value.encode("utf-8")
             identity = MemberIdentity(application.tokens.new_id(), body["legal_name"], body["email"],
                                       body.get("phone"), date.fromisoformat(body["date_of_birth"]))
             command = ApplicationSubmission(identity, body["invite_code"], body["application_note"],

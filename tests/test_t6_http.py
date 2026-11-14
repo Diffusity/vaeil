@@ -137,3 +137,17 @@ def test_duplicate_email_conflict_rolls_back_invite_and_allows_retry(repository_
                 assert canary not in refused.text
             retry = duplicate | {"email": "other@example.invalid"}
             assert client.post("/api/applications", json=retry).status_code == 202
+
+@pytest.mark.parametrize("field", ["legal_name", "email", "phone", "invite_code", "password", "application_note"])
+def test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption(repository_url, field, caplog):
+    import json
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        client, _ = client_for(repo)
+        with client:
+            malformed = BODY | {field: BODY[field] + "\ud800"}
+            response = client.post("/api/applications", content=json.dumps(malformed), headers={"Content-Type": "application/json"})
+            assert response.status_code == 400
+            for canary in PRIVATE:
+                assert canary not in response.text + caplog.text
+            assert client.post("/api/applications", json=BODY).status_code == 202
