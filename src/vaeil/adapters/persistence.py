@@ -184,7 +184,7 @@ class SqlUnitOfWork:
             raise d.InvalidInviteError("Invite is invalid.")
         self._execute(insert(invites).values(code_digest=hashlib.sha256(code.encode()).hexdigest(), issuer_id=issuer_id))
 
-    def consume_invite(self, code: str, *, principal_id: str) -> None:
+    def require_invite(self, code: str) -> None:
         if not isinstance(code, str):
             raise d.InvalidInviteError("Invite is invalid.")
         key = hashlib.sha256(code.encode()).hexdigest()
@@ -193,6 +193,10 @@ class SqlUnitOfWork:
             raise d.InvalidInviteError("Invite is invalid.")
         if row[0] is not None:
             raise d.InviteAlreadyRedeemedError("Invite is already redeemed.")
+
+    def consume_invite(self, code: str, *, principal_id: str) -> None:
+        self.require_invite(code)
+        key = hashlib.sha256(code.encode()).hexdigest()
         result = self._execute(update(invites).where(invites.c.code_digest == key, invites.c.redeemed_by.is_(None))
                                .values(redeemed_by=principal_id))
         if result.rowcount != 1:

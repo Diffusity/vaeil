@@ -82,6 +82,8 @@ class AdmissionApplication:
         identity = command.identity
         redeem_invite(Invite(command.invite_code, "application"), identity.date_of_birth, self.clock)
         note = validate_application_note(command.application_note, owner=identity)
+        with self.repository.transaction() as unit:
+            unit.require_invite(command.invite_code)
         verdict = vet(Applicant(identity.date_of_birth, note), self.model)
         approved = verdict is Verdict.APPROVED
         admission = AdmissionStatus.APPROVED if approved else AdmissionStatus.NEEDS_REVIEW

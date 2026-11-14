@@ -256,3 +256,16 @@ def test_competing_admin_decisions_record_exactly_one_terminal_outcome(repositor
             decisions = [event for event in unit.list_audit(subject_id="one")
                          if event.kind.value in {"admission_approved", "admission_rejected"}]
             assert len(decisions) == 1
+
+
+def test_unknown_invite_never_reaches_vetting_or_stores_an_applicant(repository_url):
+    from vaeil.domain import InvalidInviteError
+    with open_repository(repository_url) as repo:
+        model = CapturingModel()
+        app = app_for(repo, model)
+        with pytest.raises(InvalidInviteError):
+            app.apply(command(invite="unknown-invite"))
+        assert model.received == []
+        with repo.transaction() as unit:
+            assert unit.get_principal("one") is None
+            assert unit.list_audit(subject_id="one") == ()
