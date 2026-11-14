@@ -1,5 +1,5 @@
 """Complete structured Values Profiles; every write goes through the factory."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import unicodedata
 from vaeil.domain.identifiers import scan_identifiers
@@ -101,8 +101,8 @@ class ValuesProfile:
     pace_and_lifestyle: PaceAndLifestyle
     about: str = ""
 
-def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_stage, interests,
-                         values, communication_style, pace_and_lifestyle, about="") -> ValuesProfile:
+def _build_profile_values(*, owner: MemberIdentity, relationship_intent, life_stage, interests,
+                          values, communication_style, pace_and_lifestyle, about="", complete=True):
     choices = {
         "relationship_intent": (relationship_intent, RelationshipIntent),
         "life_stage": (life_stage, LifeStage),
@@ -114,7 +114,7 @@ def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_sta
     if not isinstance(owner, MemberIdentity) or not isinstance(about, str):
         raise ProfileShapeError()
     for name, (value, _) in choices.items():
-        if not isinstance(value, str):
+        if not isinstance(value, str) and (complete or value is not None):
             raise ProfileShapeError(field=name)
     for name, (items, _) in selections.items():
         if not isinstance(items, (list, tuple, set, frozenset)) or any(not isinstance(item, str) for item in items):
@@ -122,7 +122,7 @@ def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_sta
     normalized = {}
     for name, (value, enum) in choices.items():
         try:
-            normalized[name] = enum(value)
+            normalized[name] = enum(value) if value is not None else None
         except ValueError:
             raise UnknownProfileChoiceError(field=name) from None
     selected = {}
@@ -132,7 +132,7 @@ def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_sta
         except ValueError:
             raise UnknownProfileChoiceError(field=name) from None
     for name, items in selected.items():
-        if len(set(items)) != len(items) or not MIN_PROFILE_SELECTIONS <= len(items) <= MAX_PROFILE_SELECTIONS:
+        if len(set(items)) != len(items) or not (MIN_PROFILE_SELECTIONS if complete else 0) <= len(items) <= MAX_PROFILE_SELECTIONS:
             raise ProfileSelectionError(field=name)
     if any(unicodedata.category(char) == "Cc" for char in about):
         raise AboutNormalizationError(field="about")
@@ -143,5 +143,53 @@ def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_sta
         raise ProfileIdentifierError(field="about")
     if contains_self_name(text, identity=owner, mode=SelfNameMode.ABOUT):
         raise ProfileSelfNameError(field="about")
-    return ValuesProfile(**normalized, interests=frozenset(selected["interests"]),
+    return dict(**normalized, interests=frozenset(selected["interests"]),
                          values=frozenset(selected["values"]), about=text)
+
+
+def build_values_profile(*, owner: MemberIdentity, relationship_intent, life_stage, interests,
+                         values, communication_style, pace_and_lifestyle, about="") -> ValuesProfile:
+    return ValuesProfile(**_build_profile_values(
+        owner=owner, relationship_intent=relationship_intent, life_stage=life_stage,
+        interests=interests, values=values, communication_style=communication_style,
+        pace_and_lifestyle=pace_and_lifestyle, about=about))
+
+
+@dataclass(frozen=True, slots=True)
+class ProfileDraftInput:
+    pseudonym: str | None = None
+    relationship_intent: str | None = None
+    life_stage: str | None = None
+    interests: frozenset = field(default_factory=frozenset)
+    values: frozenset = field(default_factory=frozenset)
+    communication_style: str | None = None
+    pace_and_lifestyle: str | None = None
+    about: str = ""
+
+    @property
+    def complete(self):
+        return (all(value is not None for value in (self.relationship_intent, self.life_stage,
+                                                   self.communication_style, self.pace_and_lifestyle))
+                and bool(self.interests) and bool(self.values))
+
+
+def build_profile_draft(draft: ProfileDraftInput, *, owner: MemberIdentity) -> ProfileDraftInput:
+    from vaeil.domain.pseudonym import validate_pseudonym_candidate
+    if not isinstance(draft, ProfileDraftInput):
+        raise ProfileShapeError()
+    data = _build_profile_values(owner=owner, relationship_intent=draft.relationship_intent,
+                                 life_stage=draft.life_stage, interests=draft.interests, values=draft.values,
+                                 communication_style=draft.communication_style,
+                                 pace_and_lifestyle=draft.pace_and_lifestyle, about=draft.about, complete=False)
+    candidate = None if draft.pseudonym is None else validate_pseudonym_candidate(owner.member_id, draft.pseudonym, identity=owner).value
+    return ProfileDraftInput(pseudonym=candidate, **data)
+
+
+def profile_draft_payload(draft: ProfileDraftInput) -> dict:
+    """Explicit normalized own-draft mapping; never accepts an identity record."""
+    def code(value):
+        return value.value if isinstance(value, Enum) else value
+    return dict(pseudonym=draft.pseudonym, relationship_intent=code(draft.relationship_intent),
+                life_stage=code(draft.life_stage), interests=sorted(code(item) for item in draft.interests),
+                values=sorted(code(item) for item in draft.values), communication_style=code(draft.communication_style),
+                pace_and_lifestyle=code(draft.pace_and_lifestyle), about=draft.about)

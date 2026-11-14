@@ -208,6 +208,29 @@ class SqlUnitOfWork:
         if result.rowcount != 1:
             raise AdmissionConflictError("Application is missing or already decided.")
 
+    def save_onboarding_draft(self, principal_id, draft):
+        from vaeil.domain.profile import build_profile_draft, profile_draft_payload
+        principal = self.get_principal(principal_id)
+        if principal is None:
+            raise MemberNotFoundError("Member not found.")
+        normalized = build_profile_draft(draft, owner=principal.identity)
+        exists = self._execute(select(onboarding.c.principal_id).where(onboarding.c.principal_id == principal_id)).first()
+        statement = update(onboarding).where(onboarding.c.principal_id == principal_id) if exists else insert(onboarding)
+        self._execute(statement.values(principal_id=principal_id, draft=profile_draft_payload(normalized)))
+
+    def get_onboarding_draft(self, principal_id):
+        from vaeil.domain.profile import ProfileDraftInput, build_profile_draft
+        principal = self.get_principal(principal_id)
+        if principal is None:
+            raise MemberNotFoundError("Member not found.")
+        row = self._execute(select(onboarding.c.draft).where(onboarding.c.principal_id == principal_id)).first()
+        return build_profile_draft(ProfileDraftInput(**({} if row is None else row[0])), owner=principal.identity)
+
+    def update_values_profile(self, member_id, profile):
+        previous = self.get_member(member_id)
+        member = d.Member(previous.identity, previous.pseudonym, profile)
+        self._execute(update(members).where(members.c.member_id == member_id).values(profile=member_to_row(member)["profile"]))
+
     def append_audit(self, event: AuditEvent) -> None:
         if not isinstance(event, AuditEvent):
             raise TypeError("Append a typed audit event.")
@@ -338,3 +361,10 @@ def row_to_principal(row) -> PrincipalRecord:
     identity = d.MemberIdentity(row["principal_id"], row["legal_name"], row["email"], row["phone"], row["date_of_birth"])
     return PrincipalRecord(identity, PrivateText(row["login_email"]), PrivateText(row["password_hash"]),
                            Role(row["role"]), AdmissionStatus(row["admission"]))
+
+
+onboarding = Table(
+    "onboarding_drafts", metadata,
+    Column("principal_id", String, ForeignKey("principals.principal_id"), primary_key=True),
+    Column("draft", JSON, nullable=False),
+)

@@ -7,7 +7,10 @@ from vaeil.domain.admission import validate_application_note
 from vaeil.domain.authentication import (PrincipalRecord, ApplicationRecord, Role, AdmissionStatus,
                                          AdmissionDecision, AuthenticationError, AccessDeniedError, normalize_login_email)
 from vaeil.domain.privacy import PrivateRecord, PrivateText
-from vaeil.domain.repository import AuditEvent, AuditKind, StoredSession
+from vaeil.domain.repository import AuditEvent, AuditKind, StoredSession, MemberNotFoundError
+from vaeil.domain.profile import ProfileDraftInput, build_profile_draft, profile_draft_payload, build_values_profile
+from vaeil.domain.member import Member, project_own_profile
+from vaeil.domain.pseudonym import PseudonymAlreadySetError, validate_pseudonym_candidate
 
 SESSION_LIFETIME = timedelta(hours=24)
 
@@ -158,3 +161,47 @@ class AdmissionApplication:
                                         PrivateText(key), self.passwords.hash_password(password), Role.ADMIN, AdmissionStatus.APPROVED)
             unit.add_principal(principal)
             unit.commit()
+
+
+    def own_profile(self, *, actor: SessionPrincipal):
+        with self.repository.transaction() as unit:
+            self._require(unit, actor, Role.MEMBER)
+            try:
+                return project_own_profile(unit.get_member(actor.principal_id))
+            except MemberNotFoundError:
+                return DraftReceipt(unit.get_onboarding_draft(actor.principal_id))
+
+    def save_own_profile(self, *, actor: SessionPrincipal, draft: ProfileDraftInput):
+        with self.repository.transaction() as unit:
+            principal = self._require(unit, actor, Role.MEMBER)
+            normalized = build_profile_draft(draft, owner=principal.identity)
+            try:
+                existing = unit.get_member(actor.principal_id)
+            except MemberNotFoundError:
+                existing = None
+            if existing is not None and normalized.pseudonym is not None:
+                raise PseudonymAlreadySetError("Pseudonym is fixed once set.")
+            previous = unit.get_onboarding_draft(actor.principal_id)
+            candidate = normalized.pseudonym or previous.pseudonym
+            if existing is None and (not normalized.complete or candidate is None):
+                unit.save_onboarding_draft(actor.principal_id, normalized)
+                unit.commit()
+                return DraftReceipt(normalized)
+            data = profile_draft_payload(normalized)
+            data.pop("pseudonym")
+            profile = build_values_profile(owner=principal.identity, **data)
+            if existing is None:
+                pseudonym = validate_pseudonym_candidate(actor.principal_id, candidate, identity=principal.identity)
+                member = Member(principal.identity, pseudonym, profile)
+                unit.add_member(member)
+            else:
+                member = Member(existing.identity, existing.pseudonym, profile)
+                unit.update_values_profile(actor.principal_id, profile)
+            unit.commit()
+            return project_own_profile(member)
+
+
+@dataclass(frozen=True, slots=True)
+class DraftReceipt:
+    values_profile: ProfileDraftInput
+    complete: bool = False
