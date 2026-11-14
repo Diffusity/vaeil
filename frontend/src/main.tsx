@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import { AdmissionPanel } from './AdmissionPanel';
 
 type DemoView = {
   pseudonym: string;
@@ -73,6 +74,7 @@ function App() {
         {profile.about && <p>{profile.about}</p>}
       </>}
     </section>
+    <AdmissionPanel />
     <footer>Local walking skeleton · values-based matching · human safety review planned</footer>
   </main>;
 }
