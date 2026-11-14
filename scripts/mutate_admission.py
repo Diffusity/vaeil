@@ -160,5 +160,14 @@ add("copy application note into recipient JSON", MEMBER,
     F + "test_persisted_application_note_never_enters_recipient_views")
 
 
+add("skip registration UTF-8 validation", HTTP,
+    '                    value.encode("utf-8")', '                    pass',
+    H + "test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption")
+
+add("skip profile UTF-8 validation", HTTP,
+    '                    value.encode("utf-8")', '                    pass',
+    H + "test_profile_refuses_non_utf8_about_before_commit")
+
+
 if __name__ == "__main__":
     main(MUTATIONS, "docs/audit/t6-mutations.json")

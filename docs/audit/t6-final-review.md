@@ -15,3 +15,9 @@ The implementation self-review also caught the duplicate-email503 mismatch; the 
 Final CI remains a handoff gate. No T6 merge or deployment is authorized here. Rule5 remains partial. Existing T1 assertions are unchanged; legacy Vetting changes are fixture/type-only.
 
 Final follow-up: corrected remaining stale rule2/rule6 TESTING statuses and documented fixed `detail` as well as `reason` error envelopes. Both Spec evidence gaps verified closed; no outstanding source findings.
+
+## Fresh review against master requested before merge
+
+Baseca2f475; reviewed head5f78acb. Standards:0findings. Spec:1P2 malformed-Unicode boundary finding spanning registration and profile writes. Escaped JSON lone surrogates raised UnicodeEncodeError; About could commit before response encoding failed. Registration red5exceptions/1already-safe case; profile red1exception. Commits09b21bd and57633d0 add shared top-level HTTP text UTF-8 validation and seven per-database regressions requiring safe400, no echoed input, reusable Invite/unchanged draft. No frozen policy/assertion weakened. Runtime/deployment scope unchanged.
+
+User now authorizes merge after final green CI; the earlier no-merge wording above records the previous handoff gate. Deployment is still outside this task.

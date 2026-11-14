@@ -28,3 +28,5 @@ Known operational scope: current deployed runtime remains T4. Default local auth
 Additional restored run:606passed77explicitPostgreSQLskips26.95s; six browser tests9.0s, build/typecheck green. Availability regressions: KDF lock-scope failure -> pass; remote timeout arguments absent -> present; duplicate-email503 ->409 with Invite retry. Issue13 recipient-note canary additions are regression coverage already green after correcting a new test setup attribute typo, not behavioral red claims. Final totals below supersede earlier chronological snapshots.
 
 Final restored check after all mutations and review coverage: **608passed79skipped24.52seconds**, Ruff/assumption validation green. Final localT6matrix43/43killed and T5matrix14/14killed, exact byte restoration; no live DB/model. Windows/shared-PostgreSQL/container CI remains required on the PR.
+
+Fresh review-fix restored run: **615passed86PostgreSQLskips25.08seconds**, Ruff/assumptions green;45/45localT6mutations killed with exact restoration. Fresh review Standards0; Spec1P2 resolved and independently rechecked. FinalCI on the new head is the merge gate.

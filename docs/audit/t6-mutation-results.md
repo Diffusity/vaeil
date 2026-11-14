@@ -1,8 +1,8 @@
 # T6 mutation results
 
-Final local run: **43/43 killed**, exact source-byte restoration verified by SHA-256. PostgreSQL variants run separately in disposable-database CI; local skips are not passes. Prior T5 local matrix:14/14 killed.
+Final review-fix local run: **45/45 killed**, exact source-byte restoration verified. PostgreSQL variants run in disposable-database CI; local skips are not passes. Existing persistence local14/14; earlier CI27/27.
 
-| Mutation | Local backend | Result | Killing test |
+| Mutation | Backend | Result | Killing test |
 | --- | --- | --- | --- |
 | drop login NFKC | sqlite | KILLED | `tests/test_t6_application.py::test_login_identity_uses_nfkc_and_casefold_not_lower` |
 | replace login casefold with lower | sqlite | KILLED | `tests/test_t6_application.py::test_login_identity_uses_nfkc_and_casefold_not_lower` |
@@ -47,3 +47,5 @@ Final local run: **43/43 killed**, exact source-byte restoration verified by SHA
 | remove remote statement bound | domain | KILLED | `tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable` |
 | remove remote lock bound | domain | KILLED | `tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable` |
 | copy application note into recipient JSON | sqlite | KILLED | `tests/test_t6_profiles.py::test_persisted_application_note_never_enters_recipient_views` |
+| skip registration UTF-8 validation | sqlite | KILLED | `tests/test_t6_http.py::test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption` |
+| skip profile UTF-8 validation | sqlite | KILLED | `tests/test_t6_http.py::test_profile_refuses_non_utf8_about_before_commit` |

@@ -257,6 +257,18 @@
       "backend": "sqlite",
       "killed": true,
       "test": "tests/test_t6_profiles.py::test_persisted_application_note_never_enters_recipient_views"
+    },
+    {
+      "mutation": "skip registration UTF-8 validation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption"
+    },
+    {
+      "mutation": "skip profile UTF-8 validation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_profile_refuses_non_utf8_about_before_commit"
     }
   ],
   "restored_sha256": {
@@ -268,7 +280,7 @@
     "src\\vaeil\\domain\\self_name.py": "cfadccd3d91c4f8191b6df6ed5c3d2c37ac4c811bd80d1cec52ce52c3d0473b4",
     "src\\vaeil\\domain\\profile.py": "4b5ab14855589cd8a756d4622f1d0b3ebbb112806826bf7b8c3a28b916ff37d7",
     "src\\vaeil\\adapters\\persistence.py": "6a82be9c90a660bc89c52ff4fab77d8cb1292c1b854bb8b0059d71bb6fab51c4",
-    "src\\vaeil\\http_admission.py": "b5870fae6a640e97e573c0e2f05de002ac827189e0f7d99b50ec4888f22a5a7d",
+    "src\\vaeil\\http_admission.py": "f406851984ebe7713220fc76968ce6c60ee14e9e5c1437c867ce55342c0ee18c",
     "src\\vaeil\\adapters\\authentication.py": "2b889cf5b80c1a7806a89d0e7d2a2cae9489b6826c78e428396c1df3ce1b8057",
     "src\\vaeil\\domain\\privacy.py": "dc2408e1b509de613ced4aab42f804d2af7ca06fe41cb63d16360a1b23a3da5a",
     "src\\vaeil\\domain\\member.py": "e7e7f6e37a22572e6ed8274923fec7be8e4f8f1830c5631e2ab71e747e6341eb"
