@@ -15,11 +15,11 @@ Product/domain tests use no live provider/database or system clock. Logging test
 | # | Rule | Current evidence (`file:line`) | Proven / remaining |
 | --- | --- | --- | --- |
 | 1 | Invite-only | `tests/test_invite_redemption.py:123`, `:133`, `:138` | Single-use/unknown/invalid Invite refusal; T6 admission/API tests add pre-vetting Invite checks, atomic redemption and role gates; Admin Invite console remains T9. |
-| 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Closed Verdict and safe wrapper; real model and Admin admission remain pending. |
+| 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Closed Verdict and safe wrapper; T6 implements human admission decisions; the real model, Admin console and deployed admission evidence remain pending. |
 | 3 | Moderated delivery | — | Message delivery/moderation not implemented; Vetting failure tests do not prove delivery. |
 | 4 | Consensual Reveal | — | Eligibility, Clock timestamps and bilateral consent not implemented. T1 Reveal fixtures are projection inputs only. |
 | 5 | Anonymity before Reveal — **partial** | `tests/test_member_identity_red.py:107`, `:119`, `:189`, `:508`; `tests/test_opaque_private_values.py:23`, `:39`, `:144`, `:165`, `:179`; `tests/test_private_unwrap_boundary.py:62` | Exact view shape, graph/serialization canaries, pair isolation, owner checks and opaque scalars/authorized payload. In-memory Conversation state authority is covered by T2 (`tests/test_conversation.py:211`); Explicit storage round trips are covered by T5; T6 covers session/own-profile authority; Match/Conversation product display and moderated transport remain pending. |
-| 6 | Age gate | `tests/test_invite_redemption.py:56`, `:61`, `:70`, `:79`, `:93`, `:106`, `:114`, `:152` | 18+ before consume, birthday/leap boundaries and injected Clock; UI/admission integration pending. |
+| 6 | Age gate | `tests/test_invite_redemption.py:56`, `:61`, `:70`, `:79`, `:93`, `:106`, `:114`, `:152` | 18+ before consume, birthday/leap boundaries and injected Clock; T6 tests age-gated registration/admission integration; deployed flow evidence remains pending. |
 
 **How many rules are tested?** Rules 1, 2 and 6 have existing domain-level evidence; 3/6 domain, 0/6 E2E. Domain privacy improvements do not mark Rule 5 done.
 

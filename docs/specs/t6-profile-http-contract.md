@@ -32,6 +32,6 @@ A complete response has no `complete` flag. After completion, omit `pseudonym` o
 
 ## Safe errors
 
-400 means invalid shape/profile/code/safety input;401 missing/expired session;403 admission/authority or Origin refusal;409 fixed/taken Pseudonym;503 unavailable/busy infrastructure. Profile validation returns `reason`, safe `field`, fixed `message`, and `can_rephrase`; other errors return a fixed `reason`. Never infer successful storage on an error. Preserve form state to allow correction; do not render submitted input from server error text.
+400 means invalid shape/profile/code/safety input;401 missing/expired session;403 admission/authority or Origin refusal;409 fixed/taken Pseudonym;503 unavailable/busy infrastructure. Profile validation returns `reason`, safe `field`, fixed `message`, and `can_rephrase`; other errors return a fixed `reason` or fixed `detail`, depending on the validation path. Never infer successful storage on an error. Preserve form state to allow correction; do not render submitted input from server error text.
 
 Registration/session routes and security settings remain in `t6-auth-admission-seam.md`. The minimal registration/session UI is implemented; H1 owns the later structured form.

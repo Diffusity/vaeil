@@ -13,3 +13,5 @@ Initial seam pass: no actionable mismatch. Issue13 reconciliation found two evid
 The implementation self-review also caught the duplicate-email503 mismatch; the regression was red on503, then green on409 with atomic Invite retry. Remote operation limits and password verification lock scope each have regression evidence.
 
 Final CI remains a handoff gate. No T6 merge or deployment is authorized here. Rule5 remains partial. Existing T1 assertions are unchanged; legacy Vetting changes are fixture/type-only.
+
+Final follow-up: corrected remaining stale rule2/rule6 TESTING statuses and documented fixed `detail` as well as `reason` error envelopes. Both Spec evidence gaps verified closed; no outstanding source findings.
