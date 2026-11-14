@@ -86,7 +86,7 @@
     }
   ],
   "restored_sha256": {
-    "src\\vaeil\\adapters\\persistence.py": "c6c61d547964717e8212a5c2821f81e56e98303631b0a37afff9f7018eb56f3e",
+    "src\\vaeil\\adapters\\persistence.py": "6a82be9c90a660bc89c52ff4fab77d8cb1292c1b854bb8b0059d71bb6fab51c4",
     "src\\vaeil\\domain\\conversation.py": "ff299ef5676028938f2a9f917a28eb0ea7adbc6551308495f685ad24b6644276"
   }
 }

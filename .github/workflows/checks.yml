@@ -38,6 +38,10 @@ jobs:
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
         run: python scripts/mutate_persistence.py
+      - name: Kill T6 admission, access and privacy mutations
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python scripts/mutate_admission.py
       - name: Verify restored contracts and privacy boundary
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
@@ -46,7 +50,9 @@ jobs:
         if: always()
         with:
           name: persistence-mutations
-          path: docs/audit/t5-mutations.json
+          path: |
+            docs/audit/t5-mutations.json
+            docs/audit/t6-mutations.json
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15
