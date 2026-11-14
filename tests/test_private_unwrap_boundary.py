@@ -11,6 +11,7 @@ ALLOWED_UNWRAP_SITES = {
     ("vaeil.domain.self_name", "contains_self_name"),
     ("vaeil.domain.invite", "redeem_invite"),
     ("vaeil.adapters.persistence", "encode_private_value"),
+    ("vaeil.adapters.authentication", "verify_password"),
 }
 SOURCE = Path(__file__).resolve().parents[1] / "src"
 
@@ -88,5 +89,15 @@ def test_boundary_catches_a_deliberately_violating_fake_module(source):
 def test_persistence_boundary_rejects_an_unauthorized_mapper(module, function):
     source = f"def {function}(value):\n    return value.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()\n"
     assert unwrap_sites(source, module) == {(module, function)}
+    with pytest.raises(AssertionError):
+        assert_unwrap_boundary({module: source}, exact=False)
+
+
+@pytest.mark.parametrize("module,function", [
+    ("vaeil.adapters.authentication", "log_hash"),
+    ("vaeil.adapters.wrong_login", "verify_password"),
+])
+def test_login_unwrap_is_exact_not_a_module_allowlist(module, function):
+    source = f"def {function}(value):\n    return value.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()\n"
     with pytest.raises(AssertionError):
         assert_unwrap_boundary({module: source}, exact=False)
