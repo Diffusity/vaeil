@@ -1,6 +1,10 @@
 """One SQLAlchemy Core implementation for local SQLite and deployed PostgreSQL."""
 from contextlib import contextmanager
 from datetime import date, datetime
+import hashlib
+import certifi
+from sqlalchemy.engine import make_url
+from vaeil.domain.authentication import (PrincipalRecord, ApplicationRecord, Role, AdmissionStatus, AdmissionDecision, AdmissionConflictError, normalize_login_email)
 
 from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, delete, insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -8,7 +12,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateDate, PrivateText
-from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession
+from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
@@ -139,6 +143,100 @@ class SqlUnitOfWork:
             raise c.ConversationNotFoundError("Conversation not found.")
         return row_to_conversation(row)
 
+    def add_principal(self, principal: PrincipalRecord) -> None:
+        if not isinstance(principal, PrincipalRecord):
+            raise TypeError("Store a typed principal.")
+        identity = principal.identity
+        self._execute(insert(principals).values(
+            principal_id=identity.member_id, legal_name=encode_private_value(identity.legal_name),
+            email=encode_private_value(identity.email), phone=None if identity.phone is None else encode_private_value(identity.phone),
+            date_of_birth=encode_private_value(identity.date_of_birth),
+            login_email=normalize_login_email(encode_private_value(principal.login_email)),
+            password_hash=encode_private_value(principal.password_hash), role=principal.role.value,
+            admission=principal.admission.value))
+
+    def get_principal(self, principal_id: str) -> PrincipalRecord | None:
+        row = self._execute(select(principals).where(principals.c.principal_id == principal_id)).mappings().first()
+        return None if row is None else row_to_principal(row)
+
+    def get_principal_by_email(self, email: str) -> PrincipalRecord | None:
+        row = self._execute(select(principals).where(principals.c.login_email == normalize_login_email(email))).mappings().first()
+        return None if row is None else row_to_principal(row)
+
+    def add_application(self, application: ApplicationRecord) -> None:
+        if not isinstance(application, ApplicationRecord):
+            raise TypeError("Store a typed application.")
+        self.add_principal(application.principal)
+        self._execute(insert(applications).values(principal_id=application.principal.identity.member_id, note=application.note))
+
+    def get_application(self, principal_id: str) -> ApplicationRecord | None:
+        principal = self.get_principal(principal_id)
+        row = self._execute(select(applications.c.note).where(applications.c.principal_id == principal_id)).first()
+        return None if principal is None or row is None else ApplicationRecord(principal, row[0])
+
+    def list_pending_applications(self) -> tuple[ApplicationRecord, ...]:
+        ids = self._execute(select(principals.c.principal_id).join(applications).where(
+            principals.c.admission == AdmissionStatus.NEEDS_REVIEW.value).order_by(principals.c.principal_id)).scalars()
+        return tuple(self.get_application(identifier) for identifier in ids)
+
+    def issue_invite(self, code: str, *, issuer_id: str) -> None:
+        if not isinstance(code, str) or not code.strip():
+            raise d.InvalidInviteError("Invite is invalid.")
+        self._execute(insert(invites).values(code_digest=hashlib.sha256(code.encode()).hexdigest(), issuer_id=issuer_id))
+
+    def require_invite(self, code: str) -> None:
+        if not isinstance(code, str):
+            raise d.InvalidInviteError("Invite is invalid.")
+        key = hashlib.sha256(code.encode()).hexdigest()
+        row = self._execute(select(invites.c.redeemed_by).where(invites.c.code_digest == key)).first()
+        if row is None:
+            raise d.InvalidInviteError("Invite is invalid.")
+        if row[0] is not None:
+            raise d.InviteAlreadyRedeemedError("Invite is already redeemed.")
+
+    def consume_invite(self, code: str, *, principal_id: str) -> None:
+        self.require_invite(code)
+        key = hashlib.sha256(code.encode()).hexdigest()
+        result = self._execute(update(invites).where(invites.c.code_digest == key, invites.c.redeemed_by.is_(None))
+                               .values(redeemed_by=principal_id))
+        if result.rowcount != 1:
+            raise d.InviteAlreadyRedeemedError("Invite is already redeemed.")
+
+    def set_admission_decision(self, principal_id: str, decision: AdmissionDecision) -> None:
+        if not isinstance(decision, AdmissionDecision):
+            raise TypeError("Use a human admission decision.")
+        approved = decision is AdmissionDecision.APPROVE
+        result = self._execute(update(principals).where(principals.c.principal_id == principal_id,
+                               principals.c.admission == AdmissionStatus.NEEDS_REVIEW.value,
+                               principals.c.role == Role.APPLICANT.value).values(
+                                   admission=AdmissionStatus.APPROVED.value if approved else AdmissionStatus.REJECTED.value,
+                                   role=Role.MEMBER.value if approved else Role.APPLICANT.value))
+        if result.rowcount != 1:
+            raise AdmissionConflictError("Application is missing or already decided.")
+
+    def save_onboarding_draft(self, principal_id, draft):
+        from vaeil.domain.profile import build_profile_draft, profile_draft_payload
+        principal = self.get_principal(principal_id)
+        if principal is None:
+            raise MemberNotFoundError("Member not found.")
+        normalized = build_profile_draft(draft, owner=principal.identity)
+        exists = self._execute(select(onboarding.c.principal_id).where(onboarding.c.principal_id == principal_id)).first()
+        statement = update(onboarding).where(onboarding.c.principal_id == principal_id) if exists else insert(onboarding)
+        self._execute(statement.values(principal_id=principal_id, draft=profile_draft_payload(normalized)))
+
+    def get_onboarding_draft(self, principal_id):
+        from vaeil.domain.profile import ProfileDraftInput, build_profile_draft
+        principal = self.get_principal(principal_id)
+        if principal is None:
+            raise MemberNotFoundError("Member not found.")
+        row = self._execute(select(onboarding.c.draft).where(onboarding.c.principal_id == principal_id)).first()
+        return build_profile_draft(ProfileDraftInput(**({} if row is None else row[0])), owner=principal.identity)
+
+    def update_values_profile(self, member_id, profile):
+        previous = self.get_member(member_id)
+        member = d.Member(previous.identity, previous.pseudonym, profile)
+        self._execute(update(members).where(members.c.member_id == member_id).values(profile=member_to_row(member)["profile"]))
+
     def append_audit(self, event: AuditEvent) -> None:
         if not isinstance(event, AuditEvent):
             raise TypeError("Append a typed audit event.")
@@ -184,6 +282,11 @@ class SqlUnitOfWork:
                 "normalized_pseudonym" in constraint or "members.normalized_pseudonym" in str(original)
             ):
                 raise d.PseudonymTakenError("Pseudonym is already taken.") from None
+            if isinstance(error, IntegrityError) and (
+                constraint in {"principals_login_email_key", "principals_pkey"}
+                or "principals.login_email" in str(original) or "principals.principal_id" in str(original)
+            ):
+                raise ApplicationConflictError("Application conflicts with an existing account.") from None
             raise RepositoryError("Repository operation failed.") from None
 
     def commit(self) -> None:
@@ -225,7 +328,12 @@ def open_repository(url: str = "sqlite:///vaeil.sqlite"):
         if url.startswith(("postgresql://", "postgres://")):
             url = "postgresql+psycopg://" + url.split("://", 1)[1]
         try:
-            engine = create_engine(url, echo=False, hide_parameters=True)
+            parsed_url = make_url(url)
+            connect_args = {}
+            if parsed_url.drivername.startswith("postgresql") and parsed_url.host not in {"127.0.0.1", "localhost", "::1"}:
+                connect_args = {"sslmode": "verify-full", "sslrootcert": certifi.where(), "connect_timeout": 2,
+                                "options": "-c statement_timeout=2000 -c lock_timeout=2000"}
+            engine = create_engine(url, echo=False, hide_parameters=True, connect_args=connect_args)
         except (SQLAlchemyError, ValueError, TypeError):
             raise RepositoryError("Repository configuration is invalid.") from None
         if engine.dialect.name == "sqlite":
@@ -245,3 +353,34 @@ def open_repository(url: str = "sqlite:///vaeil.sqlite"):
         if engine is not None:
             engine.dispose()
 
+
+
+principals = Table(
+    "principals", metadata,
+    Column("principal_id", String, primary_key=True),
+    Column("legal_name", String, nullable=False), Column("email", String, nullable=False),
+    Column("phone", String), Column("date_of_birth", Date, nullable=False),
+    Column("login_email", String, nullable=False, unique=True), Column("password_hash", String, nullable=False),
+    Column("role", String, nullable=False), Column("admission", String, nullable=False),
+)
+applications = Table(
+    "applications", metadata, Column("principal_id", String, ForeignKey("principals.principal_id"), primary_key=True),
+    Column("note", String, nullable=False),
+)
+invites = Table(
+    "invites", metadata, Column("code_digest", String, primary_key=True),
+    Column("issuer_id", String, nullable=False), Column("redeemed_by", String),
+)
+
+
+def row_to_principal(row) -> PrincipalRecord:
+    identity = d.MemberIdentity(row["principal_id"], row["legal_name"], row["email"], row["phone"], row["date_of_birth"])
+    return PrincipalRecord(identity, PrivateText(row["login_email"]), PrivateText(row["password_hash"]),
+                           Role(row["role"]), AdmissionStatus(row["admission"]))
+
+
+onboarding = Table(
+    "onboarding_drafts", metadata,
+    Column("principal_id", String, ForeignKey("principals.principal_id"), primary_key=True),
+    Column("draft", JSON, nullable=False),
+)

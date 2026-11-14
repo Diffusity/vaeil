@@ -1,4 +1,6 @@
-# T6 application/API seam — proposal for approval
+# T6 application/API seam — approved 14 November 2026
+
+**Approval record:** Parth approved this seam on14November2026. The original proposal below is retained as the approved decision record; its approval requests are historical. Implementation follows it in a separate feature PR.
 
 Issue13: Authentication, admission and structured profile APIs. T5 is merged (8a7a434). The14November instruction lifts the T6 hold to carry out the recommended flow; this proposal must be approved before tests. No product decisions are reopened. No tests, stubs, product implementation or unwrap allowlist changes accompany this document.
 
@@ -80,3 +82,5 @@ Mutation targets: bypass Invite/age/admission/role/session expiry/CSRF; consume 
 Approve the application/HTTP seams, note-only port change, separate principal/draft representation and exact verify_password unwrap site before tests. Security defaults needing confirmation as part of this proposal:24-hour absolute session lifetime (no sliding renewal); new passwords12–128 Unicode code points with no composition rule or silent normalization; login email strip/NFKC/casefold uniqueness. These are proposed settings, not closed-definition decisions silently adopted. No email verification/reset flow or provider/tunnel added.
 
 Ticket estimate2.5–3.5lead sessions is tight: T5 did not persist Invites/Applicants/credentials/drafts or support profile updates. The added contracts and restricted Member state are required T6 work, not free wiring. Using3.5sessions for T6 instead of the previous optimistic3 raises the remaining13.5session forecast to14sessions against about10available: at least4sessions short, excluding additional review/acceptance effort. This is a revised estimate, not approved capacity or a reason to cut required rules. Re-estimate after the first vertical cycle. Retain the28November freeze, protected six rules/Admin/Reveal/Report handling and optional-model deferral.
+
+Implemented profile request/response shapes, omission semantics and safe errors for H1: [T6 HTTP contract](t6-profile-http-contract.md). This supplements the approved interface without changing it.

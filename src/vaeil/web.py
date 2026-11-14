@@ -1,10 +1,13 @@
-"""Same-origin demo application; admission and real-data APIs arrive in T6."""
+"""Same-origin fictional demo and explicitly authorized admission APIs."""
 
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import date
 from pathlib import Path
+from contextlib import asynccontextmanager
+from vaeil.runtime import RuntimeAdmission
+from vaeil.http_admission import attach_admission_routes
 import os
 from vaeil.adapters.readiness import check_database_ready
 
@@ -32,8 +35,22 @@ def demo_member() -> Member:
     return Member(identity, Pseudonym("Comet"), profile)
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+def create_app(*, admission_application=None) -> FastAPI:
+    runtime = RuntimeAdmission()
+
+    @asynccontextmanager
+    async def lifespan(app):
+        try:
+            yield
+        finally:
+            runtime.close()
+
+    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
+
+    def admission_provider():
+        return admission_application if admission_application is not None else runtime.get()
+
+    attach_admission_routes(app, admission_provider)
     member = demo_member()
     context = ConversationRevealState("demo-pair", ("demo-subject", "demo-viewer"), False)
 

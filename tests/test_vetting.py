@@ -11,7 +11,7 @@ class FakeVettingModel:
     def __init__(self, verdict: Verdict) -> None:
         self._verdict = verdict
 
-    def vet(self, applicant: Applicant) -> Verdict:
+    def vet(self, application_note: str) -> Verdict:
         return self._verdict
 
 
@@ -21,7 +21,7 @@ class RaisingVettingModel:
     def __init__(self, error: Exception) -> None:
         self._error = error
 
-    def vet(self, applicant: Applicant) -> Verdict:
+    def vet(self, application_note: str) -> Verdict:
         raise self._error
 
 
@@ -31,12 +31,13 @@ class MisbehavingVettingModel:
     def __init__(self, result: object) -> None:
         self._result = result
 
-    def vet(self, applicant: Applicant) -> Verdict:
+    def vet(self, application_note: str) -> Verdict:
         return self._result  # type: ignore[return-value]
 
 
 def an_applicant() -> Applicant:
-    return Applicant(date_of_birth=date(2000, 1, 1))
+    return Applicant(date_of_birth=date(2000, 1, 1),
+                     application_note="I seek a thoughtful long term relationship.")
 
 
 def test_verdict_cannot_represent_rejection() -> None:

@@ -111,3 +111,7 @@ Parth explicitly approves both readiness interface and free-only Render/Neon pro
 
 ## 2026-11-11 continuity scope decision
 Parth defers teammate collaborator invitations and password-manager storage as unnecessary for the current demo. This supersedes the earlier mandatory invite/storage procedure for T4. Continuity is owner-operated through existing Render/Neon access; do not claim teammate access or password-manager escrow. Secrets remain outside Git/logs/chat. No account password sharing or new access grants inferred.
+
+## 2026-11-14 T6 review and merge authorization
+
+Parth explicitly authorizes fresh code-review of PR24 against master, resolving actionable findings, retrospective, and merge after green final-head CI, followed by ask-matt next-step advice. Use a merge commit to preserve cited history. This supersedes the earlier T6 merge hold, not the deployment boundary. No deployment, T7 implementation, account operation or teammate assignment is inferred.

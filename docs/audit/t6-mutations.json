@@ -1,0 +1,288 @@
+{
+  "results": [
+    {
+      "mutation": "drop login NFKC",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_login_identity_uses_nfkc_and_casefold_not_lower"
+    },
+    {
+      "mutation": "replace login casefold with lower",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_login_identity_uses_nfkc_and_casefold_not_lower"
+    },
+    {
+      "mutation": "skip age gate",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_underage_never_calls_model_or_consumes_invite"
+    },
+    {
+      "mutation": "consume Invite before age validation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_underage_never_calls_model_or_consumes_invite"
+    },
+    {
+      "mutation": "skip pre-vetting Invite availability",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_unknown_invite_never_reaches_vetting_or_stores_an_applicant"
+    },
+    {
+      "mutation": "skip atomic Invite consumption",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_same_invite_concurrent_applications_have_one_atomic_winner"
+    },
+    {
+      "mutation": "auto-admit clean or injected note",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_runtime_human_review_never_auto_admits_clean_or_injection_note"
+    },
+    {
+      "mutation": "send Applicant including DOB to model",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_vetting_port_receives_only_the_application_note"
+    },
+    {
+      "mutation": "make model rejection representable",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_vetting.py::test_verdict_cannot_represent_rejection"
+    },
+    {
+      "mutation": "drop note NFKC normalization",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_note_normalization_and_accepted_boundaries"
+    },
+    {
+      "mutation": "note minimum 19",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py"
+    },
+    {
+      "mutation": "note minimum 21",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py"
+    },
+    {
+      "mutation": "note maximum 499",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py"
+    },
+    {
+      "mutation": "note maximum 501",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py"
+    },
+    {
+      "mutation": "drop note controls",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_invalid_note_refused_without_echoing_input"
+    },
+    {
+      "mutation": "drop note identifier check",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_invalid_note_refused_without_echoing_input"
+    },
+    {
+      "mutation": "drop note self-name check",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_whole_word_note_false_positive_can_be_rephrased"
+    },
+    {
+      "mutation": "use substring mode for free text",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_note.py::test_note_normalization_and_accepted_boundaries"
+    },
+    {
+      "mutation": "bypass server role check",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_approved_member_cannot_act_as_admin_even_with_forged_role"
+    },
+    {
+      "mutation": "omit session expiry",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_session_boundary_logout_and_unknown_token"
+    },
+    {
+      "mutation": "omit logout revocation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_session_boundary_logout_and_unknown_token"
+    },
+    {
+      "mutation": "drop admission audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_admin_rejection_is_human_terminal_and_audited"
+    },
+    {
+      "mutation": "commit Invite before application and audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_failed_audit_rolls_back_application_and_invite_consumption"
+    },
+    {
+      "mutation": "ignore fixed-once Pseudonym",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_profiles.py::test_private_draft_then_complete_then_profile_update_preserves_identity"
+    },
+    {
+      "mutation": "drop profile identifier check",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_profiles.py::test_draft_writes_use_the_same_profile_safety_policies"
+    },
+    {
+      "mutation": "remove normalized Pseudonym uniqueness",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_repository_contract.py::test_concurrent_normalized_claims_commit_exactly_one_owner"
+    },
+    {
+      "mutation": "drop cookie HttpOnly",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_registration_login_cookie_restricted_profile_and_logout"
+    },
+    {
+      "mutation": "drop cookie Secure",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_registration_login_cookie_restricted_profile_and_logout"
+    },
+    {
+      "mutation": "drop same-origin CSRF check",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_csrf_cross_origin_and_absent_origin_are_refused"
+    },
+    {
+      "mutation": "copy raw session token into JSON",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_registration_login_cookie_restricted_profile_and_logout"
+    },
+    {
+      "mutation": "drop password length policy",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_passwords.py::test_password_policy_refuses_without_echoing"
+    },
+    {
+      "mutation": "replace scrypt with fast hash",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_passwords.py::test_verifier_accepts_a_frozen_independent_scrypt_vector_and_versioned_format"
+    },
+    {
+      "mutation": "use ordinary secret comparison",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_passwords.py::test_verification_respects_the_vetted_constant_time_comparison"
+    },
+    {
+      "mutation": "increase password memory concurrency cap",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_passwords.py::test_password_workers_refuse_overlap_instead_of_allocating_unbounded_memory"
+    },
+    {
+      "mutation": "unwrap from unauthorized login helper",
+      "backend": "architecture",
+      "killed": true,
+      "test": "tests/test_private_unwrap_boundary.py::test_production_unwrap_sites_are_exactly_the_approved_functions"
+    },
+    {
+      "mutation": "wrapper repr leaks private values",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_opaque_private_values.py::test_all_scalar_rendering_is_redacted"
+    },
+    {
+      "mutation": "hold repository lock during password verification",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_application.py::test_password_verification_does_not_hold_the_repository_write_lock"
+    },
+    {
+      "mutation": "map duplicate email to infrastructure failure",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_duplicate_email_conflict_rolls_back_invite_and_allows_retry"
+    },
+    {
+      "mutation": "disable remote TLS verification",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable"
+    },
+    {
+      "mutation": "remove remote connect bound",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable"
+    },
+    {
+      "mutation": "remove remote statement bound",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable"
+    },
+    {
+      "mutation": "remove remote lock bound",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t6_repository.py::test_remote_postgres_uses_verified_tls_even_if_url_requests_disable"
+    },
+    {
+      "mutation": "copy application note into recipient JSON",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_profiles.py::test_persisted_application_note_never_enters_recipient_views"
+    },
+    {
+      "mutation": "skip registration UTF-8 validation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption"
+    },
+    {
+      "mutation": "skip profile UTF-8 validation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t6_http.py::test_profile_refuses_non_utf8_about_before_commit"
+    }
+  ],
+  "restored_sha256": {
+    "src\\vaeil\\domain\\authentication.py": "c2cbb46efeb7df0503516e6a5d7d10a5cafd6f14f528db23f64e359c62e90b03",
+    "src\\vaeil\\application\\admission.py": "beafb54e248e91454d8e898be2fdd1ec762effa7c1119801bd02850a1bc1800d",
+    "src\\vaeil\\runtime.py": "d110101d1a756e292147a2010e4d901dd14bac83e59de77f64c9fc4b587d80bb",
+    "src\\vaeil\\domain\\vetting.py": "dd8200a6142e1157fcac1fd74f168893c00163f6595e1d041ce50ebe6a99a9b8",
+    "src\\vaeil\\domain\\admission.py": "b7a3133e39d702abe02ee7fb43994078b67e45e8785314259d74e12daa3d2a55",
+    "src\\vaeil\\domain\\self_name.py": "cfadccd3d91c4f8191b6df6ed5c3d2c37ac4c811bd80d1cec52ce52c3d0473b4",
+    "src\\vaeil\\domain\\profile.py": "4b5ab14855589cd8a756d4622f1d0b3ebbb112806826bf7b8c3a28b916ff37d7",
+    "src\\vaeil\\adapters\\persistence.py": "6a82be9c90a660bc89c52ff4fab77d8cb1292c1b854bb8b0059d71bb6fab51c4",
+    "src\\vaeil\\http_admission.py": "f406851984ebe7713220fc76968ce6c60ee14e9e5c1437c867ce55342c0ee18c",
+    "src\\vaeil\\adapters\\authentication.py": "2b889cf5b80c1a7806a89d0e7d2a2cae9489b6826c78e428396c1df3ce1b8057",
+    "src\\vaeil\\domain\\privacy.py": "dc2408e1b509de613ced4aab42f804d2af7ca06fe41cb63d16360a1b23a3da5a",
+    "src\\vaeil\\domain\\member.py": "e7e7f6e37a22572e6ed8274923fec7be8e4f8f1830c5631e2ab71e747e6341eb"
+  }
+}

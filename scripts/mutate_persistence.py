@@ -77,13 +77,14 @@ MUTATIONS = [
 ]
 
 
-def main():
-    originals = {path: path.read_bytes() for path in (ADAPTER, CONVERSATION)}
+def main(mutations=None, output_path="docs/audit/t5-mutations.json"):
+    selected = MUTATIONS if mutations is None else mutations
+    originals = {path: path.read_bytes() for _, path, _, _ in selected}
     mtimes = {path: path.stat().st_mtime for path in originals}
     backends = ["sqlite"] + (["postgres"] if os.environ.get("VAEIL_TEST_POSTGRES_URL") else [])
     results = []
     try:
-        for number, (name, path, mutate, test) in enumerate(MUTATIONS, 1):
+        for number, (name, path, mutate, test) in enumerate(selected, 1):
             source = originals[path].decode().replace("\r\n", "\n")
             changed = mutate(source)
             if changed == source:
@@ -92,9 +93,11 @@ def main():
             # Invalidate timestamp/size bytecode caches even for equal-size edits.
             os.utime(path, (mtimes[path] + number + 2, mtimes[path] + number + 2))
             try:
-                for backend in (["architecture"] if test == BOUNDARY else backends):
+                is_database = "test_remote_postgres_uses_verified_tls" not in test and test.split("::", 1)[0] in {"tests/test_repository_contract.py", "tests/test_t6_repository.py", "tests/test_t6_application.py", "tests/test_t6_profiles.py", "tests/test_t6_http.py"}
+                matrix = ["architecture"] if test == BOUNDARY else (backends if is_database else ["domain"])
+                for backend in matrix:
                     command = [sys.executable, "-m", "pytest", test, "-q", "--tb=short"]
-                    if backend != "architecture":
+                    if backend in {"sqlite", "postgres"}:
                         command += ["-k", backend]
                     run = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=90)
                     killed = run.returncode == 1 and " failed" in run.stdout and "ERROR collecting" not in run.stdout
@@ -112,7 +115,7 @@ def main():
         assert all(path.read_bytes() == content for path, content in originals.items())
     output = dict(results=results, restored_sha256={str(path.relative_to(ROOT)): hashlib.sha256(content).hexdigest()
                                                   for path, content in originals.items()})
-    (ROOT / "docs/audit/t5-mutations.json").write_text(json.dumps(output, indent=2) + "\n")
+    (ROOT / output_path).write_text(json.dumps(output, indent=2) + "\n", encoding="utf-8")
     if not all(result["killed"] for result in results):
         raise SystemExit(1)
 

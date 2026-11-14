@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Protocol
 
 from vaeil.domain.applicant import Applicant
+from vaeil.domain.admission import normalize_application_note
 
 
 class Verdict(Enum):
@@ -16,14 +17,15 @@ class Verdict(Enum):
 class VettingModel(Protocol):
     """Port for the LLM vetting boundary; adapters translate model output."""
 
-    def vet(self, applicant: Applicant) -> Verdict:
+    def vet(self, application_note: str) -> Verdict:
         ...
 
 
 def vet(applicant: Applicant, model: VettingModel) -> Verdict:
     """Run vetting, failing closed to NeedsReview on any port misbehaviour."""
     try:
-        verdict = model.vet(applicant)
+        note = normalize_application_note(applicant.application_note)
+        verdict = model.vet(note)
     except Exception:
         return Verdict.NEEDS_REVIEW
 
