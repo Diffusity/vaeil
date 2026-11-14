@@ -326,7 +326,8 @@ def open_repository(url: str = "sqlite:///vaeil.sqlite"):
             parsed_url = make_url(url)
             connect_args = {}
             if parsed_url.drivername.startswith("postgresql") and parsed_url.host not in {"127.0.0.1", "localhost", "::1"}:
-                connect_args = {"sslmode": "verify-full", "sslrootcert": certifi.where()}
+                connect_args = {"sslmode": "verify-full", "sslrootcert": certifi.where(), "connect_timeout": 2,
+                                "options": "-c statement_timeout=2000 -c lock_timeout=2000"}
             engine = create_engine(url, echo=False, hide_parameters=True, connect_args=connect_args)
         except (SQLAlchemyError, ValueError, TypeError):
             raise RepositoryError("Repository configuration is invalid.") from None

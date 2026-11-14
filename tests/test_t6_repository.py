@@ -34,7 +34,9 @@ def test_principal_and_application_roundtrip_without_private_diagnostics(reposit
             assert unit.get_principal("missing") is None
 
 
-def test_principal_email_ownership_and_rollback(repository_url):
+@pytest.mark.parametrize("other_email", ["fiction@example.invalid", " FICTION@example.invalid ", "ｆｉｃｔｉｏｎ＠example.invalid"],
+                         ids=["exact", "trim-case", "nfkc"])
+def test_principal_email_ownership_and_rollback(repository_url, other_email):
     from vaeil.domain.authentication import ApplicationRecord
     from vaeil.domain.repository import RepositoryError
     with open_repository(repository_url) as repo:
@@ -47,7 +49,7 @@ def test_principal_email_ownership_and_rollback(repository_url):
             unit.commit()
         with pytest.raises(RepositoryError):
             with repo.transaction() as unit:
-                unit.add_application(ApplicationRecord(principal("p2"), "I seek a thoughtful long term relationship."))
+                unit.add_application(ApplicationRecord(principal("p2", other_email), "I seek a thoughtful long term relationship."))
                 unit.commit()
         with repo.transaction() as unit:
             assert unit.get_principal("p2") is None
@@ -106,4 +108,7 @@ def test_remote_postgres_uses_verified_tls_even_if_url_requests_disable(monkeypa
             pass
     assert len(connections) == 1
     assert connections[0]["sslmode"] == "verify-full"
+    assert connections[0]["connect_timeout"] == 2
+    assert "statement_timeout=2000" in connections[0]["options"]
+    assert "lock_timeout=2000" in connections[0]["options"]
     assert Path(connections[0]["sslrootcert"]).is_file()
