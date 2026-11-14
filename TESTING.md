@@ -128,7 +128,7 @@ The same contract runs against file SQLite and disposable PostgreSQL18 in CI. Fi
 
 New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects wrong mapper functions/modules. Generic private serialization remains refused.
 
-Run `python scripts/mutate_persistence.py` alone. Final matrix at19ccb9e:13/13SQLite,13/13PostgreSQL and1/1sharedAST mutations killed; normal contracts passed after exact source restoration. CIrun43081827304. Results: docs/audit/t5-mutations-both-databases.json; readable table: docs/audit/t5-mutation-results.md. Supplementary T2mutations19/19 and Slice2mutations12/12 also killed after policy extraction. Deployed survival verification is pending; #12 stays open and Rule5 stays partial.
+Run `python scripts/mutate_persistence.py` alone. Final matrix at19ccb9e:13/13SQLite,13/13PostgreSQL and1/1sharedAST mutations killed; normal contracts passed after exact source restoration. CIrun43081827304. Results: docs/audit/t5-mutations-both-databases.json; readable table: docs/audit/t5-mutation-results.md. Supplementary T2mutations19/19 and Slice2mutations12/12 also killed after policy extraction. An isolated Neon fixture survived a Render restart on14November; see docs/audit/t5-deployed-survival-2026-11-14.md. Rule5 stays partial.
 
 Final review regression: `tests/test_repository_contract.py:495` refuses SQLite INSERT OR REPLACE and PostgreSQL conflict-update replacement at the raw storage boundary. The prior guards alone were bypassable on SQLite; the new duplicate-ID insert guard closes that gap.
 ## T4 readiness and container preparation
