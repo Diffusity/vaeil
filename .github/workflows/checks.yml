@@ -33,7 +33,7 @@ jobs:
       - name: Run the same contract against SQLite and disposable PostgreSQL
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
-        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py -q
+        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py -q
       - name: Kill persistence mutations on both databases
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
@@ -41,7 +41,7 @@ jobs:
       - name: Verify restored contracts and privacy boundary
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
-        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_private_unwrap_boundary.py tests/test_domain_purity.py -q
+        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py tests/test_private_unwrap_boundary.py tests/test_domain_purity.py -q
       - uses: actions/upload-artifact@v4
         if: always()
         with:
