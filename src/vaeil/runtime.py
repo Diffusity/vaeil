@@ -13,7 +13,7 @@ from vaeil.domain.repository import RepositoryError
 
 class RuntimeClock:
     def today(self):
-        return self.now().date()
+        return datetime.now().date()
     def now(self):
         return datetime.now(timezone.utc)
 

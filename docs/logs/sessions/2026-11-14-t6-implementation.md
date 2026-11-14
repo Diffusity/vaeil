@@ -25,3 +25,5 @@ Credentialformat red1frozenreferencevectorrefused -> versionlabelscrypt-v1. Refe
 Cycle12HTTPguidancered1KeyErrorcan_rephrase/1PGskip -> green12HTTPcases12PGskips. Preserved fixed domainmessage/field/rephraseflag, no offendingtext. Versioncycle23selectedgreen. No furtherprivateextractorsorinputechoes introduced.
 
 Cycle13Inviteorderingred1modelreceivednoteonunknownInvite/1PGskip -> green21application/repositorycases20PGskips. Addedshortrequire_invite readbeforemodel, thenatomicconsumerecheckaftermodel outsidewriteTxn. Underagepriorityandconcurrentone-winner behaviorretained. No modelbudgetspentforinvalid/alreadyusedInvites.
+
+InitialT6matrix34/34localkills,exactbytesrestored; PostgreSQLmatrixrequiresCI. Clockadapterred1localdate14!=15 atUTCboundary ->green3selected; preservedexistingClock.todaylocal-calendardatecontractandUTCnowforexpiry. Runtimeuseshostcalendarconfiguration,notviewer-controlledtime. No newproducttimezonechoice.
