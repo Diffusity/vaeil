@@ -20,7 +20,7 @@ As of14November,14calendar build days remain through27November: about10lead sess
 
 Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Free-only provisioning was approved and the fictional demo is live.
 
-The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 and T4 are merged; T4 has accepted operational limits. T5 storage and isolated Neon restart survival are verified. Current forecast is below.
+The table below is the historical October allocation, superseded for current estimates by the [14 November velocity forecast](docs/audit/t5-velocity-2026-11-14.md). It is not a commitment or a claim that past planned work has landed. T3 and T4 are merged; T4 has accepted operational limits. T5 storage and isolated Neon restart survival are verified. Current forecast is below.
 
 | Week | Historical proposed focus |
 | --- | --- |
