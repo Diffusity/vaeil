@@ -20,6 +20,10 @@ class RepositoryError(Exception):
     """An infrastructure operation failed without exposing SQL or private values."""
 
 
+class ApplicationConflictError(RepositoryError):
+    """An application conflicts with a stored principal; no input is echoed."""
+
+
 class AuditKind(str, Enum):
     INVITE_REDEEMED = "invite_redeemed"
     VETTING_APPROVED = "vetting_approved"

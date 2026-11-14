@@ -11,7 +11,7 @@ from vaeil.domain import InvalidPseudonymError, PseudonymAlreadySetError, Pseudo
 from vaeil.domain.admission import ApplicationNoteError
 from vaeil.domain.authentication import AuthenticationError, AccessDeniedError, AdmissionConflictError, AdmissionDecision
 from vaeil.domain.profile import InvalidValuesProfileError, ProfileDraftInput, profile_draft_payload
-from vaeil.domain.repository import RepositoryError
+from vaeil.domain.repository import RepositoryError, ApplicationConflictError
 from vaeil.adapters.authentication import PasswordPolicyError, PasswordBusyError
 
 COOKIE = "vaeil_session"
@@ -32,6 +32,7 @@ def attach_admission_routes(app, provider):
         ApplicationNoteError: (400, "invalid_note"), InvalidValuesProfileError: (400, "invalid_profile"),
         InvalidPseudonymError: (400, "invalid_pseudonym"), PseudonymAlreadySetError: (409, "pseudonym_fixed"),
         PseudonymTakenError: (409, "pseudonym_taken"), AdmissionConflictError: (409, "admission_conflict"),
+        ApplicationConflictError: (409, "application_conflict"),
         RepositoryError: (503, "unavailable"), PasswordBusyError: (503, "busy"), PasswordPolicyError: (400, "password_policy"),
     }
     for error_type, (status, reason) in errors.items():

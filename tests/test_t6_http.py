@@ -119,3 +119,21 @@ def test_about_refusal_tells_member_to_rephrase_without_echoing_name(repository_
             assert response.json()["can_rephrase"] is True
             assert "rephrase" in response.json()["message"].lower()
             assert BODY["legal_name"] not in response.text
+
+def test_duplicate_email_conflict_rolls_back_invite_and_allows_retry(repository_url):
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        client, _ = client_for(repo)
+        with client:
+            assert client.post("/api/applications", json=BODY).status_code == 202
+            with repo.transaction() as unit:
+                unit.issue_invite("invite-two", issuer_id="admin")
+                unit.commit()
+            duplicate = BODY | {"invite_code": "invite-two", "email": " EMAILCANARY@example.invalid "}
+            refused = client.post("/api/applications", json=duplicate)
+            assert refused.status_code == 409
+            assert refused.json() == {"reason": "application_conflict"}
+            for canary in PRIVATE:
+                assert canary not in refused.text
+            retry = duplicate | {"email": "other@example.invalid"}
+            assert client.post("/api/applications", json=retry).status_code == 202

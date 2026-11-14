@@ -12,7 +12,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain.privacy import PrivateDate, PrivateText
-from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession
+from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
@@ -282,6 +282,11 @@ class SqlUnitOfWork:
                 "normalized_pseudonym" in constraint or "members.normalized_pseudonym" in str(original)
             ):
                 raise d.PseudonymTakenError("Pseudonym is already taken.") from None
+            if isinstance(error, IntegrityError) and (
+                constraint in {"principals_login_email_key", "principals_pkey"}
+                or "principals.login_email" in str(original) or "principals.principal_id" in str(original)
+            ):
+                raise ApplicationConflictError("Application conflicts with an existing account.") from None
             raise RepositoryError("Repository operation failed.") from None
 
     def commit(self) -> None:
