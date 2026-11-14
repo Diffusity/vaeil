@@ -90,3 +90,20 @@ def test_admission_is_terminal_and_rollback_preserves_queue(repository_url):
         with pytest.raises(AdmissionConflictError):
             with repo.transaction() as unit:
                 unit.set_admission_decision("p1", AdmissionDecision.REJECT)
+
+
+def test_remote_postgres_uses_verified_tls_even_if_url_requests_disable(monkeypatch):
+    import psycopg
+    from pathlib import Path
+    from vaeil.domain.repository import RepositoryError
+    connections = []
+    def refuse_connection(*args, **kwargs):
+        connections.append(kwargs)
+        raise psycopg.OperationalError("Synthetic connection refusal.")
+    monkeypatch.setattr(psycopg, "connect", refuse_connection)
+    with pytest.raises(RepositoryError):
+        with open_repository("postgresql://fiction:fiction@db.example.invalid/fiction?sslmode=disable"):
+            pass
+    assert len(connections) == 1
+    assert connections[0]["sslmode"] == "verify-full"
+    assert Path(connections[0]["sslrootcert"]).is_file()

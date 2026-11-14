@@ -2,6 +2,8 @@
 from contextlib import contextmanager
 from datetime import date, datetime
 import hashlib
+import certifi
+from sqlalchemy.engine import make_url
 from vaeil.domain.authentication import (PrincipalRecord, ApplicationRecord, Role, AdmissionStatus, AdmissionDecision, AdmissionConflictError, normalize_login_email)
 
 from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, delete, insert, select, update
@@ -317,7 +319,11 @@ def open_repository(url: str = "sqlite:///vaeil.sqlite"):
         if url.startswith(("postgresql://", "postgres://")):
             url = "postgresql+psycopg://" + url.split("://", 1)[1]
         try:
-            engine = create_engine(url, echo=False, hide_parameters=True)
+            parsed_url = make_url(url)
+            connect_args = {}
+            if parsed_url.drivername.startswith("postgresql") and parsed_url.host not in {"127.0.0.1", "localhost", "::1"}:
+                connect_args = {"sslmode": "verify-full", "sslrootcert": certifi.where()}
+            engine = create_engine(url, echo=False, hide_parameters=True, connect_args=connect_args)
         except (SQLAlchemyError, ValueError, TypeError):
             raise RepositoryError("Repository configuration is invalid.") from None
         if engine.dialect.name == "sqlite":
