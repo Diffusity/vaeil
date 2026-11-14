@@ -1,0 +1,9 @@
+# T4 deployment preparation
+
+Working block begins **2026-11-09 17:37:15 Asia/Calcutta**. User invokes implement T4. Recovered canonical #11, approved velocity checkpoint, current app and remaining explicit provisioning gate. No Render/Neon connector discovered; no account/resource/credential changes. Local Docker command not found, so no local image build is claimed.
+
+Prepared Dockerfile (React build + non-root Python runtime), proposed Render Free blueprint, one-page recovery/demo continuity note and concrete readiness seam/provisioning stages. No readiness tests/code before seam confirmation. Earlier T3 merge record remains pending, to include in this branch's commit. Preserved unrelated historical untracked files. No provisioning, model run or teammate invitation. New public readiness interface needs the explicit TDD seam gate; free-only provisioning approval is retained by #11. Read wizard workflow for later human account stages; no wizard script created/run or Bash/WSL/software installed.
+
+Official-source preflight recheck: https://render.com/docs/free confirms750 free instance-hours/month,15-minute idle spin-down, no free persistent disk and30-day Render free Postgres expiry (excluded). https://neon.com/blog/neon-free-plan-1-gb-per-project announces1GB Free storage/project; older official docs still mention0.5GB, so confirm applicable quota in Parth's console rather than choose silently. No live-plan fit/eligibility/RAM/cold-start evidence claimed; these remain T4 live acceptance gates.
+
+Observed preparation block ends2026-11-09 17:39:18 Asia/Calcutta (2m03s elapsed including tools, not certified human active effort). Whitespace check passed. Image build/live deployment/readiness tests not performed or claimed. Prepared artifacts committed for concrete review; new readiness seam and free-only provisioning remain pending confirmation.
