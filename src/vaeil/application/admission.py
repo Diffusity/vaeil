@@ -102,9 +102,14 @@ class AdmissionApplication:
         key = normalize_login_email(email)
         with self.repository.transaction() as unit:
             principal = unit.get_principal_by_email(key)
-            valid = self.passwords.verify_password(password, self._dummy_hash if principal is None else principal.password_hash)
-            if not valid or principal is None:
+        valid = self.passwords.verify_password(password, self._dummy_hash if principal is None else principal.password_hash)
+        if not valid or principal is None:
+            raise AuthenticationError("Invalid credentials.")
+        with self.repository.transaction() as unit:
+            current = unit.get_principal(principal.identity.member_id)
+            if current is None or current.password_hash != principal.password_hash:
                 raise AuthenticationError("Invalid credentials.")
+            principal = current
             token = self.tokens.new_token()
             expires = self.clock.now() + SESSION_LIFETIME
             unit.put_session(StoredSession(PrivateText(token_digest(token)), principal.identity.member_id, expires))

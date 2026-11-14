@@ -133,7 +133,9 @@ def test_underage_never_calls_model_or_consumes_invite(repository_url):
         assert app.apply(command()).admission is AdmissionStatus.NEEDS_REVIEW
 
 
-@pytest.mark.parametrize("result", [TimeoutError("Private failure canary"), "Reject", None])
+@pytest.mark.parametrize("result", [TimeoutError("Private failure canary"), ConnectionError("Offline canary"),
+                                    RuntimeError("Busy canary"), "Reject", None],
+                         ids=["timeout", "unreachable", "busy", "malformed-reject", "malformed-none"])
 def test_model_failures_never_auto_admit(repository_url, result):
     with open_repository(repository_url) as repo:
         issue(repo)
@@ -269,3 +271,39 @@ def test_unknown_invite_never_reaches_vetting_or_stores_an_applicant(repository_
         with repo.transaction() as unit:
             assert unit.get_principal("one") is None
             assert unit.list_audit(subject_id="one") == ()
+
+
+@pytest.mark.parametrize("email", ["STRASSE@example.invalid", " ＳＴＲＡＳＳＥ＠example.invalid "])
+def test_login_identity_uses_nfkc_and_casefold_not_lower(repository_url, email):
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        app = app_for(repo)
+        app.apply(command(identifier="straße"))
+        assert app.login(email, "fiction password").principal.principal_id == "straße"
+
+
+def test_password_verification_does_not_hold_the_repository_write_lock(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    entered, release = threading.Event(), threading.Event()
+    class BlockingPasswords(Passwords):
+        def verify_password(self, raw, encoded):
+            entered.set()
+            assert release.wait(15)
+            return super().verify_password(raw, encoded)
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        app = app_for(repo)
+        app.apply(command())
+        app.passwords = BlockingPasswords()
+        def probe():
+            with repo.transaction() as unit:
+                return unit.get_principal("one").role
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            login = pool.submit(app.login, "one@example.invalid", "fiction password")
+            assert entered.wait(5)
+            try:
+                assert pool.submit(probe).result(timeout=3) is Role.APPLICANT
+            finally:
+                release.set()
+            assert login.result(timeout=5).principal.principal_id == "one"
