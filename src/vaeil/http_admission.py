@@ -36,7 +36,12 @@ def attach_admission_routes(app, provider):
     }
     for error_type, (status, reason) in errors.items():
         async def handle(request, error, _status=status, _reason=reason):
-            return safe_response({"reason": _reason}, _status)
+            payload = {"reason": _reason}
+            if isinstance(error, InvalidValuesProfileError):
+                payload.update(can_rephrase=error.can_rephrase, message=error.message, field=error.field)
+            elif isinstance(error, ApplicationNoteError):
+                payload.update(can_rephrase=True, message="Remove contact details or rephrase your application note.")
+            return safe_response(payload, _status)
         app.add_exception_handler(error_type, handle)
 
     def check_origin(request: Request):

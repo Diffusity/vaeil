@@ -105,3 +105,17 @@ def test_test_only_approved_fake_does_not_create_an_http_model_switch(repository
         client, _ = client_for(repo, CapturingModel(Verdict.APPROVED))
         with client:
             assert client.post("/api/applications", json=BODY | {"model": "approve"}).status_code == 400
+
+
+def test_about_refusal_tells_member_to_rephrase_without_echoing_name(repository_url):
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        client, _ = client_for(repo, CapturingModel(Verdict.APPROVED))
+        with client:
+            assert client.post("/api/applications", json=BODY).status_code == 202
+            client.post("/api/sessions", json={"email": BODY["email"], "password": BODY["password"]})
+            response = client.put("/api/me/profile", json={"about": "I am LegalCanaryZXQ and enjoy walks."})
+            assert response.status_code == 400
+            assert response.json()["can_rephrase"] is True
+            assert "rephrase" in response.json()["message"].lower()
+            assert BODY["legal_name"] not in response.text
