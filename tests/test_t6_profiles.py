@@ -78,3 +78,30 @@ def test_taken_pseudonym_does_not_consume_onboarding_retry(repository_url):
         with pytest.raises(PseudonymTakenError):
             app.save_own_profile(actor=actor, draft=ProfileDraftInput(pseudonym="cOmEt", **fields()))
         assert app.save_own_profile(actor=actor, draft=ProfileDraftInput(pseudonym="Orbit", **fields())).pseudonym.value == "Orbit"
+
+@pytest.mark.parametrize("revealed", [False, True], ids=["anonymous", "revealed"])
+def test_persisted_application_note_never_enters_recipient_views(repository_url, revealed):
+    import json
+    from dataclasses import fields as record_fields
+    from vaeil.domain import project_member_for_viewer, serialize_member_view
+    from vaeil.domain.member import ConversationRevealState
+    from vaeil.domain.profile import ProfileDraftInput
+    note = "AdmissionNoteCanaryZXR I seek a thoughtful long term relationship."
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        app = app_for(repo, CapturingModel(Verdict.APPROVED))
+        app.apply(command(note=note))
+        actor = app.session(app.login("one@example.invalid", "fiction password").token)
+        app.save_own_profile(actor=actor, draft=ProfileDraftInput(pseudonym="Comet", **fields()))
+        with repo.transaction() as unit:
+            assert unit.get_application("one").note == note
+            member = unit.get_member("one")
+        view = project_member_for_viewer(member, viewer_id="other", conversation=ConversationRevealState("pair", ("one", "other"), revealed))
+        payload = serialize_member_view(view)
+        expected = {"pseudonym", "values_profile"} | ({"legal_name", "email", "phone"} if revealed else set())
+        assert {field.name for field in record_fields(view)} == expected
+        assert set(payload) == expected
+        for surface in (repr(view), str(view), repr(payload), json.dumps(payload)):
+            assert note not in surface
+            assert "AdmissionNoteCanaryZXR" not in surface
+            assert "application_note" not in surface

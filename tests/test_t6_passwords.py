@@ -60,3 +60,16 @@ def test_verifier_accepts_a_frozen_independent_scrypt_vector_and_versioned_forma
     assert verify_password("Independent reference phrase", reference) is True
     encoded = hash_password(PASSWORD).UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()
     assert encoded.split("$")[:4] == ["scrypt-v1", "131072", "8", "1"]
+
+
+def test_verification_respects_the_vetted_constant_time_comparison(monkeypatch):
+    import hmac
+    from vaeil.adapters.authentication import verify_password
+    calls = []
+    def mismatch(left, right):
+        calls.append((len(left), len(right)))
+        return False
+    monkeypatch.setattr(hmac, "compare_digest", mismatch)
+    reference = PrivateText("scrypt-v1$131072$8$1$000102030405060708090a0b0c0d0e0f$284a357c3ae912808cf3c68ca883509118d444d42a43507b54bcc9b5eec718dc")
+    assert verify_password("Independent reference phrase", reference) is False
+    assert calls == [(32, 32)]
