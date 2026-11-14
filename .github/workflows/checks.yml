@@ -9,6 +9,44 @@ permissions:
   contents: read
 
 jobs:
+  repository-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: contract-test-only
+          POSTGRES_DB: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e ".[dev]"
+      - name: Run the same contract against SQLite and disposable PostgreSQL
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python -m pytest tests/test_repository_contract.py -q
+      - name: Kill persistence mutations on both databases
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python scripts/mutate_persistence.py
+      - name: Verify restored contracts and privacy boundary
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python -m pytest tests/test_repository_contract.py tests/test_private_unwrap_boundary.py tests/test_domain_purity.py -q
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: persistence-mutations
+          path: docs/audit/t5-mutations.json
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15

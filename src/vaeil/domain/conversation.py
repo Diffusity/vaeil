@@ -74,7 +74,7 @@ class ConversationDirectory:
         conversation = Conversation(conversation_id, participant_ids)
         if conversation_id in self._conversations:
             raise ConversationAlreadyExistsError("Conversation ID already exists.")
-        self._validate_placement(conversation)
+        validate_conversation_storage(conversation, tuple(self._conversations.values()))
         self._conversations[conversation_id] = conversation
         return conversation
 
@@ -86,29 +86,8 @@ class ConversationDirectory:
 
     def restore(self, conversation: Conversation) -> None:
         """Restore trusted fixtures/state; this is not a public Reveal command."""
-        if not isinstance(conversation, Conversation):
-            raise InvalidConversationError("Restore a validated Conversation.")
-        previous = self._conversations.get(conversation.conversation_id)
-        if previous is not None and (
-            previous.participant_ids != conversation.participant_ids
-            or (previous.revealed and not conversation.revealed)
-            or (previous.blocked and not conversation.blocked)
-        ):
-            raise InvalidConversationTransitionError("Conversation history cannot be reversed or reassigned.")
-        self._validate_placement(conversation)
+        validate_conversation_storage(conversation, tuple(self._conversations.values()))
         self._conversations[conversation.conversation_id] = conversation
-
-    def _validate_placement(self, conversation: Conversation) -> None:
-        others = [existing for existing in self._conversations.values()
-                  if existing.conversation_id != conversation.conversation_id]
-        if any(existing.blocked and frozenset(conversation.participant_ids) == frozenset(existing.participant_ids)
-               for existing in others):
-            raise PairBlockedError("This pair cannot open another Conversation.")
-        if conversation.active and any(
-            existing.active and set(conversation.participant_ids).intersection(existing.participant_ids)
-            for existing in others
-        ):
-            raise MemberAlreadyActiveError("A Member already has an active Conversation.")
 
     def block(self, conversation_id: str, *, actor_id: str) -> Conversation:
         conversation = self.get(conversation_id)
@@ -117,3 +96,27 @@ class ConversationDirectory:
         blocked = replace(conversation, blocked=True)
         self._conversations[conversation_id] = blocked
         return blocked
+
+
+def validate_conversation_storage(conversation: Conversation, existing_conversations: tuple[Conversation, ...]) -> None:
+    """Shared T2 placement/monotonic policy; repositories supply an atomic snapshot."""
+    if not isinstance(conversation, Conversation):
+        raise InvalidConversationError("Restore a validated Conversation.")
+    previous = next((item for item in existing_conversations if item.conversation_id == conversation.conversation_id), None)
+    if previous is not None and (
+        previous.participant_ids != conversation.participant_ids
+        or (previous.revealed and not conversation.revealed)
+        or (previous.blocked and not conversation.blocked)
+    ):
+        raise InvalidConversationTransitionError("Conversation history cannot be reversed or reassigned.")
+    others = [existing for existing in existing_conversations
+              if existing.conversation_id != conversation.conversation_id]
+    if any(existing.blocked and frozenset(conversation.participant_ids) == frozenset(existing.participant_ids)
+           for existing in others):
+        raise PairBlockedError("This pair cannot open another Conversation.")
+    if conversation.active and any(
+        existing.active and set(conversation.participant_ids).intersection(existing.participant_ids)
+        for existing in others
+    ):
+        raise MemberAlreadyActiveError("A Member already has an active Conversation.")
+

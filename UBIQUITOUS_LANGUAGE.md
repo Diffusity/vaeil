@@ -10,7 +10,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Applicant** | A person who has redeemed an Invite and is being vetted; not yet a Member. | user, candidate, signup | `src/vaeil/domain/applicant.py:9` |
 | **Member** | A vetted person admitted to the platform — an Approved Applicant at the verdict, a NeedsReview Applicant when an Admin approves. | user, account, player | `src/vaeil/domain/member.py:9` — complete-profile projection input; admission wiring remains T6 |
 | **Admin** | The human operator; every rejection of an Applicant is an Admin decision, and the Admin oversees safety reviews. | moderator, staff, superuser | _(absent)_ |
-| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:33`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic storage uniqueness remains T5 |
+| **Pseudonym** | The name a Member chooses during Onboarding and is shown under before a Reveal; platform-unique after normalization, fixed once set, and must never be a Personal identifier. It is 3-20 letters, digits, underscores or hyphens, starts with a letter, and cannot impersonate staff through a reserved name and must pass the owner-specific self-name check. | alias, username, handle | `src/vaeil/domain/pseudonym.py:29`, `:71`; owner-specific checks at `src/vaeil/domain/self_name.py:11`; atomic normalized unique index at `src/vaeil/adapters/persistence.py:23` |
 
 ## Onboarding & vetting
 
@@ -40,9 +40,9 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Escalated** | A Message approved by safety moderation but identifier-flagged before Reveal; delivered, queued for Admin review and audited. | flagged, suspicious, quarantined | _(absent)_ |
 | **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
 | **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
-| **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | `src/vaeil/domain/conversation.py:113`; domain lifecycle only, API/Report wiring pending |
+| **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | `src/vaeil/domain/conversation.py:92`; domain lifecycle only, API/Report wiring pending |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
-| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | _(absent)_ |
+| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:40`, `src/vaeil/adapters/persistence.py:142`; business-event emission remains in later workflows |
 
 ## Relationships
 
@@ -88,4 +88,4 @@ Resolved — winners recorded (kept here as findings):
 | Canonical term | Called in code | Location | Note |
 | -------------- | -------------- | -------- | ---- |
 
-Slices 1-2 implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. T1 adds Member, Values Profile, the self-name check, and pair-scoped identity views. T2 adds in-memory Conversation lifecycle/state authority; transport and persistent platform uniqueness remain planned. Rule 5 stays partial. The self-name check is implemented, but general real-name detection is not promised; see `DESIGN.md` for the heuristic limits.
+Slices 1-2 implement Invite, Applicant, Vetting, Verdict, identifier scanning, and Pseudonym claims. T1 adds Member, Values Profile, the self-name check, and pair-scoped identity views. T2 adds in-memory Conversation lifecycle/state authority; T3/T4 supply the fictional transport and T5 implements persistent normalized uniqueness; authenticated transport and deployed survival remain pending. Rule 5 stays partial. The self-name check is implemented, but general real-name detection is not promised; see `DESIGN.md` for the heuristic limits.

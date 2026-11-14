@@ -1,0 +1,35 @@
+# T5 persistence evidence
+
+## Cycle1 — Member round trip / explicit mapper
+
+Approved seam: docs/specs/t5-persistence-seam.md. SQLite round-trip red: missing persistence module; boundary red: exact approved fourth site missing. Unauthorized mapper controls pass (wrong module or wrong function rejected). Green9targeted cases including purity,1Postgres skip locally. Test setup correction imported PrivateText/PrivateDate from their existing privacy module, no assertion weakened or new domain re-export added.
+
+SQLAlchemy Core2.1.8 pinned after checking official PyPI release; psycopg3.3.8 pinned. One implementation and explicit mapping reconstruct MemberIdentity wrappers and complete ValuesProfile. Raw rows remain inside the adapter, SQL echo off/parameters hidden. Explicit commit persists, transaction context rollback on exit. Later cycles supply uniqueness/concurrency, audit/rollback, Conversation and sessions; do not claim these implemented now. No T4 files cherry-picked; branch based on masterf47d768.
+
+Contract fixture supports file SQLite and loopback-only disposable PostgreSQL. PostgreSQL is deliberately skipped without VAEIL_TEST_POSTGRES_URL; CI service supplies it. A per-test database is created/dropped through external driver setup, never production Neon. CI result pending; no two-database pass claimed yet.
+
+## Cycle2 — durable Pseudonym policy and uniqueness
+Red10SQLitefailures: equivalentsdidnotraise,invalidformat/reserved/identifier/selfnameaccepted,andconcurrentclaimsbot hsaved. Green48targeted11PostgresskipsincludingexistingPseudonymandpuritytests. Sharedpurevalidate_pseudonym_candidateextractedwithoutchangingoldDirectoryseam; SQLusesitplusunique normalizedcolumn. SQLiteBEGINIMMEDIATEandPostgresdatabase-scopedadvisorytransactionlockserialize multirowoperations, withuniquenessstill enforcedbyDB. Throughputtradeoff: demo transactions serialize, nothigh-scaleclaim. CIcycle1passed bothdatabases; cycle2CIpending. One mistypedtestfilepathran0tests; correctedcommandgreen, notcountedasevidence.
+
+## Cycle3 — atomic Conversation storage
+Red7SQLitemissingstore_conversation failuresaftercorrectingtestimportsfromactualConversationmodule (initialcollectionerrornotbehavioralevidence). Green66targeted18localPostgresskipsincludingall46existingT2andpuritycases. Sharedpurevalidate_conversation_storagekeepsT2placement/monotonicrules; oneSQLimplementationstoresandrestorespaircontextunderDBtransactionlock. Crosspairprojection,staleReveal/Blockraces,active-slotrace,andpermanentpairBlockcovered. Foreignkeysrequireparticipantsstoredfirst. NoRevealconsentcommandadded.
+
+## Cycle4 — atomic append-only audit
+Red7missingAudittypes/methods, green33targeted24localPostgresskipsincludingprivacy/purity. Explicitcommit/exception/no-commit/constraintfailure contracts ensure domain/auditatomicity. FixedAuditKindcoversrequiredspec events andAdminadmission/queue/release/discarddecisions; payloadshapepermitsonlytypedmetadata/reasonenums. BothdialectsgetdatabaseUPDATE/DELETEguards; PostgresalsoTRUNCATEguard. DuplicateeventIDrefusesreplacement. Actualbusiness-eventemissionbelongsfutureworkflowtickets; noAdminbehaviorclaimed.
+
+## Cycle5 — durable server-session records
+Red3missingStoredSession/methods, green36targeted26localPostgresskipsincludingprivacy/purity. Token digestwrappedPrivateText,frozen/slottedrecord,genericexportrefused. ExplicitUTCexpiryroundtripanddeletepersistacrossrepositoryinstances; no-commitrollsback. T6ownsrawtokencreation/hash,login/cookie/expiry-enforcement;T5doesnotdecideauth. Onlyapprovedpersistenceunwraphelperused; noT6loginunwrapsiteadded.
+
+## Cycle6 — configuration and SQL-log redaction
+RedmalformedportconfigurationechoedPrivateConfigurationCanaryviaValueError; narrowlytranslatedengineconstructionfailures tosafeRepositoryErrorfromNone. Green38targeted27localPostgresskipsincludingpurity/unwrap. SQLloggerINFOregressionconfirmsidentity,DOB,phoneanddigestparametershiddenevenwhenloggerenabled. Earliercycles1-4Postgres+SQLiteCIgreen; currentsession/privacyCIpending.
+
+## Cycle7 — failed/committed transaction state and local default
+Red3cases: caughtconstraintfailurecouldcommit, postcommitcouldstartanunlockedsecondtransaction, defaultURLmissing. Green41targeted29localPostgresskips. DBexecutionnowmarksfailedtransactionsrollback-onlyandtranslatesSQLerrorsatmethodboundary; commitorlateroperationrefusedafterfailure/commit. SQLitedefaultURLsqlite:///vaeil.sqlite requiresnodatabaseinstall. Noauthdecisionornewunwrapsite.
+
+## Full local verification and mutation matrix
+Restoredfullcheck:498passed29Postgresskipped21.63s, Ruff/assumptionsgreen, existingStarlettewarningunsuppressed. SQLite12/12behavioralmutationsandsharedAST1/1killed, exactbytesrestored; table/docs/audit/t5-mutations.json. DisposablePostgresCIwillrunall12database mutants plussharedASTandnormalcontractsafterrestoration. NofullPostgresmutationclaimbeforethatjob. Domaincounts3/6andRule5partialunchanged. WindowsUTF8docreadfailurecaughtbeforecommit, retriedexplicitUTF8; nostatus/testclaimfromfailedcommand.
+
+## Final review fixes
+StandardsP2citationsupdatedtoactualclaim/Block/uniqueindex; nonblockingforwardingmethodremoved. SpecP2SQLiteINSERTORREPLACEbypassauditguardreproducedredDIDNOTRAISE DBAPIError; duplicate-IDBEFOREINSERTguardadded, rawreplacementcontractgreen. PostgreSQLconflict-updatevariantusesitsUPDATEguard. Newreplacementmutantadded: local13DB+1AST=14/14killedwithrestoredbytes; updatedbothDBCIpending. SupplementaryT2mutationharnessfirsthitCRLFanchorsandthenWindowswriteerrno22; exactsourcehashrestoredand46T2testsverified. HarnessnormalizesCRLFforanchorsandretriesonlyerrno22threeboundedattempts; all19/19thenkilled,restoredSHAff299ef5676028938f2a9f917a28eb0ea7adbc6551308495f685ad24b6644276. OriginalSlice2casefoldoperatorretargetedtoactualDirectoryuniquenesskeyafterextraction; all12/12killed. Nooldproducttestchanged. Fullrestored499passed30skipped13.64s beforelastsupplementarywriter; finalnormalchecksrepeatbelow.
+
+Finalreviewcode19ccb9e: Standards0residual,Spec0residualafterfixes. CI43081827304greenWindows/browser,sharedcontracts+privacy/purityandmutations. Finalmutationartifact13SQLite+13Postgres+1ASTallkilled,normalcontractsafterrestoregreen. Fullrestored499passed30localPostgresskips15.30s. Deployedfixture-survivalstillgated; issue12open,PR22draft. See finalreview/mutationtable/velocity12Novemberdocs. Noactualhumanactivesessioncountinvented.

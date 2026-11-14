@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src/vaeil/domain/conversation.py"
@@ -33,16 +34,27 @@ MUTATIONS = [
 ]
 
 
+def write_source(content: bytes) -> None:
+    for attempt in range(3):
+        try:
+            SOURCE.write_bytes(content)
+            return
+        except OSError as error:
+            if error.errno != 22 or attempt == 2:
+                raise
+            time.sleep(0.05)
+
+
 def main() -> int:
     original = SOURCE.read_bytes()
     digest = hashlib.sha256(original).hexdigest()
-    text = original.decode("utf-8")
+    text = original.decode("utf-8").replace("\r\n", "\n")
     killed = 0
     try:
         for name, old, new in MUTATIONS:
             if text.count(old) != 1:
                 raise ValueError(f"Mutation anchor is not unique: {name}")
-            SOURCE.write_bytes(text.replace(old, new, 1).encode("utf-8"))
+            write_source(text.replace(old, new, 1).encode("utf-8"))
             # Ignore cached bytecode even for equal-length mutations on Windows.
             for cache in SOURCE.parent.glob("__pycache__/conversation.*.pyc"):
                 cache.unlink()
@@ -56,9 +68,9 @@ def main() -> int:
             print(f"{'KILLED' if valid_kill else 'SURVIVED/ERROR'} | {name}", flush=True)
             if not valid_kill:
                 print(result.stdout + result.stderr)
-            SOURCE.write_bytes(original)
+            write_source(original)
     finally:
-        SOURCE.write_bytes(original)
+        write_source(original)
         for cache in SOURCE.parent.glob("__pycache__/conversation.*.pyc"):
             cache.unlink()
     assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == digest

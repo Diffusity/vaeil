@@ -30,6 +30,33 @@ class Pseudonym:
     value: str
 
 
+def validate_pseudonym_candidate(member_id: str, candidate: str, *, identity: MemberIdentity) -> Pseudonym:
+    """Shared candidate policy; storage owns the uniqueness/fixed-once state."""
+    if not isinstance(identity, MemberIdentity) or identity.member_id != member_id:
+        raise IdentityOwnerMismatchError("Use the claiming Member's identity.")
+    if not isinstance(candidate, str):
+        raise InvalidPseudonymError("Choose a valid Pseudonym.")
+
+    value = unicodedata.normalize("NFKC", candidate).strip()
+    if scan_identifiers(value).is_flagged:
+        raise InvalidPseudonymError("Choose a non-identifying Pseudonym.")
+
+    if (
+        not MIN_PSEUDONYM_LENGTH <= len(value) <= MAX_PSEUDONYM_LENGTH
+        or not value[0].isalpha()
+        or not all(char.isalpha() or char.isdecimal() or char in PSEUDONYM_PUNCTUATION for char in value)
+    ):
+        raise InvalidPseudonymError("Use 3-20 letters, digits, underscores or hyphens; start with a letter.")
+
+    if contains_self_name(value, identity=identity, mode=SelfNameMode.PSEUDONYM):
+        raise InvalidPseudonymError("Choose a non-identifying Pseudonym.")
+
+    key = value.casefold()
+    if key in RESERVED_PSEUDONYMS:
+        raise InvalidPseudonymError("Choose a name that does not impersonate staff.")
+    return Pseudonym(value)
+
+
 class PseudonymDirectory:
     """Own claims within one directory; reuse it across Members.
 
@@ -45,32 +72,11 @@ class PseudonymDirectory:
         if member_id in self._members:
             raise PseudonymAlreadySetError("Pseudonym is fixed once set.")
 
-        if not isinstance(identity, MemberIdentity) or identity.member_id != member_id:
-            raise IdentityOwnerMismatchError("Use the claiming Member's identity.")
-        if not isinstance(candidate, str):
-            raise InvalidPseudonymError("Choose a valid Pseudonym.")
-
-        value = unicodedata.normalize("NFKC", candidate).strip()
-        if scan_identifiers(value).is_flagged:
-            raise InvalidPseudonymError("Choose a non-identifying Pseudonym.")
-
-        if (
-            not MIN_PSEUDONYM_LENGTH <= len(value) <= MAX_PSEUDONYM_LENGTH
-            or not value[0].isalpha()
-            or not all(char.isalpha() or char.isdecimal() or char in PSEUDONYM_PUNCTUATION for char in value)
-        ):
-            raise InvalidPseudonymError("Use 3-20 letters, digits, underscores or hyphens; start with a letter.")
-
-        if contains_self_name(value, identity=identity, mode=SelfNameMode.PSEUDONYM):
-            raise InvalidPseudonymError("Choose a non-identifying Pseudonym.")
-
-        key = value.casefold()
-        if key in RESERVED_PSEUDONYMS:
-            raise InvalidPseudonymError("Choose a name that does not impersonate staff.")
+        pseudonym = validate_pseudonym_candidate(member_id, candidate, identity=identity)
+        key = pseudonym.value.casefold()
         if key in self._taken:
             raise PseudonymTakenError("Pseudonym is already taken.")
 
-        pseudonym = Pseudonym(value)
         self._members[member_id] = pseudonym
         self._taken.add(key)
         return pseudonym
