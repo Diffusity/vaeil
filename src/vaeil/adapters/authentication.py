@@ -36,7 +36,7 @@ def hash_password(password: str) -> PrivateText:
         raise PasswordPolicyError("Use a password between 12 and 128 characters.")
     salt = secrets.token_bytes(16)
     digest = _derive(password, salt)
-    return PrivateText(f"scrypt${SCRYPT_N}${SCRYPT_R}${SCRYPT_P}${salt.hex()}${digest.hex()}")
+    return PrivateText(f"scrypt-v1${SCRYPT_N}${SCRYPT_R}${SCRYPT_P}${salt.hex()}${digest.hex()}")
 
 
 def verify_password(password: str, encoded_hash: PrivateText) -> bool:
@@ -46,7 +46,7 @@ def verify_password(password: str, encoded_hash: PrivateText) -> bool:
         return False
     try:
         scheme, n, r, p, salt_hex, digest_hex = encoded_hash.UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE().split("$")
-        if (scheme, n, r, p) != ("scrypt", str(SCRYPT_N), str(SCRYPT_R), str(SCRYPT_P)):
+        if (scheme, n, r, p) != ("scrypt-v1", str(SCRYPT_N), str(SCRYPT_R), str(SCRYPT_P)):
             return False
         salt, expected = bytes.fromhex(salt_hex), bytes.fromhex(digest_hex)
         if len(salt) != 16 or len(expected) != 32:

@@ -31,7 +31,32 @@ def test_password_policy_refuses_without_echoing(password):
     assert "aaa" not in str(result.value)
 
 
-@pytest.mark.parametrize("encoded", ["not-a-hash", "scrypt$131072$8$1$xx$yy", "scrypt$9999999999999999$8$1$00$00"])
+@pytest.mark.parametrize("encoded", ["not-a-hash", "scrypt-v1$131072$8$1$xx$yy", "scrypt-v1$9999999999999999$8$1$00$00"])
 def test_malformed_or_unapproved_cost_hash_fails_closed(encoded):
     from vaeil.adapters.authentication import verify_password
     assert verify_password(PASSWORD, PrivateText(encoded)) is False
+
+
+def test_password_workers_refuse_overlap_instead_of_allocating_unbounded_memory():
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    from vaeil.adapters.authentication import PasswordBusyError, hash_password
+    start = threading.Barrier(2)
+    def attempt():
+        start.wait(timeout=5)
+        try:
+            hash_password(PASSWORD)
+            return "completed"
+        except PasswordBusyError:
+            return "busy"
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda _: attempt(), range(2)))
+    assert sorted(results) == ["busy", "completed"]
+
+
+def test_verifier_accepts_a_frozen_independent_scrypt_vector_and_versioned_format():
+    from vaeil.adapters.authentication import hash_password, verify_password
+    reference = PrivateText("scrypt-v1$131072$8$1$000102030405060708090a0b0c0d0e0f$284a357c3ae912808cf3c68ca883509118d444d42a43507b54bcc9b5eec718dc")
+    assert verify_password("Independent reference phrase", reference) is True
+    encoded = hash_password(PASSWORD).UNWRAP_PRIVATE_VALUE_FOR_AUTHORIZED_USE()
+    assert encoded.split("$")[:4] == ["scrypt-v1", "131072", "8", "1"]
