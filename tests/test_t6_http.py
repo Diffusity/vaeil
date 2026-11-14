@@ -151,3 +151,17 @@ def test_registration_refuses_non_utf8_text_without_echo_or_invite_consumption(r
             for canary in PRIVATE:
                 assert canary not in response.text + caplog.text
             assert client.post("/api/applications", json=BODY).status_code == 202
+
+def test_profile_refuses_non_utf8_about_before_commit(repository_url, caplog):
+    import json
+    with open_repository(repository_url) as repo:
+        issue(repo)
+        client, _ = client_for(repo, CapturingModel(Verdict.APPROVED))
+        with client:
+            assert client.post("/api/applications", json=BODY).status_code == 202
+            assert client.post("/api/sessions", json={"email": BODY["email"], "password": BODY["password"]}).status_code == 200
+            before = client.get("/api/me/profile").json()
+            response = client.put("/api/me/profile", content=json.dumps({"about": "AboutCanaryZXR\ud800"}), headers={"Content-Type": "application/json"})
+            assert response.status_code == 400
+            assert "AboutCanaryZXR" not in response.text + caplog.text
+            assert client.get("/api/me/profile").json() == before
