@@ -1,0 +1,13 @@
+# T4 retrospective — 11 November 2026
+
+Sources: docs/logs/sessions/2026-11-10-t4-readiness.md, docs/logs/sessions/2026-11-11-t4-readiness.md, docs/audit/t4-evidence.md, final Standards/Spec reviews. Recommendations below concern the agent workflow; no new agent tooling is introduced.
+
+1. **Secret-field browser handoff (highest priority).** A masked Render value was returned by AX after earlier secret inspection. Visual masking is not a safe observation boundary. Keep secret entry, verification and rotation with the owner; the agent verifies only public readiness. Recovery now records this restriction. Clear temporary copies after use. Rotation was requested; user acknowledgement is not completion.
+2. **Wait for save completion before deploying.** The first restore did not persist. A click is not a completed save. For ordinary settings, verify the saved state before the next action; for secrets, use the owner's confirmation plus public readiness. The recovery note now states this. This is a UI workflow rule, not an application test or a reason for a new browser helper.
+3. **Timeout contract regression in existing CI.** Raising the readiness deadline exposed the smoke client's shorter HTTP timeout. The new regression already runs in the existing pytest/check.py/Windows CI path; the constrained Linux image job catches actual container behavior. A future change to either deadline must update the other boundary's regression deliberately. No additional CI framework or hook is needed.
+4. **One current status, chronological evidence.** README/DESIGN retained old browser-blocked paragraphs after deployment. Both reviewers caught it. Keep detailed evidence in docs/audit/t4-evidence.md and root summaries short, with only current verified behavior and gaps. Cross-file status consistency remains a reviewer judgement; a string-ban would reject legitimate historical logs.
+5. **Cold-start evidence must show actual sleep.** Sixteen minutes without agent traffic did not establish spin-down; logs retained the same host instance and no platform loader was captured. Observe host state before calling a result a cold start. Do not repeat idle waiting indefinitely or install a keep-alive monitor. Retain the demo-day wake checklist and the honest missing-evidence gate.
+
+## Outcome
+
+CI fix is red-green,480Python pass. Live healthy/outage/restoration smoke passes; owner-led recovery exercised. No residual code/docs findings after fixes at29a1bb1 (Standards0, Spec0). Actual Render spin-down/platform-loader capture, paid-only live RAM visibility and rotation confirmation remain operational acceptance gates; T4#11 and PR21 stay open. No merge or new tool setup performed.

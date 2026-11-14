@@ -1,0 +1,12 @@
+# Proposed only: applying this creates a resource and requires Parth's approval.
+services:
+  - type: web
+    name: vaeil-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: DATABASE_URL
+        sync: false

@@ -6,17 +6,19 @@ This repository is the IT643 course project. The design and vocabulary live in [
 
 **Demo only — do not enter real personal details.** Future registration carries the same notice. Keep this notice until a consent and deletion plan exists; Render and Neon store app data. Seed personas are fictional. Local-model outside-user stretch requires uptime and consent planning.
 
+**Live fictional demo:** [vaeil-demo.onrender.com](https://vaeil-demo.onrender.com). Healthy/outage/recovery smoke passed on 11 November. The owner confirmed password rotation on 12 November, and healthy public smoke passed again. Actual host spin-down/platform-loader capture remains pending; live RAM graphs are unavailable on Free.
+
 ## Status
 
-Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 499 passing Python tests (479 product/domain/storage/boundary and 20 tooling); 30 PostgreSQL variants are explicitly skipped locally and run in disposable-database CI, plus four browser tests; T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
+Slices 1 and 2 are merged into `master`: single-use Invite redemption behind an 18+ age gate, reject-free fail-closed Vetting, heuristic identifier scanning, and normalized in-memory Pseudonym claims. The retrospective tooling is also merged, including Windows CI. The current suite has 516 passing Python tests (494 product/domain/storage/boundary and 22 tooling); 30 PostgreSQL variants are explicitly skipped locally and run in disposable-database CI, plus four browser tests; T1 merged with 401, and the earlier baseline was 122. The five benchmark cases guard the client; T2 adds 46 Conversation-domain cases without marking another rule done.
 
 T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit `4f9ca80`, with **401 passing tests**. It implements the Member/Values Profile pure view, shared self-name checks, ordered profile validation, opaque private scalars and pair-projection isolation. **Rule 5 remains partial**: T2 adds in-memory Conversation lifecycle/state authority; HTTP auth/display, persistence and moderated delivery remain future work. The real local-model adapter is not built. T1 tests cover constructor-friendly wrappers, safe diagnostics/export and an exact approved unwrap allowlist (T5 adds the explicit persistence mapper); explicit authorized JSON remains unchanged. Spec: [#7](https://github.com/Diffusity/vaeil/issues/7). T1-T6 are published; later ticket estimates wait for the benchmark-informed velocity review.
 
 ## Remaining schedule (confirmed dates/capacity; estimates under review)
 
-Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; proposed deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Provisioning remains approval-gated.
+Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Free-only provisioning was approved and the fictional demo is live.
 
-The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 is the current local increment; deployment still needs approval.
+The table below is the historical October allocation, superseded for current estimates by the [9 November velocity forecast](docs/audit/t3-velocity.md). It is not a commitment or a claim that past planned work has landed. T3 is merged; T4 is deployed on its feature branch and remains under acceptance review.
 
 | Week | Historical proposed focus |
 | --- | --- |
@@ -63,4 +65,10 @@ T3 adds the local same-origin synthetic demo: health and anonymous Member endpoi
 
 ## T5 repository status
 
-Draft [PR #22](https://github.com/Diffusity/vaeil/pull/22) adds one SQLAlchemy Core implementation for SQLite/PostgreSQL, atomic normalized-Pseudonym ownership, Conversation state storage, rollback/append-only audit and opaque server-session records. T6 auth/admission and business-event wiring remain pending. Local repository callers default to `sqlite:///vaeil.sqlite`; the existing five-command fictional demo is unchanged and still does not use durable product state. Contract CI uses disposable PostgreSQL, never the deployment database. Deployed survival remains gated on T4 acceptance; #12 stays open. Rule 5 remains partial.
+Draft [PR #22](https://github.com/Diffusity/vaeil/pull/22) adds one SQLAlchemy Core implementation for SQLite/PostgreSQL, atomic normalized-Pseudonym ownership, Conversation state storage, rollback/append-only audit and opaque server-session records. T6 auth/admission and business-event wiring remain pending. Local repository callers default to `sqlite:///vaeil.sqlite`; the existing five-command fictional demo is unchanged and still does not use durable product state. Contract CI uses disposable PostgreSQL, never the deployment database. Deployed survival verification is pending; #12 stays open. Rule 5 remains partial.
+T4 merged in PR #21 (d16c32f), with disclosed operational limitations accepted on 14 November: `/api/ready` reports200/503 independently of health and caches the bounded read-only DB probe for30seconds. With no DATABASE_URL locally it returns503 while the demo works. The five local commands are unchanged. The fictional Render/Neon deployment and live healthy/outage/recovery smoke are verified; recovery is in `docs/deployment/recovery.md`. Password rotation is owner-confirmed and public readiness passed afterward. Actual host spin-down/platform loader remains unverified; live RAM graphs require paid compute, which is outside scope. #11 stays open for the outstanding operational evidence and future registration notice.
+
+
+
+
+

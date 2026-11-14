@@ -1,1 +1,1 @@
-"""Infrastructure adapters outside the pure domain."""
+"""External infrastructure adapters; never imported by the domain."""

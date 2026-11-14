@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 499 Python tests pass locally: 479 product/domain/storage/boundary cases and 20 tooling cases; 30 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; 30 PostgreSQL variants are explicitly skipped locally and run in disposable-database CI; four separate browser tests pass. The20 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 516 Python tests pass locally: 494 product/domain/storage/boundary cases and 22 tooling cases; 30 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; four separate browser tests pass. The22 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; authenticated product APIs/UI remain pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
@@ -122,22 +122,18 @@ Frontend TypeScript is checked by `npm.cmd run typecheck --prefix frontend`. Pyt
 
 ## T5 shared SQL contract
 
-`tests/test_repository_contract.py:50` tests explicit private Member round trips; :71/:104 pin normalized ownership and concurrent uniqueness; :94 reuses all existing candidate policy categories. :137/:161/:177/:193/:218 cover persisted pair projection, monotonic restoration, permanent Block and real concurrent active-slot/stale-transition conflicts. :259/:284/:298 pin atomic commit/rollback, :316 database UPDATE/DELETE refusal, :338 immutable event IDs, :355 typed payload shape and required Admin decision kinds. :379/:401/:411 cover opaque durable sessions and generic-export refusal; :426/:438 protect configuration/SQL diagnostics; :452/:470 reject failed or already-committed units; :482 verifies default local SQLite.
-
-The same contract runs against file SQLite and disposable PostgreSQL18 in CI. SQLite on Windows needs no database install. Postgres fixtures refuse non-loopback URLs and create/drop isolated test databases. Production Neon is never a routine test fixture. Timestamp inputs are fixed; no real clock or live model is used. This is infrastructure evidence, not a newly completed product rule.
-
-New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects a wrong mapper function or wrong module. Generic private serialization remains refused.
-
-Run `python scripts/mutate_persistence.py` alone. Locally13database mutations plus1shared AST mutation were killed, with exact source bytes restored; PostgreSQL matrix is wired into CI and is not claimed green before its run finishes. Results: docs/audit/t5-mutations.json. Deployed survival remains gated on T4; #12 stays open and Rule5 stays partial.
-
-## T5 shared SQL contract
-
 `tests/test_repository_contract.py:50` tests explicit private Member round trips; :71/:104 normalized ownership/concurrent uniqueness; :94 all existing candidate policy categories. :137/:161/:177/:193/:218 cover persisted pair projection, monotonic restoration, permanent Block and concurrent active-slot/stale-transition conflicts. :259/:284/:298 pin atomic commit/rollback, :316 database UPDATE/DELETE refusal, :338 immutable event IDs, :355 typed payload shape/required Admin decision kinds. :379/:401/:411 cover opaque durable sessions/export refusal; :426/:438 safe configuration/SQL diagnostics; :452/:470 failed/committed unit refusal; :482 default local SQLite.
 
 The same contract runs against file SQLite and disposable PostgreSQL18 in CI. Fixtures refuse non-loopback Postgres URLs and create/drop isolated test databases; production Neon is never a routine fixture. Fixed timestamp inputs and no live model. These are infrastructure checks, not a newly completed product rule.
 
 New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:88` rejects wrong mapper functions/modules. Generic private serialization remains refused.
 
-Run `python scripts/mutate_persistence.py` alone. Final matrix at19ccb9e:13/13SQLite,13/13PostgreSQL and1/1sharedAST mutations killed; normal contracts passed after exact source restoration. CIrun43081827304. Results: docs/audit/t5-mutations-both-databases.json; readable table: docs/audit/t5-mutation-results.md. Supplementary T2mutations19/19 and Slice2mutations12/12 also killed after policy extraction. Deployed survival waits for T4 acceptance; #12 stays open and Rule5 stays partial.
+Run `python scripts/mutate_persistence.py` alone. Final matrix at19ccb9e:13/13SQLite,13/13PostgreSQL and1/1sharedAST mutations killed; normal contracts passed after exact source restoration. CIrun43081827304. Results: docs/audit/t5-mutations-both-databases.json; readable table: docs/audit/t5-mutation-results.md. Supplementary T2mutations19/19 and Slice2mutations12/12 also killed after policy extraction. Deployed survival verification is pending; #12 stays open and Rule5 stays partial.
 
 Final review regression: `tests/test_repository_contract.py:495` refuses SQLite INSERT OR REPLACE and PostgreSQL conflict-update replacement at the raw storage boundary. The prior guards alone were bypassable on SQLite; the new duplicate-ID insert guard closes that gap.
+## T4 readiness and container preparation
+
+15new cases in `tests/test_readiness.py`: HTTP matrix/outage isolation:25; cache/deadline/env redaction:43,:68,:92; workerCLI verifiedTLS/read-only/cleanup:105,:145; actual stalled interpreter killed/reaped:161; image asset directory:191; cache expiry/concurrent refusal:202,:223. Full local480Python+4browser evidence and review/red runs are in docs/audit/t4-evidence.md. No old tests or unwrap site changed. Linux CI builds the nonroot Docker image and probes real HTML/assets/API/outage under512MiB/0.1CPU; that is not proof of Render/Neon quota fit or coldstart. T4 is live: real HTML/assets, anonymous payload, health and verified-TLS database readiness smoke passed on11November at4ce56bd. First measured readiness200 took5.504s after raising the approved worker budget to10s. The production deadline is pinned at:43; :161 injects3s solely to preserve the existing strict actual-child cleanup bound. Healthy/outage/recovery smoke and owner continuity are verified. Actual host spin-down remains unverified; Free RAM graphs are unavailable. Rule5partial,3/6domain0/6complete-ruleE2E unchanged.
+
+
+

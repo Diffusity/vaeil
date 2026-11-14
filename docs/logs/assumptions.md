@@ -104,3 +104,10 @@ User explicitly invoked implement for T3 at approvedinterfaces; no new definitio
 ## 2026-11-09 team capacity confirmation and PR20 merge authorization
 
 Parth confirms teammates can contribute the extra required hours to cover the estimated session gap. Record this as a collective additional-capacity commitment (roughly9-16.5hours in the current forecast), not measured delivery, individual hours or assignments. Allocate genuinely additional suitable work and retain lead review; H1-H3 already excluded from leadbaseline cannot be counted twice. Domaincore/audit ownership restrictions remain. Parth explicitly authorizes review/fix/merge of openPR20 aftergreenfinalCI usingmergecommit; no T4provision ormodelGO inferred.
+
+## 2026-11-10 T4 seam and provisioning approved
+
+Parth explicitly approves both readiness interface and free-only Render/Neon provisioning and invokes implementT4. No repeat approval is required for that scope. No purchases/paid upgrades or model/tunnel authorization. Both browser-controlroutes failkernelassetsinitialization and noAPIcredentialsconfigured; userwillrestoreaccess. Liveprovisioning remains technicallyblocked; codereadiness tests do not close#11. Workerprocessisolation implements theapprovedboundedDBprobe without globalWindowsloopchanges; source/tests and imageCI evidence are separate from vendor/livechecks.
+
+## 2026-11-11 continuity scope decision
+Parth defers teammate collaborator invitations and password-manager storage as unnecessary for the current demo. This supersedes the earlier mandatory invite/storage procedure for T4. Continuity is owner-operated through existing Render/Neon access; do not claim teammate access or password-manager escrow. Secrets remain outside Git/logs/chat. No account password sharing or new access grants inferred.
