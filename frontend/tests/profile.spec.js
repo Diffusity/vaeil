@@ -42,3 +42,37 @@ test('admitted Member saves and reloads a private partial draft through the real
   await expect(form.getByLabel('About (optional)', { exact: true })).toHaveValue('I enjoy quiet walks.');
   await expect(form.getByLabel('Relationship intent', { exact: true })).toHaveValue('');
 });
+
+async function complete(form, pseudonym) {
+  await form.getByLabel('Pseudonym', { exact: true }).fill(pseudonym);
+  await form.getByLabel('Relationship intent', { exact: true }).selectOption('long_term');
+  await form.getByLabel('Life stage', { exact: true }).selectOption('undergraduate');
+  await form.getByLabel('Communication style', { exact: true }).selectOption('direct');
+  await form.getByLabel('Pace and lifestyle', { exact: true }).selectOption('quiet_and_routine');
+  await form.getByRole('checkbox', { name: 'Reading', exact: true }).check();
+  await form.getByRole('checkbox', { name: 'Honesty', exact: true }).check();
+}
+
+test('complete and update without reclaiming name; unsafe About keeps unsaved text with safe rephrase guidance', async ({ page }) => {
+  await member(page, 1);
+  const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+  await complete(form, 'Orbit');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toHaveText('Profile saved.');
+  await expect(form.getByLabel('Pseudonym', { exact: true })).toHaveCount(0);
+  await expect(form.getByText('Pseudonym: Orbit (fixed)', { exact: true })).toBeVisible();
+  await form.getByLabel('About (optional)', { exact: true }).fill('I enjoy quiet reading.');
+  const request = page.waitForRequest(r => r.url().endsWith('/api/me/profile') && r.method() === 'PUT');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  expect((await request).postDataJSON()).not.toHaveProperty('pseudonym');
+  await expect(form.getByRole('status')).toHaveText('Profile saved.');
+  const unsafe = 'Contact contactcanary@example.invalid';
+  await form.getByLabel('About (optional)', { exact: true }).fill(unsafe);
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('alert')).toHaveText('About: Rephrase without contact details or your own name.');
+  await expect(form.getByLabel('About (optional)', { exact: true })).toHaveValue(unsafe);
+  expect((await (await page.request.get('/api/me/profile')).json()).values_profile.about).toBe('I enjoy quiet reading.');
+  await form.getByLabel('About (optional)', { exact: true }).fill('I enjoy music too.');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toHaveText('Profile saved.');
+});

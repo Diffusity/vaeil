@@ -71,7 +71,21 @@ export function ProfileForm({ onSessionExpired }: { onSessionExpired: () => void
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(complete ? values : { ...values, pseudonym: pseudonym || null }) });
       if (response.status === 401) { onSessionExpired(); return; }
-      if (!response.ok) { setError('Could not save your profile. Review your details and retry.'); return; }
+      if (!response.ok) {
+        const failure = await response.json();
+        if (failure.reason === 'invalid_profile' && failure.field === 'about' && failure.can_rephrase === true) {
+          setError('About: Rephrase without contact details or your own name.');
+        } else if (failure.reason === 'pseudonym_taken') {
+          setError('Pseudonym: This name is taken. Choose another and retry.');
+        } else if (failure.reason === 'invalid_pseudonym') {
+          setError('Pseudonym: Choose an allowed name without your name or contact details.');
+        } else if (failure.reason === 'invalid_profile') {
+          const label = failure.field === 'interests' ? 'Interests' : failure.field === 'values' ? 'Values'
+            : singles.includes(failure.field) ? singleChoices[failure.field as typeof singles[number]].label : 'Profile';
+          setError(`${label}: Review your choices and retry.`);
+        } else { setError('Could not save your profile. Your changes are still here; please retry.'); }
+        return;
+      }
       const parsed = readProfile(await response.json());
       setDraft(parsed.draft); setComplete(parsed.complete);
       setMessage(parsed.complete ? 'Profile saved.' : 'Draft saved. Complete all choices and choose a Pseudonym when you are ready.');
