@@ -115,3 +115,7 @@ Parth defers teammate collaborator invitations and password-manager storage as u
 ## 2026-11-14 T6 review and merge authorization
 
 Parth explicitly authorizes fresh code-review of PR24 against master, resolving actionable findings, retrospective, and merge after green final-head CI, followed by ask-matt next-step advice. Use a merge commit to preserve cited history. This supersedes the earlier T6 merge hold, not the deployment boundary. No deployment, T7 implementation, account operation or teammate assignment is inferred.
+
+## 2026-11-16 T7 implementation approved
+
+Parth explicitly invokes implement for T7#25 after approving its four text/comparison/idempotency choices and interfaces. H1#28 remains separate/unmerged. No model/tunnel/deployment or T7merge authorization inferred. Message bodies remain ordinary text under explicit mapping, no new identity unwrap; use immutable slotted non-dataclass body-holding records so generic dataclass export cannot copy text. This implementation detail preserves the approved generic-export refusal; revisit if explicit export contracts change.
