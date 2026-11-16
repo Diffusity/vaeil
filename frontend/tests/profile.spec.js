@@ -183,3 +183,25 @@ test('server normalization and code-point limits remain authoritative without tr
   await expect(form.getByRole('status')).toContainText('Draft saved.');
   await expect(about).toHaveValue('Hello walks.');
 });
+
+test('a late session restoration snapshot cannot overwrite a newer explicit sign-in', async ({ page }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/session', async route => {
+    if (route.request().method() !== 'GET') { await route.continue(); return; }
+    await held;
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      principal_id: 'old-pending-session', role: 'applicant', admission: 'NeedsReview',
+    }) });
+  }, { times: 1 });
+  try {
+    await member(page, 13);
+    const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+    await expect(form).toBeVisible();
+    const restored = page.waitForResponse(response => response.url().endsWith('/api/session') && response.request().method() === 'GET');
+    release();
+    await restored;
+    await expect(page.getByText('Your membership is approved.', { exact: true })).toBeVisible();
+    await expect(form).toBeVisible();
+  } finally { release(); }
+});
