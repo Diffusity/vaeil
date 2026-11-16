@@ -30,6 +30,8 @@ def record(message_id='m1', request_id=REQUEST, text='MessageBodyCanaryZXQ hello
 
 
 def test_canonical_message_roundtrip_redacted_and_not_delivered(repository_url, caplog):
+    import logging
+    caplog.set_level(logging.INFO, logger='sqlalchemy.engine')
     with open_repository(repository_url) as repo:
         seed(repo)
         message = record(text='  Ｈｅｌｌｏ MessageBodyCanaryZXQ  ')
@@ -50,7 +52,7 @@ def test_canonical_message_roundtrip_redacted_and_not_delivered(repository_url, 
 def test_message_body_record_refuses_accidental_export_copy_and_mutation():
     message = record()
     assert not hasattr(message, '__dict__')
-    for export in (copy.copy, copy.deepcopy, dataclasses.asdict, pickle.dumps, json.dumps):
+    for export in (copy.copy, copy.deepcopy, dataclasses.asdict, pickle.dumps, json.dumps, lambda value: value.__getstate__()):
         with pytest.raises(TypeError) as caught:
             export(message)
         assert 'MessageBodyCanaryZXQ' not in str(caught.value)
@@ -116,3 +118,29 @@ def test_uncommitted_message_and_review_claim_are_rolled_back(repository_url):
             assert not unit.review_text_exists('ab', 'a', message.text_digest)
             with pytest.raises(MessageNotFoundError):
                 unit.get_message('m1')
+
+
+def test_database_request_and_review_uniqueness_cannot_be_bypassed_by_another_writer(repository_url):
+    from sqlalchemy import create_engine, text
+    from sqlalchemy.exc import IntegrityError
+    from vaeil.domain.messaging import ReviewState
+    with open_repository(repository_url) as repo:
+        seed(repo)
+        with repo.transaction() as unit:
+            unit.add_message(record().transition(review_state=ReviewState.PENDING))
+            unit.add_message(record('m2', '00000000-0000-4000-8000-000000000002', 'A different message.'))
+            unit.commit()
+    engine = create_engine(repository_url.replace('postgresql://', 'postgresql+psycopg://', 1), hide_parameters=True)
+    try:
+        with pytest.raises(IntegrityError):
+            with engine.begin() as connection:
+                connection.execute(text('INSERT INTO messages (message_id, conversation_id, sender_id, text, request_id, '
+                    'text_digest, processing, outcome, reason, identifier_reasons, review_state, provenance, created_at, delivered_at) '
+                    "SELECT 'different-id', conversation_id, sender_id, text, request_id, text_digest, processing, outcome, reason, "
+                    "identifier_reasons, review_state, provenance, created_at, delivered_at FROM messages WHERE message_id = 'm1'"))
+        with pytest.raises(IntegrityError):
+            with engine.begin() as connection:
+                connection.execute(text('INSERT INTO message_review_claims (conversation_id, sender_id, text_digest, message_id) '
+                    "SELECT conversation_id, sender_id, text_digest, 'm2' FROM message_review_claims WHERE message_id = 'm1'"))
+    finally:
+        engine.dispose()

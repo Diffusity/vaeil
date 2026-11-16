@@ -20,7 +20,7 @@ function receipt(value: unknown, conversationId: string): Receipt {
       || !states.includes(String(data.review_state)) || typeof data.retry_allowed !== 'boolean'
       || typeof data.can_submit_for_review !== 'boolean') throw new Error('Invalid response');
   const withheld = data.outcome === 'Withheld';
-  if (withheld ? !failures.includes(String(data.reason)) : data.reason !== null
+  if ((withheld ? !failures.includes(String(data.reason)) : data.reason !== null)
       || (!withheld && (data.retry_allowed || data.can_submit_for_review))
       || (data.review_state !== 'not_submitted' && (data.retry_allowed || data.can_submit_for_review))
       || (data.can_submit_for_review && !data.retry_allowed)

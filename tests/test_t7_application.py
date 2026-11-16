@@ -192,3 +192,106 @@ def test_human_release_preserves_identifier_escalation(repository_url):
         assert not receipt.retry_allowed and not receipt.can_submit_for_review
         with repo.transaction() as unit:
             assert [event.kind for event in unit.list_audit(subject_id=sent.message_id)] == [AuditKind.MESSAGE_RELEASED, AuditKind.IDENTIFIER_ESCALATED]
+
+
+def test_same_text_scope_is_sender_and_conversation_with_case_retained(repository_url):
+    from vaeil.domain.messaging import MessageConflictError
+    with open_repository(repository_url) as repo:
+        app, actors, _ = setup(repo, Moderator(d.Verdict.NEEDS_REVIEW))
+        app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='Hello there.')
+        with pytest.raises(MessageConflictError):
+            app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='  Ｈｅｌｌｏ there. ')
+        assert app.send_message(actor=actors['b'], conversation_id='ab', request_id=REQUEST, text='Hello there.').message_id
+        assert app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='HELLO there.').message_id
+        with repo.transaction() as unit:
+            unit.store_conversation(Conversation('ab', ('a', 'b'), revealed=True))
+            unit.store_conversation(Conversation('ac', ('a', 'c')))
+            unit.commit()
+        other = app.send_message(actor=actors['a'], conversation_id='ac', request_id=REQUEST, text='Hello there.')
+        assert app.read_conversation(actor=actors['c'], conversation_id='ac').attempts == ()
+        assert app.read_conversation(actor=actors['b'], conversation_id='ab').delivered == ()
+        assert other.conversation_id == 'ac'
+
+
+def test_manual_review_digest_prevents_two_pending_copies(repository_url):
+    from vaeil.domain.messaging import MessageConflictError
+    with open_repository(repository_url) as repo:
+        app, actors, _ = setup(repo)
+        first = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
+        second = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='hello')
+        app.submit_for_review(actor=actors['a'], message_id=first.message_id)
+        with pytest.raises(MessageConflictError):
+            app.submit_for_review(actor=actors['a'], message_id=second.message_id)
+        assert [item.message_id for item in app.list_review_messages(actor=actors['admin'])] == [first.message_id]
+
+
+def test_competing_human_decisions_have_one_delivery_and_audit(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    from vaeil.domain.messaging import MessageReviewDecision, MessageConflictError
+    with open_repository(repository_url) as repo:
+        app, actors, _ = setup(repo)
+        sent = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
+        app.submit_for_review(actor=actors['a'], message_id=sent.message_id)
+        barrier = threading.Barrier(2)
+        def decide():
+            barrier.wait(timeout=5)
+            try:
+                app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.RELEASE)
+                return 'released'
+            except MessageConflictError:
+                return 'conflict'
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            futures = [pool.submit(decide) for _ in range(2)]
+            assert sorted(f.result(timeout=10) for f in futures) == ['conflict', 'released']
+        assert len(app.read_conversation(actor=actors['b'], conversation_id='ab').delivered) == 1
+        with repo.transaction() as unit:
+            assert len(unit.list_audit(subject_id=sent.message_id)) == 1
+
+
+def test_failed_release_audit_rolls_back_delivery_and_preserves_review(repository_url):
+    from contextlib import contextmanager
+    from vaeil.application.messaging import MessageApplication
+    from vaeil.domain.messaging import MessageReviewDecision
+    from vaeil.domain.repository import RepositoryError
+    class FailedAudit:
+        def __init__(self, unit):
+            self.unit = unit
+        def __getattr__(self, key):
+            return getattr(self.unit, key)
+        def append_audit(self, event):
+            raise RepositoryError('Synthetic audit failure.')
+    class BrokenRepository:
+        @contextmanager
+        def transaction(self):
+            with repo.transaction() as unit:
+                yield FailedAudit(unit)
+    with open_repository(repository_url) as repo:
+        app, actors, clock = setup(repo)
+        sent = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
+        app.submit_for_review(actor=actors['a'], message_id=sent.message_id)
+        broken = MessageApplication(BrokenRepository(), tokens=app.tokens, clock=clock)
+        with pytest.raises(RepositoryError):
+            broken.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.RELEASE)
+        assert app.read_conversation(actor=actors['b'], conversation_id='ab').delivered == ()
+        assert [item.message_id for item in app.list_review_messages(actor=actors['admin'])] == [sent.message_id]
+        app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.RELEASE)
+        with repo.transaction() as unit:
+            assert len(unit.list_audit(subject_id=sent.message_id)) == 1
+
+
+def test_blocked_pending_release_refused_but_discard_still_audited(repository_url):
+    from vaeil.domain.messaging import MessageReviewDecision, MessageBlockedError
+    with open_repository(repository_url) as repo:
+        app, actors, _ = setup(repo)
+        sent = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
+        app.submit_for_review(actor=actors['a'], message_id=sent.message_id)
+        with repo.transaction() as unit:
+            unit.store_conversation(Conversation('ab', ('a', 'b'), blocked=True))
+            unit.commit()
+        with pytest.raises(MessageBlockedError):
+            app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.RELEASE)
+        app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.DISCARD)
+        assert app.read_conversation(actor=actors['b'], conversation_id='ab').delivered == ()
+        with repo.transaction() as unit:
+            assert [event.kind for event in unit.list_audit(subject_id=sent.message_id)] == [AuditKind.MESSAGE_DISCARDED]

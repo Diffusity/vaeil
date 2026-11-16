@@ -39,3 +39,48 @@ test('no recipient delivery before explicit human review; release delivers exact
     await expect(history.getByText('BrowserMessageCanaryZXQ hello.', { exact: true })).toHaveCount(1);
   } finally { await context.close(); }
 });
+
+test('checking disables duplicate sends; a technical retry uses a fresh request key', async ({ page }) => {
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await chat.getByLabel('Message', { exact: true }).fill('RetryMessageCanaryZXQ');
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  const keys = [];
+  await page.route('**/api/conversations/browser-conversation/messages', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    keys.push(route.request().postDataJSON().request_id);
+    const response = await route.fetch();
+    if (keys.length === 1) await held;
+    await route.fulfill({ response });
+  });
+  try {
+    await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+    await expect(chat.getByRole('status')).toHaveText('Checking…');
+    await expect(chat.getByRole('button', { name: 'Send Message', exact: true })).toBeDisabled();
+    release();
+    await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toBeVisible();
+    const retried = page.waitForResponse(response => response.url().endsWith('/messages') && response.request().method() === 'POST');
+    await chat.getByRole('button', { name: 'Retry Message', exact: true }).click();
+    await retried;
+    await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toBeEnabled();
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).not.toBe(keys[1]);
+  } finally { release(); }
+});
+
+test('inconsistent review-required retry flags are rejected and draft is retained', async ({ page }) => {
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await chat.getByLabel('Message', { exact: true }).fill('MalformedReceiptCanaryZXQ');
+  await page.route('**/api/conversations/browser-conversation/messages', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    await route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({
+      message_id: 'invalid-receipt', conversation_id: 'browser-conversation', outcome: 'Withheld',
+      reason: 'review_required', review_state: 'pending', retry_allowed: true, can_submit_for_review: true,
+    }) });
+  });
+  await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+  await expect(chat.getByRole('alert')).toHaveText('Could not confirm your Message. Retry to check the same request.');
+  await expect(chat.getByLabel('Message', { exact: true })).toHaveValue('MalformedReceiptCanaryZXQ');
+});
