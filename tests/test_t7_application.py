@@ -71,12 +71,13 @@ def test_baseline_manual_review_then_one_audited_delivery_at_release_time(reposi
 
 
 def test_model_review_prevents_normalized_resend_even_after_discard(repository_url):
-    from vaeil.domain.messaging import MessageConflictError, MessageReviewDecision, ReviewReason
+    from vaeil.domain.messaging import MessageConflictError, MessageReviewDecision, ReviewReason, MessageProvenance
     model = Moderator(d.Verdict.NEEDS_REVIEW)
     with open_repository(repository_url) as repo:
         app, actors, _ = setup(repo, model)
         sent = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='  Ｈｅｌｌｏ there. ')
         assert sent.reason is ReviewReason.REQUIRED and not sent.retry_allowed
+        assert sent.provenance is MessageProvenance.MODEL
         app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.DISCARD)
         with pytest.raises(MessageConflictError):
             app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='Hello there.')

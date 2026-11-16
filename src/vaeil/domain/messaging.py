@@ -1,6 +1,7 @@
 """Pure Message policy. The scanner reports reasons; this module decides outcomes."""
 from dataclasses import dataclass
 from enum import Enum
+from datetime import datetime, timezone
 import unicodedata
 from vaeil.domain.conversation import Conversation
 from vaeil.domain.identifiers import IdentifierReason, scan_identifiers
@@ -131,7 +132,6 @@ class MessageRecord(PrivateRecord):
     def __init__(self, message_id, conversation_id, sender_id, text, request_id, assessment,
                  created_at, *, delivered_at=None, review_state=None, provenance=None):
         import hashlib
-        from datetime import datetime, timezone
         if any(not isinstance(value, str) or not value for value in (message_id, conversation_id, sender_id)):
             raise MessageShapeError('Use Message, Conversation and sender IDs.')
         body = normalize_message_text(text)
@@ -139,7 +139,7 @@ class MessageRecord(PrivateRecord):
             raise MessageShapeError('Use a typed Message assessment.')
         delivered = assessment.outcome is not MessageOutcome.WITHHELD
         state = review_state if review_state is not None else (ReviewState.PENDING if assessment.reason is ReviewReason.REQUIRED else ReviewState.NOT_SUBMITTED)
-        source = provenance if provenance is not None else (MessageProvenance.MODEL if delivered else MessageProvenance.NONE)
+        source = provenance if provenance is not None else (MessageProvenance.MODEL if delivered or assessment.reason is ReviewReason.REQUIRED else MessageProvenance.NONE)
         if (not isinstance(created_at, datetime) or created_at.utcoffset() is None
                 or not isinstance(state, ReviewState) or not isinstance(source, MessageProvenance)
                 or (delivered != (delivered_at is not None))
@@ -207,8 +207,8 @@ class SenderMessageView:
     provenance: MessageProvenance
     retry_allowed: bool
     can_submit_for_review: bool
-    created_at: object
-    delivered_at: object
+    created_at: datetime
+    delivered_at: datetime | None
 
 
 class _MessageBodyView(PrivateRecord):

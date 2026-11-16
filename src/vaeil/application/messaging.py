@@ -79,7 +79,7 @@ class MessageApplication:
             delivered = assessment.outcome is not MessageOutcome.WITHHELD
             finished = message.transition(assessment=assessment,
                 review_state=ReviewState.PENDING if assessment.reason is ReviewReason.REQUIRED else ReviewState.NOT_SUBMITTED,
-                provenance=MessageProvenance.MODEL if delivered else MessageProvenance.NONE,
+                provenance=MessageProvenance.MODEL if type(moderation) is Verdict else MessageProvenance.NONE,
                 delivered_at=self.clock.now() if delivered else None)
             unit.finish_message(finished)
             if assessment.outcome is MessageOutcome.ESCALATED:
