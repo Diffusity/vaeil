@@ -295,3 +295,25 @@ def test_blocked_pending_release_refused_but_discard_still_audited(repository_ur
         assert app.read_conversation(actor=actors['b'], conversation_id='ab').delivered == ()
         with repo.transaction() as unit:
             assert [event.kind for event in unit.list_audit(subject_id=sent.message_id)] == [AuditKind.MESSAGE_DISCARDED]
+
+
+def test_review_views_are_not_recipient_views_and_generic_exports_refuse_body(repository_url):
+    import copy
+    import dataclasses
+    import pickle
+    from vaeil.domain.messaging import DeliveredMessageView, MessageReviewDecision
+    with open_repository(repository_url) as repo:
+        app, actors, _ = setup(repo)
+        sent = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='BodyExportCanaryZXQ')
+        app.submit_for_review(actor=actors['a'], message_id=sent.message_id)
+        review = app.list_review_messages(actor=actors['admin'])[0]
+        assert not isinstance(review, DeliveredMessageView)
+        app.decide_message(actor=actors['admin'], message_id=sent.message_id, decision=MessageReviewDecision.RELEASE)
+        view = app.read_conversation(actor=actors['b'], conversation_id='ab')
+        assert isinstance(view.delivered[0], DeliveredMessageView)
+        for value in (review, view, view.delivered[0]):
+            assert 'BodyExportCanaryZXQ' not in repr(value) + str(value)
+            for export in (copy.copy, copy.deepcopy, dataclasses.asdict, pickle.dumps):
+                with pytest.raises(TypeError) as caught:
+                    export(value)
+                assert 'BodyExportCanaryZXQ' not in str(caught.value)

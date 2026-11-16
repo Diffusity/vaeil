@@ -211,14 +211,8 @@ class SenderMessageView:
     delivered_at: object
 
 
-class DeliveredMessageView(PrivateRecord):
-    __slots__ = ('message_id', 'sender_id', 'text', 'delivered_at')
-
-    def __init__(self, message):
-        if message.assessment.outcome is MessageOutcome.WITHHELD or message.delivered_at is None:
-            raise MessageConflictError('Only delivered Messages have recipient views.')
-        for key in self.__slots__:
-            object.__setattr__(self, key, getattr(message, key))
+class _MessageBodyView(PrivateRecord):
+    __slots__ = ()
 
     def __setattr__(self, name, value):
         raise AttributeError('Message views are immutable.')
@@ -227,13 +221,24 @@ class DeliveredMessageView(PrivateRecord):
         raise AttributeError('Message views are immutable.')
 
     def __repr__(self):
-        return '<DeliveredMessageView>'
+        return '<' + type(self).__name__ + '>'
 
     __str__ = __repr__
 
 
-class ReviewMessageView(DeliveredMessageView):
-    __slots__ = ('conversation_id', 'identifier_reasons', 'outcome', 'review_state')
+class DeliveredMessageView(_MessageBodyView):
+    __slots__ = ('message_id', 'sender_id', 'text', 'delivered_at')
+
+    def __init__(self, message):
+        if message.assessment.outcome is MessageOutcome.WITHHELD or message.delivered_at is None:
+            raise MessageConflictError('Only delivered Messages have recipient views.')
+        for key in self.__slots__:
+            object.__setattr__(self, key, getattr(message, key))
+
+
+class ReviewMessageView(_MessageBodyView):
+    __slots__ = ('message_id', 'sender_id', 'text', 'delivered_at',
+                 'conversation_id', 'identifier_reasons', 'outcome', 'review_state')
 
     def __init__(self, message):
         for key in ('message_id', 'sender_id', 'text', 'delivered_at', 'conversation_id', 'review_state'):
@@ -241,14 +246,10 @@ class ReviewMessageView(DeliveredMessageView):
         object.__setattr__(self, 'identifier_reasons', message.assessment.identifier_reasons)
         object.__setattr__(self, 'outcome', message.assessment.outcome)
 
-    def __repr__(self):
-        return '<ReviewMessageView>'
-
-    __str__ = __repr__
-
 
 @dataclass(frozen=True, slots=True)
-class ConversationMessagesView:
+class ConversationMessagesView(PrivateRecord):
+    __getstate__ = PrivateRecord.__getstate__
     conversation_id: str
     delivered: tuple[DeliveredMessageView, ...]
     attempts: tuple[SenderMessageView, ...]
