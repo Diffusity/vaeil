@@ -7,3 +7,5 @@ Pure assessment -> durable message transitions -> application/manual-review -> a
 Cycle1assessmentred33missingmodule ->green35selectedincludingpurity. Approved outcome/scanner/normalization/pair/Block policy only; no delivery persistence yet.
 
 Cycle2repositoryred5local4PGskips ->green48selected4PGskips inclassessment/purity/AST. Singlecanonicalbody, immutable slotted non-dataclassrecords, request/reviewdigestuniqueconstraints, terminaltransitionguards, exactroundtrip/rollbacktested. PostgreSQLnotclaimedlocally; sharedCIwillrun.
+
+Cycle3applicationred11local11PGskips ->green59selected15PGskips inclrepository/assessment/purity/AST. Durable in-flight requestreservation exposes only technicalBusy receipt on replay, so cross-instance samekeydoesnotcallmoderationtwice; modelcalloutsidewrite. Finaltransitionfreshpair/Block/revealcheck, manualsubmission/terminalhumanrelease/discard+atomic audit, timestamponactualdelivery. Unfinishedservercrash attempt stays technicalBusy; newrequestkeycanretry, never counted/delivered. This is infrastructure failure behavior, not auto-approval.

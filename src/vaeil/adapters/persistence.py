@@ -334,16 +334,31 @@ class SqlUnitOfWork:
         self._execute(insert(message_review_claims).values(conversation_id=message.conversation_id,
             sender_id=message.sender_id, text_digest=message.text_digest, message_id=message.message_id))
 
-    def add_message(self, message):
+    def add_message(self, message, *, processing=False):
         if not isinstance(message, m.MessageRecord):
             raise m.MessageShapeError('Use a typed Message record.')
         if self.review_text_exists(message.conversation_id, message.sender_id, message.text_digest):
             raise m.MessageConflictError('This Message text already has a review decision.')
-        self._execute(insert(messages).values(**message_to_row(message)))
+        self._execute(insert(messages).values(**message_to_row(message), processing=processing))
         if message.review_state is m.ReviewState.PENDING:
             self._reserve_message_review(message)
 
+    def message_is_processing(self, message_id):
+        row = self._execute(select(messages.c.processing).where(messages.c.message_id == message_id)).first()
+        return row is not None and row[0]
+
+    def finish_message(self, message):
+        previous = self.get_message(message.message_id)
+        if not self.message_is_processing(message.message_id) or any(
+                getattr(previous, key) != getattr(message, key) for key in ('conversation_id', 'sender_id', 'text', 'request_id', 'created_at')):
+            raise m.MessageConflictError('Message processing is no longer available.')
+        if message.review_state is m.ReviewState.PENDING:
+            self._reserve_message_review(message)
+        self._execute(update(messages).where(messages.c.message_id == message.message_id).values(**message_to_row(message), processing=False))
+
     def update_message(self, message):
+        if self.message_is_processing(message.message_id):
+            raise m.MessageConflictError('Message is still being checked.')
         previous = self.get_message(message.message_id)
         immutable = ('conversation_id', 'sender_id', 'text', 'request_id', 'created_at')
         if any(getattr(previous, key) != getattr(message, key) for key in immutable):
@@ -466,7 +481,7 @@ messages = Table(
     Column('conversation_id', String, ForeignKey('conversations.conversation_id'), nullable=False),
     Column('sender_id', String, ForeignKey('members.member_id'), nullable=False),
     Column('text', String, nullable=False), Column('request_id', String, nullable=False),
-    Column('text_digest', String, nullable=False), Column('outcome', String, nullable=False),
+    Column('text_digest', String, nullable=False), Column('processing', Boolean, nullable=False), Column('outcome', String, nullable=False),
     Column('reason', String), Column('identifier_reasons', JSON, nullable=False),
     Column('review_state', String, nullable=False), Column('provenance', String, nullable=False),
     Column('created_at', String, nullable=False), Column('delivered_at', String),

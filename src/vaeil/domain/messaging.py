@@ -5,6 +5,7 @@ import unicodedata
 from vaeil.domain.conversation import Conversation
 from vaeil.domain.identifiers import IdentifierReason, scan_identifiers
 from vaeil.domain.vetting import Verdict
+from vaeil.domain.privacy import PrivateRecord
 
 MAX_MESSAGE_CODE_POINTS = 2000
 
@@ -122,7 +123,7 @@ def message_request_key(value: str) -> str:
 _UNSET = object()
 
 
-class MessageRecord:
+class MessageRecord(PrivateRecord):
     # Not a dataclass: asdict must refuse rather than deep-copy the ordinary body.
     __slots__ = ('message_id', 'conversation_id', 'sender_id', 'text', 'request_id',
                  'text_digest', 'assessment', 'created_at', 'delivered_at', 'review_state', 'provenance')
@@ -188,3 +189,66 @@ class MessageRecord:
 
     def __deepcopy__(self, memo):
         return self.__reduce__()
+
+
+class MessageReviewDecision(str, Enum):
+    RELEASE = 'release'
+    DISCARD = 'discard'
+
+
+@dataclass(frozen=True, slots=True)
+class SenderMessageView:
+    message_id: str
+    conversation_id: str
+    outcome: MessageOutcome
+    reason: ModerationFailure | ReviewReason | None
+    review_state: ReviewState
+    identifier_reasons: tuple[IdentifierReason, ...]
+    provenance: MessageProvenance
+    retry_allowed: bool
+    can_submit_for_review: bool
+    created_at: object
+    delivered_at: object
+
+
+class DeliveredMessageView(PrivateRecord):
+    __slots__ = ('message_id', 'sender_id', 'text', 'delivered_at')
+
+    def __init__(self, message):
+        if message.assessment.outcome is MessageOutcome.WITHHELD or message.delivered_at is None:
+            raise MessageConflictError('Only delivered Messages have recipient views.')
+        for key in self.__slots__:
+            object.__setattr__(self, key, getattr(message, key))
+
+    def __setattr__(self, name, value):
+        raise AttributeError('Message views are immutable.')
+
+    def __delattr__(self, name):
+        raise AttributeError('Message views are immutable.')
+
+    def __repr__(self):
+        return '<DeliveredMessageView>'
+
+    __str__ = __repr__
+
+
+class ReviewMessageView(DeliveredMessageView):
+    __slots__ = ('conversation_id', 'identifier_reasons', 'outcome', 'review_state')
+
+    def __init__(self, message):
+        for key in ('message_id', 'sender_id', 'text', 'delivered_at', 'conversation_id', 'review_state'):
+            object.__setattr__(self, key, getattr(message, key))
+        object.__setattr__(self, 'identifier_reasons', message.assessment.identifier_reasons)
+        object.__setattr__(self, 'outcome', message.assessment.outcome)
+
+    def __repr__(self):
+        return '<ReviewMessageView>'
+
+    __str__ = __repr__
+
+
+@dataclass(frozen=True, slots=True)
+class ConversationMessagesView:
+    conversation_id: str
+    delivered: tuple[DeliveredMessageView, ...]
+    attempts: tuple[SenderMessageView, ...]
