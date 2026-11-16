@@ -114,3 +114,56 @@ test('withheld status never promises actions disallowed by the server', async ({
   await expect(chat.getByRole('button', { name: 'Submit for review', exact: true })).toHaveCount(0);
   await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toHaveCount(0);
 });
+
+test('ambiguous network retry reuses its request key without creating a second attempt', async ({ page }) => {
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await chat.getByLabel('Message', { exact: true }).fill('AmbiguousRequestCanaryZXQ');
+  const before = (await (await page.request.get('/api/conversations/browser-conversation/messages')).json()).attempts.length;
+  const keys = [];
+  await page.route('**/api/conversations/browser-conversation/messages', async route => {
+    if (route.request().method() !== 'POST') { await route.continue(); return; }
+    keys.push(route.request().postDataJSON().request_id);
+    const response = await route.fetch();
+    if (keys.length === 1) await route.abort('failed');
+    else await route.fulfill({ response });
+  });
+  await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+  await expect(chat.getByRole('alert')).toHaveText('Could not confirm your Message. Retry to check the same request.');
+  await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+  await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBe(keys[1]);
+  expect((await (await page.request.get('/api/conversations/browser-conversation/messages')).json()).attempts).toHaveLength(before + 1);
+});
+
+test('released HTML-like text stays inert in the recipient history', async ({ page, browser, request }) => {
+  const body = '<img src=x onerror="window.messageExecuted=true"> Synthetic text.';
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await chat.getByLabel('Message', { exact: true }).fill(body);
+  const sent = page.waitForResponse(response => response.url().endsWith('/messages') && response.request().method() === 'POST');
+  await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+  await sent;
+  await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toBeEnabled();
+  const attempt = chat.getByRole('list', { name: 'Your Message status', exact: true }).getByRole('listitem').last();
+  await attempt.getByRole('button', { name: 'Submit for review', exact: true }).click();
+  await expect(attempt.getByText('Under review. Not delivered.', { exact: true })).toBeVisible();
+  const headers = { Origin: 'http://127.0.0.1:8765' };
+  expect((await request.post('/api/sessions', { headers, data: {
+    email: 'browser.admin@example.invalid', password: 'Fictional admin password',
+  } })).status()).toBe(200);
+  const queue = (await (await request.get('/api/admin/messages')).json()).messages;
+  const message = queue.find(item => item.text === body);
+  expect(message).toBeTruthy();
+  expect((await request.post(`/api/admin/messages/${message.message_id}/decision`, { headers, data: { decision: 'release' } })).status()).toBe(204);
+  const context = await browser.newContext({ baseURL: 'http://127.0.0.1:8765' });
+  try {
+    const recipient = await context.newPage();
+    await signIn(recipient, 'browser-b');
+    const history = recipient.getByRole('log', { name: 'Delivered Messages', exact: true });
+    await expect(history.getByText(body, { exact: true })).toBeVisible();
+    await expect(history.locator('img')).toHaveCount(0);
+    expect(await recipient.evaluate(() => window.messageExecuted)).toBeUndefined();
+  } finally { await context.close(); }
+});

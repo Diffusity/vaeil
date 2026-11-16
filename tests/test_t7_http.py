@@ -84,3 +84,24 @@ def test_invalid_message_is_safe_before_model_and_store(repository_url, body, ca
             assert 'InvalidRequestCanary' not in response.text + caplog.text
             assert not model.seen
             assert client.get('/api/conversations/ab/messages').json()['attempts'] == []
+
+
+def test_pending_admission_cannot_use_message_or_queue_apis(repository_url):
+    from vaeil.domain import MemberIdentity
+    from vaeil.domain.authentication import PrincipalRecord, Role, AdmissionStatus
+    from vaeil.domain.privacy import PrivateText
+    from test_repository_contract import example_member
+    model = Moderator(Verdict.APPROVED)
+    with open_repository(repository_url) as repo:
+        client = client_for(repo, model)
+        sample = example_member('pending')
+        identity = MemberIdentity('pending', sample.identity.legal_name, 'pending@example.invalid', None, sample.identity.date_of_birth)
+        with repo.transaction() as unit:
+            unit.add_principal(PrincipalRecord(identity, identity.email, PrivateText('test-only:fiction password'), Role.APPLICANT, AdmissionStatus.NEEDS_REVIEW))
+            unit.commit()
+        with client:
+            login(client, 'pending')
+            assert client.get('/api/conversations/ab/messages').status_code == 403
+            assert client.get('/api/admin/messages').status_code == 403
+            assert client.post('/api/conversations/ab/messages', json={'request_id': REQUEST, 'text': 'hello'}).status_code == 403
+            assert model.seen == []

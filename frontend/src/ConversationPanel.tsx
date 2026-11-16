@@ -136,7 +136,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
     {view && <>
       <div role="log" aria-label="Delivered Messages">
         {view.delivered.length === 0 && <p>No delivered Messages yet.</p>}
-        {view.delivered.map(item => <p key={item.message_id}>{item.text}</p>)}
+        {view.delivered.map(item => <p className="message-body" key={item.message_id}>{item.text}</p>)}
       </div>
       <form onSubmit={compose}>
         <label htmlFor="message-text">Message</label>
