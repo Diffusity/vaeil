@@ -30,6 +30,18 @@ class HumanReviewModel:
         return Verdict.NEEDS_REVIEW
 
 
+class DemoMessageFailure:
+    def moderate(self, text):
+        raise TimeoutError('Demo-only Message moderation failure.')
+
+
+def configured_message_moderator():
+    switch = os.environ.get('VAEIL_DEMO_LLM_FAILURE', '0')
+    if switch not in {'0', '1'} or (switch == '1' and os.environ.get('VAEIL_ENV') != 'demo'):
+        raise RepositoryError('Demo Message failure configuration is not permitted.')
+    return DemoMessageFailure() if switch == '1' else None
+
+
 class RuntimeAdmission:
     """Lazily own the SQL engine; failed auth storage never breaks public health."""
     def __init__(self):
@@ -60,10 +72,11 @@ class RuntimeAdmission:
 
     def get_messages(self):
         from vaeil.application.messaging import MessageApplication
+        moderator = configured_message_moderator()
         application = self.get()
         with self._lock:
             if self._messages is None:
-                self._messages = MessageApplication(application.repository, tokens=application.tokens, clock=application.clock)
+                self._messages = MessageApplication(application.repository, tokens=application.tokens, clock=application.clock, moderator=moderator)
             return self._messages
 
     def close(self):
