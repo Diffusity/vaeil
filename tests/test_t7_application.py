@@ -221,6 +221,8 @@ def test_manual_review_digest_prevents_two_pending_copies(repository_url):
         first = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
         second = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='hello')
         app.submit_for_review(actor=actors['a'], message_id=first.message_id)
+        receipt = next(item for item in app.read_conversation(actor=actors['a'], conversation_id='ab').attempts if item.message_id == second.message_id)
+        assert not receipt.retry_allowed and not receipt.can_submit_for_review
         with pytest.raises(MessageConflictError):
             app.submit_for_review(actor=actors['a'], message_id=second.message_id)
         assert [item.message_id for item in app.list_review_messages(actor=actors['admin'])] == [first.message_id]
@@ -318,3 +320,19 @@ def test_review_views_are_not_recipient_views_and_generic_exports_refuse_body(re
                 with pytest.raises(TypeError) as caught:
                     export(value)
                 assert 'BodyExportCanaryZXQ' not in str(caught.value)
+
+
+def test_review_lock_created_during_moderation_prevents_matching_late_delivery(repository_url):
+    from vaeil.application.messaging import MessageApplication
+    from vaeil.domain.messaging import MessageConflictError
+    with open_repository(repository_url) as repo:
+        app, actors, clock = setup(repo)
+        old = app.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='hello')
+        class ReviewDuringCall:
+            def moderate(self, text):
+                app.submit_for_review(actor=actors['a'], message_id=old.message_id)
+                return d.Verdict.APPROVED
+        other = MessageApplication(repo, tokens=app.tokens, clock=clock, moderator=ReviewDuringCall())
+        with pytest.raises(MessageConflictError):
+            other.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST2, text='hello')
+        assert app.read_conversation(actor=actors['b'], conversation_id='ab').delivered == ()

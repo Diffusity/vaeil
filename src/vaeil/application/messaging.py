@@ -32,9 +32,9 @@ class MessageApplication:
         return conversation
 
     @staticmethod
-    def _receipt(message, *, processing=False, open_for_chat=True):
+    def _receipt(message, *, processing=False, open_for_chat=True, review_locked=False):
         technical = message.assessment.outcome is MessageOutcome.WITHHELD and isinstance(message.assessment.reason, ModerationFailure)
-        retry = technical and message.review_state is ReviewState.NOT_SUBMITTED and open_for_chat
+        retry = technical and message.review_state is ReviewState.NOT_SUBMITTED and open_for_chat and not review_locked
         return SenderMessageView(message.message_id, message.conversation_id, message.assessment.outcome,
             message.assessment.reason, message.review_state, message.assessment.identifier_reasons,
             message.provenance, retry, retry and not processing, message.created_at, message.delivered_at)
@@ -64,7 +64,8 @@ class MessageApplication:
             if previous is not None:
                 if previous.text != body:
                     raise MessageConflictError('This request key already identifies another Message.')
-                return self._receipt(previous, processing=unit.message_is_processing(previous.message_id))
+                return self._receipt(previous, processing=unit.message_is_processing(previous.message_id),
+                    review_locked=unit.review_text_exists(conversation_id, actor.principal_id, previous.text_digest))
             if unit.review_text_exists(conversation_id, actor.principal_id, digest):
                 raise MessageConflictError('This Message text already has a review decision.')
             # Durable in-flight reservation prevents a second process calling moderation.
@@ -75,6 +76,8 @@ class MessageApplication:
         moderation = self._moderate(body)
         with self.repository.transaction() as unit:
             conversation = self._pair(unit, actor, conversation_id, sending=True)
+            if unit.review_text_exists(conversation_id, actor.principal_id, digest):
+                raise MessageConflictError('This Message text entered review while it was checked.')
             assessment = assess_message(body, sender_id=actor.principal_id, conversation=conversation, moderation=moderation)
             delivered = assessment.outcome is not MessageOutcome.WITHHELD
             finished = message.transition(assessment=assessment,
@@ -137,7 +140,8 @@ class MessageApplication:
             conversation = self._pair(unit, actor, conversation_id)
             delivered = tuple(DeliveredMessageView(message) for message in unit.list_delivered_messages(conversation_id))
             attempts = tuple(self._receipt(message, processing=unit.message_is_processing(message.message_id),
-                open_for_chat=conversation.open_for_chat) for message in unit.list_sender_messages(conversation_id, actor.principal_id))
+                open_for_chat=conversation.open_for_chat,
+                review_locked=unit.review_text_exists(conversation_id, actor.principal_id, message.text_digest)) for message in unit.list_sender_messages(conversation_id, actor.principal_id))
             return ConversationMessagesView(conversation_id, delivered, attempts)
 
     def list_review_messages(self, *, actor):
