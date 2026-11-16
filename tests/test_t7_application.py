@@ -33,7 +33,7 @@ def setup(repo, moderator=None):
             sample = example_member(identifier, name)
             identity = d.MemberIdentity(identifier, sample.identity.legal_name, identifier + '@example.invalid', None, sample.identity.date_of_birth)
             role = Role.ADMIN if identifier == 'admin' else Role.MEMBER
-            unit.add_principal(PrincipalRecord(identity, identity.email, PrivateText('test-only-hash'), role, AdmissionStatus.APPROVED))
+            unit.add_principal(PrincipalRecord(identity, identity.email, PrivateText('test-only:fiction password'), role, AdmissionStatus.APPROVED))
             if role is Role.MEMBER:
                 unit.add_member(d.Member(identity, sample.pseudonym, sample.values_profile))
         unit.store_conversation(Conversation('ab', ('a', 'b')))

@@ -36,6 +36,7 @@ class RuntimeAdmission:
         self._lock = threading.Lock()
         self._context = None
         self._application = None
+        self._messages = None
 
     def get(self):
         with self._lock:
@@ -57,8 +58,16 @@ class RuntimeAdmission:
             self._context, self._application = context, application
             return application
 
+    def get_messages(self):
+        from vaeil.application.messaging import MessageApplication
+        application = self.get()
+        with self._lock:
+            if self._messages is None:
+                self._messages = MessageApplication(application.repository, tokens=application.tokens, clock=application.clock)
+            return self._messages
+
     def close(self):
         with self._lock:
             if self._context is not None:
                 self._context.__exit__(None, None, None)
-                self._context, self._application = None, None
+                self._context, self._application, self._messages = None, None, None

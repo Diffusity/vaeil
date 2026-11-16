@@ -3,7 +3,7 @@ import hashlib
 from vaeil.application.admission import SessionPrincipal
 from vaeil.domain.authentication import Role, AdmissionStatus, AccessDeniedError
 from vaeil.domain.messaging import (
-    MessageRecord, MessageAssessment, MessageOutcome, ModerationFailure, ReviewReason,
+    MessageRecord, MessageOutcome, ModerationFailure, ReviewReason,
     ReviewState, MessageProvenance, MessageReviewDecision, SenderMessageView,
     DeliveredMessageView, ReviewMessageView, ConversationMessagesView,
     MessageConflictError, MessageActorError, MessageBlockedError, MessageShapeError,
