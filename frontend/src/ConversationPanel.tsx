@@ -115,7 +115,9 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
       if (!response.ok) throw new Error('Unavailable');
       const item = receipt(await response.json(), conversationId);
       if (controller.signal.aborted) return;
-      remember(item); setText(''); setRetry(null);
+      remember(item);
+      setText(current => retry?.message_id === messageId && current === retry.text ? '' : current);
+      setRetry(current => current?.message_id === messageId ? null : current);
       await load();
     } catch { if (!controller.signal.aborted) setError('Could not submit for review. Refresh and retry.'); }
     finally { if (!controller.signal.aborted) setBusy(false); }
@@ -143,10 +145,13 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
         <button disabled={busy} type="submit">Send Message</button>
       </form>
       <ul aria-label="Your Message status">
-        {view.attempts.map(item => <li key={item.message_id}>
+        {view.attempts.map((item, index) => <li key={item.message_id}>
+          <p>Message attempt {index + 1}</p>
           <p>{item.review_state === 'pending' ? 'Under review. Not delivered.'
             : item.review_state === 'discarded' ? 'An Admin discarded this Message. Not delivered.'
-            : item.outcome === 'Withheld' ? 'Withheld — technical failure. Retry or submit for review.'
+            : item.outcome === 'Withheld' ? (item.retry_allowed
+              ? item.can_submit_for_review ? 'Withheld — technical failure. Retry or submit for review.' : 'Withheld — technical failure. Retry is available.'
+              : 'Withheld. Retry and review submission are unavailable.')
             : item.outcome === 'Escalated' ? 'Delivered and queued for Admin review.' : 'Delivered.'}</p>
           {item.can_submit_for_review && <button disabled={busy} onClick={() => void submit(item.message_id)}>Submit for review</button>}
           {item.retry_allowed && retry?.message_id === item.message_id && <button disabled={busy} onClick={() => void send(retry.text)}>Retry Message</button>}

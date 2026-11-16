@@ -84,3 +84,33 @@ test('inconsistent review-required retry flags are rejected and draft is retaine
   await expect(chat.getByRole('alert')).toHaveText('Could not confirm your Message. Retry to check the same request.');
   await expect(chat.getByLabel('Message', { exact: true })).toHaveValue('MalformedReceiptCanaryZXQ');
 });
+
+test('submitting an older withheld attempt preserves a different unsent draft', async ({ page }) => {
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await chat.getByLabel('Message', { exact: true }).fill('OldReviewAttemptCanaryZXQ');
+  await chat.getByRole('button', { name: 'Send Message', exact: true }).click();
+  await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toBeVisible();
+  await chat.getByLabel('Message', { exact: true }).fill('A different unsent draft remains here.');
+  const attempt = chat.getByRole('list', { name: 'Your Message status', exact: true }).getByRole('listitem').last();
+  await attempt.getByRole('button', { name: 'Submit for review', exact: true }).click();
+  await expect(attempt.getByText('Under review. Not delivered.', { exact: true })).toBeVisible();
+  await expect(chat.getByLabel('Message', { exact: true })).toHaveValue('A different unsent draft remains here.');
+});
+
+test('withheld status never promises actions disallowed by the server', async ({ page }) => {
+  await page.route('**/api/conversations/browser-conversation/messages', async route => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+      conversation_id: 'browser-conversation', delivered: [], attempts: [{
+        message_id: 'closed-attempt', conversation_id: 'browser-conversation', outcome: 'Withheld',
+        reason: 'busy', review_state: 'not_submitted', retry_allowed: false, can_submit_for_review: false,
+        provenance: 'none', identifier_reasons: [], created_at: '2026-11-16T12:00:00+00:00', delivered_at: null,
+      }],
+    }) });
+  });
+  await signIn(page, 'browser-a');
+  const chat = page.getByRole('region', { name: 'Conversation', exact: true });
+  await expect(chat.getByText('Withheld. Retry and review submission are unavailable.', { exact: true })).toBeVisible();
+  await expect(chat.getByRole('button', { name: 'Submit for review', exact: true })).toHaveCount(0);
+  await expect(chat.getByRole('button', { name: 'Retry Message', exact: true })).toHaveCount(0);
+});
