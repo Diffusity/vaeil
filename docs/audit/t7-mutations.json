@@ -1,0 +1,192 @@
+{
+  "results": [
+    {
+      "mutation": "auto-approve scanner-clean baseline",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "clear identifier reasons",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_approved_assessment_preserves_reason_and_pair_reveal_policy"
+    },
+    {
+      "mutation": "deliver technical or review Withheld",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_review_and_technical_outcomes_never_deliver_even_when_flagged"
+    },
+    {
+      "mutation": "ignore Conversation Reveal",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_approved_assessment_preserves_reason_and_pair_reveal_policy"
+    },
+    {
+      "mutation": "Message limit 1999",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_normalized_code_point_boundary_and_chat_whitespace_are_accepted"
+    },
+    {
+      "mutation": "Message limit 2001",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_invalid_text_is_refused_without_echo"
+    },
+    {
+      "mutation": "drop control refusal",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t7_assessment.py::test_invalid_text_is_refused_without_echo"
+    },
+    {
+      "mutation": "bypass stored role",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_roles_pair_and_request_collision_cannot_bypass_policy"
+    },
+    {
+      "mutation": "bypass participant pair",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_roles_pair_and_request_collision_cannot_bypass_policy"
+    },
+    {
+      "mutation": "bypass Conversation Block policy",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_block_during_external_call_prevents_delivery"
+    },
+    {
+      "mutation": "omit fresh state recheck after moderation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_block_during_external_call_prevents_delivery"
+    },
+    {
+      "mutation": "omit request replay lookup",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_roles_pair_and_request_collision_cannot_bypass_policy"
+    },
+    {
+      "mutation": "remove durable request unique constraint",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_repository.py::test_database_request_and_review_uniqueness_cannot_be_bypassed_by_another_writer"
+    },
+    {
+      "mutation": "remove durable review digest unique constraint",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_repository.py::test_database_request_and_review_uniqueness_cannot_be_bypassed_by_another_writer"
+    },
+    {
+      "mutation": "ignore existing review text before moderation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_model_review_prevents_normalized_resend_even_after_discard"
+    },
+    {
+      "mutation": "permit repeated Admin release",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "drop terminal storage guard",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_repository.py::test_review_reserves_digest_and_terminal_delivery_is_immutable"
+    },
+    {
+      "mutation": "omit human decision audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "commit human delivery before audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_failed_release_audit_rolls_back_delivery_and_preserves_review"
+    },
+    {
+      "mutation": "timestamp release at submission",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "show pending sender receipts to the other participant",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "count Withheld as delivered storage",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_repository.py::test_canonical_message_roundtrip_redacted_and_not_delivered"
+    },
+    {
+      "mutation": "copy Message body into audit identifier",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "copy Message body into review queue",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_baseline_manual_review_then_one_audited_delivery_at_release_time"
+    },
+    {
+      "mutation": "allow demo failure config in production",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_runtime.py::test_runtime_failure_switch_never_enables_approval"
+    },
+    {
+      "mutation": "accept client Reveal flag",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_http.py::test_send_cannot_supply_authority_or_production_approval_switch"
+    },
+    {
+      "mutation": "extract identity from unapproved Message helper",
+      "backend": "architecture",
+      "killed": true,
+      "test": "tests/test_private_unwrap_boundary.py::test_production_unwrap_sites_are_exactly_the_approved_functions"
+    },
+    {
+      "mutation": "omit model-review decision provenance",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_model_review_prevents_normalized_resend_even_after_discard"
+    },
+    {
+      "mutation": "omit review lock recheck after moderation",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_review_lock_created_during_moderation_prevents_matching_late_delivery"
+    },
+    {
+      "mutation": "advertise retry of already reviewed matching text",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t7_application.py::test_manual_review_digest_prevents_two_pending_copies"
+    }
+  ],
+  "restored_sha256": {
+    "src\\vaeil\\application\\messaging.py": "5c39fc3c3ab1fe128e1b505ba109d3b772a1bfa5cacf437739ef0e22b9fa9c6b",
+    "src\\vaeil\\domain\\messaging.py": "68be6a953ccbca495dcbbf4b323a73cc04c55124f4faeae7e3672dc247638b29",
+    "src\\vaeil\\domain\\conversation.py": "ff299ef5676028938f2a9f917a28eb0ea7adbc6551308495f685ad24b6644276",
+    "src\\vaeil\\adapters\\persistence.py": "c0fff5d17788c5339d95d0989392699bc0e9153d9b4d1c77b30f04e07ea8bafa",
+    "src\\vaeil\\runtime.py": "dd80cd94cf53e14023b3e6e96e02412990a66486d8de584296119b8a5f1d2f87",
+    "src\\vaeil\\http_messaging.py": "84e40aee8322462bbed78123de4420cb47f8c5c0f36a7c92b168e86f7c215f6d"
+  }
+}
