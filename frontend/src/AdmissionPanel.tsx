@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { ProfileForm } from './ProfileForm';
 import type { FormEvent } from 'react';
 
 type Principal = { role: 'applicant' | 'member' | 'admin'; admission: 'NeedsReview' | 'Approved' | 'Rejected' };
@@ -9,6 +10,22 @@ export function AdmissionPanel() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [principal, setPrincipal] = useState<Principal | null>(null);
+
+  const sessionExpired = useCallback(() => {
+    setPrincipal(null); setMode(null); setMessage('Your session has expired. Please sign in again.');
+  }, []);
+  useEffect(() => {
+    let active = true;
+    void fetch('/api/session', { credentials: 'same-origin' }).then(async response => {
+      if (!response.ok) return;
+      const data = await response.json();
+      if (active && ['applicant', 'member', 'admin'].includes(data.role)
+          && ['NeedsReview', 'Approved', 'Rejected'].includes(data.admission)) {
+        setPrincipal({ role: data.role, admission: data.admission });
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   function select(next: 'apply' | 'login') {
     setMode(next); setError(''); setMessage('');
@@ -65,6 +82,7 @@ export function AdmissionPanel() {
       <button onClick={() => select('apply')} disabled={busy}>Apply with an Invite</button>
       <button onClick={() => select('login')} disabled={busy}>Sign in</button>
     </nav>}
+    {principal?.role === 'member' && principal.admission === 'Approved' && <ProfileForm onSessionExpired={sessionExpired} />}
     {mode && <form onSubmit={submit}>
       {mode === 'apply' && <>
         <p>Demo only — use fictional details.</p>

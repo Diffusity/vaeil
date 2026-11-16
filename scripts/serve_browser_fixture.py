@@ -13,9 +13,13 @@ def main():
         os.environ["VAEIL_SECURE_COOKIES"] = "0"
         os.environ.pop("VAEIL_ADMIN_EMAIL", None)
         os.environ.pop("VAEIL_ADMIN_PASSWORD", None)
+        os.environ["VAEIL_ADMIN_EMAIL"] = "browser.admin@example.invalid"
+        os.environ["VAEIL_ADMIN_PASSWORD"] = "Fictional admin password"
         with open_repository(url) as repository:
             with repository.transaction() as unit:
                 unit.issue_invite("browser-invite", issuer_id="fictional-browser-admin")
+                for index in range(40):
+                    unit.issue_invite(f"h1-invite-{index}", issuer_id="fictional-browser-admin")
                 unit.commit()
         uvicorn.run("vaeil.web:create_app", factory=True, host="127.0.0.1", port=8765)
 

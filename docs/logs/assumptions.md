@@ -115,3 +115,7 @@ Parth defers teammate collaborator invitations and password-manager storage as u
 ## 2026-11-14 T6 review and merge authorization
 
 Parth explicitly authorizes fresh code-review of PR24 against master, resolving actionable findings, retrospective, and merge after green final-head CI, followed by ask-matt next-step advice. Use a merge commit to preserve cited history. This supersedes the earlier T6 merge hold, not the deployment boundary. No deployment, T7 implementation, account operation or teammate assignment is inferred.
+
+## 2026-11-16 T7 seam and H1 implementation authorization
+
+Parth approves the proposed T7 seam including text/comparison/idempotency choices and documentation PR27; merged green as a4036b6 with merge commit. Parth directs H1 ownership to Nevil and author attribution using Nevil email/GitHub username, and asks Codex to implement on his behalf then provide ask-matt advice. Identity is not present in repo/contributors; exact username/email requested before assignment/commits, no identity guessed. AI assistance stays factual and visible; no independent human implementation claim. H1 approved T6 HTTP/browser seam and acceptance tests define implementation scope; no domain/audit modifications. T7 approval does not start T7 implementation in this H1-only task.
