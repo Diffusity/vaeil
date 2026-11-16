@@ -28,16 +28,23 @@ function readProfile(data: unknown): { draft: Draft; complete: boolean } {
   const root = data as Record<string, unknown>;
   if (!root.values_profile || typeof root.values_profile !== 'object') throw new Error('Invalid response');
   const profile = root.values_profile as Record<string, unknown>;
+  if ('complete' in root && root.complete !== false) throw new Error('Invalid response');
   const complete = root.complete !== false;
   const pseudonym = complete ? root.pseudonym : profile.pseudonym;
   if ((pseudonym !== null && typeof pseudonym !== 'string') || (complete && !pseudonym)
       || typeof profile.about !== 'string'
-      || singles.some(key => profile[key] !== null && typeof profile[key] !== 'string')
-      || !Array.isArray(profile.interests) || !profile.interests.every(item => typeof item === 'string')
-      || !Array.isArray(profile.values) || !profile.values.every(item => typeof item === 'string')) throw new Error('Invalid response');
+      || singles.some(key => profile[key] === null ? complete : !singleChoices[key].options.some(([code]) => code === profile[key]))
+      || (['interests', 'values'] as const).some(key => {
+        const items = profile[key];
+        return !Array.isArray(items) || items.length > 5 || (complete && items.length < 1)
+          || new Set(items).size !== items.length
+          || items.some(item => typeof item !== 'string' || !multiChoices[key].options.includes(item));
+      })) throw new Error('Invalid response');
+  if (complete && (typeof root.legal_name !== 'string' || typeof root.email !== 'string'
+      || typeof root.date_of_birth !== 'string' || (root.phone !== null && typeof root.phone !== 'string'))) throw new Error('Invalid response');
   // Keep only form fields: authorized own-identity payload values are not form state.
   return { complete, draft: { pseudonym, relationship_intent: profile.relationship_intent as string | null,
-    life_stage: profile.life_stage as string | null, interests: profile.interests, values: profile.values,
+    life_stage: profile.life_stage as string | null, interests: profile.interests as string[], values: profile.values as string[],
     communication_style: profile.communication_style as string | null,
     pace_and_lifestyle: profile.pace_and_lifestyle as string | null, about: profile.about } };
 }

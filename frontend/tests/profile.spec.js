@@ -76,3 +76,21 @@ test('complete and update without reclaiming name; unsafe About keeps unsaved te
   await form.getByRole('button', { name: 'Save profile', exact: true }).click();
   await expect(form.getByRole('status')).toHaveText('Profile saved.');
 });
+
+const empty = { complete: false, values_profile: { pseudonym: null, relationship_intent: null,
+  life_stage: null, interests: [], values: [], communication_style: null, pace_and_lifestyle: null, about: '' } };
+for (const [name, payload, index] of [
+  ['missing profile', { complete: false }, 2],
+  ['unknown code', { ...empty, values_profile: { ...empty.values_profile, communication_style: 'unknown' } }, 3],
+  ['duplicate selections', { ...empty, values_profile: { ...empty.values_profile, interests: ['reading', 'reading'] } }, 4],
+  ['invalid complete response', { ...empty, complete: true, pseudonym: 'Star' }, 5],
+]) {
+  test(`malformed ${name} is refused with a retry to the real API`, async ({ page }) => {
+    await page.route('**/api/me/profile', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(payload) }), { times: 1 });
+    await member(page, index);
+    await expect(page.getByRole('alert')).toHaveText('Could not load your profile. Please retry.');
+    await expect(page.getByRole('form', { name: 'Your Values Profile', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Retry profile', exact: true }).click();
+    await expect(page.getByRole('form', { name: 'Your Values Profile', exact: true })).toBeVisible();
+  });
+}
