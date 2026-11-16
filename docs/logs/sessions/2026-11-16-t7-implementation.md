@@ -5,3 +5,5 @@ Block start verified2026-11-16T10:32:23UTC (16:02:23Asia/Calcutta). User explici
 Pure assessment -> durable message transitions -> application/manual-review -> authenticated HTTP -> minimal ConversationUI, each red shown then green, onecommitpercycle. Final mutation/purity/AST/fullchecks/two-axisreview/PR required, no merge without later authorization. Rule5partial; current16Novembercalendar10.5corevs8–9slots remains risk, not verified human velocity.
 
 Cycle1assessmentred33missingmodule ->green35selectedincludingpurity. Approved outcome/scanner/normalization/pair/Block policy only; no delivery persistence yet.
+
+Cycle2repositoryred5local4PGskips ->green48selected4PGskips inclassessment/purity/AST. Singlecanonicalbody, immutable slotted non-dataclassrecords, request/reviewdigestuniqueconstraints, terminaltransitionguards, exactroundtrip/rollbacktested. PostgreSQLnotclaimedlocally; sharedCIwillrun.

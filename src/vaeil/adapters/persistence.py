@@ -6,11 +6,12 @@ import certifi
 from sqlalchemy.engine import make_url
 from vaeil.domain.authentication import (PrincipalRecord, ApplicationRecord, Role, AdmissionStatus, AdmissionDecision, AdmissionConflictError, normalize_login_email)
 
-from sqlalchemy import Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, delete, insert, select, update
+from sqlalchemy import UniqueConstraint, Boolean, Column, DDL, Date, ForeignKey, JSON, MetaData, String, Table, create_engine, event, delete, insert, select, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from vaeil import domain as d
 from vaeil.domain import conversation as c
+from vaeil.domain import messaging as m
 from vaeil.domain.privacy import PrivateDate, PrivateText
 from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
@@ -287,6 +288,11 @@ class SqlUnitOfWork:
                 or "principals.login_email" in str(original) or "principals.principal_id" in str(original)
             ):
                 raise ApplicationConflictError("Application conflicts with an existing account.") from None
+            if isinstance(error, IntegrityError) and (
+                constraint in {'message_request_owner', 'review_digest_owner', 'messages_pkey'}
+                or 'messages.' in str(original) or 'message_review_claims.' in str(original)
+            ):
+                raise m.MessageConflictError('Message conflicts with an existing request or review.') from None
             raise RepositoryError("Repository operation failed.") from None
 
     def commit(self) -> None:
@@ -298,6 +304,75 @@ class SqlUnitOfWork:
         except SQLAlchemyError:
             self._failed = True
             raise RepositoryError("Repository commit failed.") from None
+
+
+    def find_message_by_request(self, conversation_id, sender_id, request_id):
+        row = self._execute(select(messages).where(messages.c.conversation_id == conversation_id,
+            messages.c.sender_id == sender_id, messages.c.request_id == m.message_request_key(request_id))).mappings().first()
+        return None if row is None else row_to_message(row)
+
+    def get_message(self, message_id):
+        row = self._execute(select(messages).where(messages.c.message_id == message_id)).mappings().first()
+        if row is None:
+            raise m.MessageNotFoundError('Message not found.')
+        return row_to_message(row)
+
+    def review_text_exists(self, conversation_id, sender_id, digest):
+        return self._execute(select(message_review_claims.c.message_id).where(
+            message_review_claims.c.conversation_id == conversation_id,
+            message_review_claims.c.sender_id == sender_id, message_review_claims.c.text_digest == digest)).first() is not None
+
+    def _reserve_message_review(self, message):
+        row = self._execute(select(message_review_claims.c.message_id).where(
+            message_review_claims.c.conversation_id == message.conversation_id,
+            message_review_claims.c.sender_id == message.sender_id,
+            message_review_claims.c.text_digest == message.text_digest)).first()
+        if row is not None:
+            if row[0] != message.message_id:
+                raise m.MessageConflictError('This Message text already has a review decision.')
+            return
+        self._execute(insert(message_review_claims).values(conversation_id=message.conversation_id,
+            sender_id=message.sender_id, text_digest=message.text_digest, message_id=message.message_id))
+
+    def add_message(self, message):
+        if not isinstance(message, m.MessageRecord):
+            raise m.MessageShapeError('Use a typed Message record.')
+        if self.review_text_exists(message.conversation_id, message.sender_id, message.text_digest):
+            raise m.MessageConflictError('This Message text already has a review decision.')
+        self._execute(insert(messages).values(**message_to_row(message)))
+        if message.review_state is m.ReviewState.PENDING:
+            self._reserve_message_review(message)
+
+    def update_message(self, message):
+        previous = self.get_message(message.message_id)
+        immutable = ('conversation_id', 'sender_id', 'text', 'request_id', 'created_at')
+        if any(getattr(previous, key) != getattr(message, key) for key in immutable):
+            raise m.MessageConflictError('Message ownership and body are fixed.')
+        if previous == message:
+            return
+        allowed = (previous.review_state is m.ReviewState.NOT_SUBMITTED and previous.assessment.outcome is m.MessageOutcome.WITHHELD
+                   and message.review_state is m.ReviewState.PENDING) or (
+                   previous.review_state is m.ReviewState.PENDING and message.review_state in {m.ReviewState.RELEASED, m.ReviewState.DISCARDED})
+        if not allowed:
+            raise m.MessageConflictError('Message review transition is not available.')
+        if message.review_state is not m.ReviewState.NOT_SUBMITTED:
+            self._reserve_message_review(message)
+        self._execute(update(messages).where(messages.c.message_id == message.message_id).values(**message_to_row(message)))
+
+    def list_delivered_messages(self, conversation_id):
+        rows = self._execute(select(messages).where(messages.c.conversation_id == conversation_id,
+            messages.c.outcome != m.MessageOutcome.WITHHELD.value).order_by(messages.c.delivered_at, messages.c.message_id)).mappings()
+        return tuple(row_to_message(row) for row in rows)
+
+    def list_sender_messages(self, conversation_id, sender_id):
+        rows = self._execute(select(messages).where(messages.c.conversation_id == conversation_id,
+            messages.c.sender_id == sender_id).order_by(messages.c.created_at, messages.c.message_id)).mappings()
+        return tuple(row_to_message(row) for row in rows)
+
+    def list_review_message_ids(self):
+        return tuple(row[0] for row in self._execute(select(messages.c.message_id).where(
+            (messages.c.review_state == m.ReviewState.PENDING.value) | (messages.c.outcome == m.MessageOutcome.ESCALATED.value)
+            ).order_by(messages.c.created_at, messages.c.message_id)))
 
 
 class SqlRepository:
@@ -384,3 +459,44 @@ onboarding = Table(
     Column("principal_id", String, ForeignKey("principals.principal_id"), primary_key=True),
     Column("draft", JSON, nullable=False),
 )
+
+
+messages = Table(
+    'messages', metadata, Column('message_id', String, primary_key=True),
+    Column('conversation_id', String, ForeignKey('conversations.conversation_id'), nullable=False),
+    Column('sender_id', String, ForeignKey('members.member_id'), nullable=False),
+    Column('text', String, nullable=False), Column('request_id', String, nullable=False),
+    Column('text_digest', String, nullable=False), Column('outcome', String, nullable=False),
+    Column('reason', String), Column('identifier_reasons', JSON, nullable=False),
+    Column('review_state', String, nullable=False), Column('provenance', String, nullable=False),
+    Column('created_at', String, nullable=False), Column('delivered_at', String),
+    UniqueConstraint('conversation_id', 'sender_id', 'request_id', name='message_request_owner'),
+)
+message_review_claims = Table(
+    'message_review_claims', metadata,
+    Column('conversation_id', String, ForeignKey('conversations.conversation_id'), nullable=False),
+    Column('sender_id', String, ForeignKey('members.member_id'), nullable=False),
+    Column('text_digest', String, nullable=False),
+    Column('message_id', String, ForeignKey('messages.message_id'), nullable=False),
+    UniqueConstraint('conversation_id', 'sender_id', 'text_digest', name='review_digest_owner'),
+)
+
+
+def message_to_row(message):
+    assessment = message.assessment
+    return dict(message_id=message.message_id, conversation_id=message.conversation_id,
+        sender_id=message.sender_id, text=message.text, request_id=message.request_id,
+        text_digest=message.text_digest, outcome=assessment.outcome.value,
+        reason=None if assessment.reason is None else assessment.reason.value,
+        identifier_reasons=[reason.value for reason in assessment.identifier_reasons],
+        review_state=message.review_state.value, provenance=message.provenance.value,
+        created_at=message.created_at.isoformat(), delivered_at=None if message.delivered_at is None else message.delivered_at.isoformat())
+
+
+def row_to_message(row):
+    reason = None if row['reason'] is None else (m.ReviewReason.REQUIRED if row['reason'] == m.ReviewReason.REQUIRED.value else m.ModerationFailure(row['reason']))
+    assessment = m.MessageAssessment(m.MessageOutcome(row['outcome']), tuple(d.IdentifierReason(code) for code in row['identifier_reasons']), reason)
+    return m.MessageRecord(row['message_id'], row['conversation_id'], row['sender_id'], row['text'], row['request_id'],
+        assessment, datetime.fromisoformat(row['created_at']),
+        delivered_at=None if row['delivered_at'] is None else datetime.fromisoformat(row['delivered_at']),
+        review_state=m.ReviewState(row['review_state']), provenance=m.MessageProvenance(row['provenance']))

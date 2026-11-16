@@ -86,3 +86,105 @@ def assess_message(text: str, *, sender_id: str, conversation: Conversation,
     reason = ReviewReason.REQUIRED if moderation is Verdict.NEEDS_REVIEW else (
         moderation if type(moderation) is ModerationFailure else ModerationFailure.MALFORMED)
     return MessageAssessment(MessageOutcome.WITHHELD, reasons, reason)
+
+
+class MessageConflictError(Exception):
+    pass
+
+
+class MessageNotFoundError(Exception):
+    pass
+
+
+class ReviewState(str, Enum):
+    NOT_SUBMITTED = 'not_submitted'
+    PENDING = 'pending'
+    RELEASED = 'released'
+    DISCARDED = 'discarded'
+
+
+class MessageProvenance(str, Enum):
+    NONE = 'none'
+    MODEL = 'model'
+    HUMAN = 'human'
+
+
+def message_request_key(value: str) -> str:
+    from uuid import UUID
+    if not isinstance(value, str):
+        raise MessageShapeError('Use a UUID Message request key.')
+    try:
+        return str(UUID(value))
+    except ValueError:
+        raise MessageShapeError('Use a UUID Message request key.') from None
+
+
+_UNSET = object()
+
+
+class MessageRecord:
+    # Not a dataclass: asdict must refuse rather than deep-copy the ordinary body.
+    __slots__ = ('message_id', 'conversation_id', 'sender_id', 'text', 'request_id',
+                 'text_digest', 'assessment', 'created_at', 'delivered_at', 'review_state', 'provenance')
+
+    def __init__(self, message_id, conversation_id, sender_id, text, request_id, assessment,
+                 created_at, *, delivered_at=None, review_state=None, provenance=None):
+        import hashlib
+        from datetime import datetime, timezone
+        if any(not isinstance(value, str) or not value for value in (message_id, conversation_id, sender_id)):
+            raise MessageShapeError('Use Message, Conversation and sender IDs.')
+        body = normalize_message_text(text)
+        if not isinstance(assessment, MessageAssessment):
+            raise MessageShapeError('Use a typed Message assessment.')
+        delivered = assessment.outcome is not MessageOutcome.WITHHELD
+        state = review_state if review_state is not None else (ReviewState.PENDING if assessment.reason is ReviewReason.REQUIRED else ReviewState.NOT_SUBMITTED)
+        source = provenance if provenance is not None else (MessageProvenance.MODEL if delivered else MessageProvenance.NONE)
+        if (not isinstance(created_at, datetime) or created_at.utcoffset() is None
+                or not isinstance(state, ReviewState) or not isinstance(source, MessageProvenance)
+                or (delivered != (delivered_at is not None))
+                or (delivered_at is not None and (not isinstance(delivered_at, datetime) or delivered_at.utcoffset() is None or delivered_at < created_at))
+                or (state in {ReviewState.PENDING, ReviewState.DISCARDED} and delivered)
+                or (state is ReviewState.RELEASED and (not delivered or source is not MessageProvenance.HUMAN))):
+            raise MessageShapeError('Use consistent Message state and aware timestamps.')
+        values = dict(message_id=message_id, conversation_id=conversation_id, sender_id=sender_id,
+                      text=body, request_id=message_request_key(request_id), text_digest=hashlib.sha256(body.encode('utf-8')).hexdigest(),
+                      assessment=assessment, created_at=created_at.astimezone(timezone.utc),
+                      delivered_at=None if delivered_at is None else delivered_at.astimezone(timezone.utc), review_state=state, provenance=source)
+        for key, value in values.items():
+            object.__setattr__(self, key, value)
+
+    def transition(self, *, assessment=None, review_state=None, provenance=None, delivered_at=_UNSET):
+        return MessageRecord(self.message_id, self.conversation_id, self.sender_id, self.text, self.request_id,
+            assessment if assessment is not None else self.assessment, self.created_at,
+            delivered_at=self.delivered_at if delivered_at is _UNSET else delivered_at,
+            review_state=self.review_state if review_state is None else review_state,
+            provenance=self.provenance if provenance is None else provenance)
+
+    def __setattr__(self, name, value):
+        raise AttributeError('Message records are immutable.')
+
+    def __delattr__(self, name):
+        raise AttributeError('Message records are immutable.')
+
+    def __repr__(self):
+        return '<MessageRecord>'
+
+    __str__ = __repr__
+
+    def __eq__(self, other):
+        return type(other) is MessageRecord and all(getattr(self, key) == getattr(other, key) for key in self.__slots__)
+
+    __hash__ = None
+
+    def __reduce__(self):
+        from vaeil.domain.privacy import PrivateSerializationError
+        raise PrivateSerializationError('Message bodies require explicit authorized mapping.')
+
+    def __reduce_ex__(self, protocol):
+        return self.__reduce__()
+
+    def __copy__(self):
+        return self.__reduce__()
+
+    def __deepcopy__(self, memo):
+        return self.__reduce__()
