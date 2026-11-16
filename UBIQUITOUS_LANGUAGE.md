@@ -18,8 +18,8 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Vetting** | The AI's assessment of an Applicant before admission. | screening, background check | `src/vaeil/domain/vetting.py:24` |
 | **Verdict** | The outcome of Vetting: Approved or NeedsReview. The AI never rejects. | decision, score, result | `src/vaeil/domain/vetting.py:10` |
-| **Values Profile** | A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding. | bio, profile, personality test | `src/vaeil/domain/profile.py:95`, `:150` — complete factory; private drafts at `:159`, T6 own-profile API implemented, teammate form remains pending |
-| **Onboarding** | The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope. | setup, intake, signup flow | `src/vaeil/domain/profile.py:159`, `src/vaeil/application/admission.py:181` — private draft/complete-profile API; form UI remains H1 |
+| **Values Profile** | A Member's structured self-description: relationship intent, life stage, one to five distinct interests and one to five distinct values from fixed lists for complete profiles, communication style, pace and lifestyle, and at most one about field of up to 280 characters, built through Onboarding. | bio, profile, personality test | `src/vaeil/domain/profile.py:95`, `:150` — complete factory; private drafts at `:159`, T6 own-profile API and H1 form implemented (pending review), `frontend/src/ProfileForm.tsx:52` |
+| **Onboarding** | The structured-form process in which a Member builds a Values Profile; the conversational LLM version is stretch scope. | setup, intake, signup flow | `src/vaeil/domain/profile.py:159`, `src/vaeil/application/admission.py:181` — private draft/complete-profile API; H1 form at `frontend/src/ProfileForm.tsx:52` implemented, pending review |
 
 ## Matching
 

@@ -1,0 +1,28 @@
+{
+  "results": [
+    {
+      "mutation": "reclaim fixed Pseudonym",
+      "killed": true,
+      "test": "complete and update"
+    },
+    {
+      "mutation": "accept unknown choice code",
+      "killed": true,
+      "test": "malformed unknown code"
+    },
+    {
+      "mutation": "display raw server error",
+      "killed": true,
+      "test": "storage failure"
+    },
+    {
+      "mutation": "accept stale session restoration",
+      "killed": true,
+      "test": "late session"
+    }
+  ],
+  "restored_sha256": {
+    "frontend\\src\\ProfileForm.tsx": "dd99f58f8d4765d2435ca33f4e746d72c27b702f79230fff707a48a283a33124",
+    "frontend\\src\\AdmissionPanel.tsx": "a3fb75a6b82bfe5a2681aa271618a25c6825d6b97b60e0fd95b51c2994642039"
+  }
+}
