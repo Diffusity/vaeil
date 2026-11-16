@@ -26,6 +26,7 @@ async function member(page, index, decision = 'approve') {
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
   return email;
 }
 
@@ -94,3 +95,91 @@ for (const [name, payload, index] of [
     await expect(page.getByRole('form', { name: 'Your Values Profile', exact: true })).toBeVisible();
   });
 }
+
+for (const [decision, index, message] of [
+  [null, 6, 'Your application is under review.'],
+  ['reject', 7, 'An Admin has declined your application.'],
+]) {
+  test(`${decision || 'pending'} admission never exposes the profile editor`, async ({ page }) => {
+    await member(page, index, decision);
+    await expect(page.getByText(message, { exact: true })).toBeVisible();
+    await expect(page.getByRole('form', { name: 'Your Values Profile', exact: true })).toHaveCount(0);
+    expect((await page.request.get('/api/me/profile')).status()).toBe(403);
+    await page.reload();
+    await expect(page.getByText(message, { exact: true })).toBeVisible();
+    await expect(page.getByRole('form', { name: 'Your Values Profile', exact: true })).toHaveCount(0);
+  });
+}
+
+test('a revoked session cannot save and returns the Member to sign in', async ({ page }) => {
+  await member(page, 8);
+  const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+  await form.getByLabel('About (optional)', { exact: true }).fill('Unsaved draft.');
+  expect((await page.request.delete('/api/session', { headers: origin })).status()).toBe(204);
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(page.getByText('Your session has expired. Please sign in again.', { exact: true })).toBeVisible();
+  await expect(form).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+});
+
+test('taken Pseudonym can be corrected without losing the completed choices', async ({ page }) => {
+  await member(page, 9);
+  expect((await page.request.put('/api/me/profile', { headers: origin, data: {
+    pseudonym: 'H1Owned', relationship_intent: 'long_term', life_stage: 'undergraduate',
+    interests: ['reading'], values: ['honesty'], communication_style: 'direct',
+    pace_and_lifestyle: 'quiet_and_routine', about: '',
+  } })).status()).toBe(200);
+  await member(page, 10);
+  const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+  await complete(form, 'H1Owned');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('alert')).toHaveText('Pseudonym: This name is taken. Choose another and retry.');
+  await expect(form.getByLabel('Relationship intent', { exact: true })).toHaveValue('long_term');
+  await form.getByLabel('Pseudonym', { exact: true }).fill('H1Retry');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toHaveText('Profile saved.');
+});
+
+test('storage failure retains text and selections, retries, and does not copy identity into browser storage or logs', async ({ page }) => {
+  const logs = [];
+  page.on('console', message => logs.push(message.text()));
+  page.on('pageerror', error => logs.push(error.message));
+  const email = await member(page, 11);
+  const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+  await form.getByLabel('About (optional)', { exact: true }).fill('I enjoy gentle walks.');
+  await form.getByRole('checkbox', { name: 'Music', exact: true }).check();
+  await page.route('**/api/me/profile', async route => {
+    if (route.request().method() === 'PUT') await route.fulfill({ status: 503, contentType: 'application/json', body: '{"reason":"PrivateErrorCanary"}' });
+    else await route.continue();
+  }, { times: 1 });
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('alert')).toHaveText('Could not save your profile. Your changes are still here; please retry.');
+  await expect(form.getByLabel('About (optional)', { exact: true })).toHaveValue('I enjoy gentle walks.');
+  await expect(form.getByRole('checkbox', { name: 'Music', exact: true })).toBeChecked();
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toContainText('Draft saved.');
+  for (const canary of [email, 'FictionalProfile11', 'PrivateErrorCanary', password]) {
+    expect(logs.join('\n')).not.toContain(canary);
+    await expect(page.locator('body')).not.toContainText(canary);
+  }
+  expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
+});
+
+test('server normalization and code-point limits remain authoritative without truncation', async ({ page }) => {
+  await member(page, 12);
+  const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+  const about = form.getByLabel('About (optional)', { exact: true });
+  await about.fill('🙂'.repeat(280));
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toContainText('Draft saved.');
+  await expect(about).toHaveValue('🙂'.repeat(280));
+  await about.fill('🙂'.repeat(281));
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('alert')).toBeVisible();
+  await expect(about).toHaveValue('🙂'.repeat(281));
+  expect((await (await page.request.get('/api/me/profile')).json()).values_profile.about).toBe('🙂'.repeat(280));
+  await about.fill('  Ｈｅｌｌｏ walks.  ');
+  await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(form.getByRole('status')).toContainText('Draft saved.');
+  await expect(about).toHaveValue('Hello walks.');
+});

@@ -22,6 +22,6 @@ nav[aria-label="Membership actions"] { display: flex; gap: 0.75rem; flex-wrap: w
 
 select { font: inherit; padding: 0.6rem; width: 100%; box-sizing: border-box; }
 fieldset { min-width: 0; border: 1px solid #d9dfd5; padding: 16px; display: grid; gap: 12px; }
-.profile-choice { display: flex; align-items: center; gap: 0.5rem; }
+form .profile-choice { display: flex; align-items: center; gap: 0.5rem; }
 .profile-choice input { width: auto; }
 button:disabled { opacity: 0.65; cursor: wait; }
