@@ -42,3 +42,5 @@ Not merged/deployed by this task. Registration/admission fixture accounts are sy
 Independent HTTP-boundary malformed-data tests and fresh async lifecycle review found faults beyond happy paths. Await real sign-in before fixture API actions; explicit label associations survive populated controls. Keep issue+API contract in the review packet, use existing checks rather than new agent tooling, and preserve clear human-versus-AI attribution and unverified-time limits.
 
 Final restored local browser suite: **19/19 passed49.7seconds** after all four source mutations were restored. TypeScript/build pass; full Python regression remains615passed86explicitlocalPGskips31.49s. Product policy/source unchanged after that Python run. Final-head Windows/container/shared-Postgres CI will be checked before handoff.
+
+Current16November forecast:10.5remaining lead sessions versus roughly8–9slots before freeze, at least1.5–2.5gap plus review/rework. H1 was outside that estimate already; no new savings inferred.

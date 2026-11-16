@@ -16,7 +16,7 @@ T1 merged in [PR #14](https://github.com/Diffusity/vaeil/pull/14), merge commit 
 
 ## Remaining schedule (confirmed dates/capacity; estimates under review)
 
-As of14November, about10lead sessions remain before the28November freeze at5/week. T6 merged in [PR #24](https://github.com/Diffusity/vaeil/pull/24), merge commit `ba9212b`, with final Windows/container/SQLite+PostgreSQL CI green. Remaining T7–T11/T13 estimates total10sessions plus0.5integration: at least0.5session over available slots, with review/rework risk. If T7 takes4 rather than3sessions, the gap rises to1.5. These are forecasts, not verified human velocity or capacity commitments. Teammate work already excluded from the lead baseline is not new savings. T7 seam is approved; implementation follows the H1 handoff;29November–4December remains rehearsal/fixes only.
+As of16November, roughly8–9lead sessions remain before the28November feature freeze at5/week. T6 merged in [PR #24](https://github.com/Diffusity/vaeil/pull/24), merge commit `ba9212b`; T7 seam/docs are approved and planning PR27mergeda4036b6. Remaining T7–T11/T13 estimates total10sessions plus0.5integration, a minimum1.5–2.5session gap before review/rework. H1 is implemented for review but was already outside this lead baseline, so it creates no additional counted gap savings. These are calendar forecasts, not verified human velocity or committed capacity.29November–4December remains rehearsal/fixes only.
 
 Confirmed viva: December 5, 2026, with five build sessions/week. Effort allocations depend on measured velocity. Hosting budget is $0; deployment is Render Free plus Neon Free PostgreSQL, with SQLite the default local run. Free-only provisioning was approved and the fictional demo is live.
 
