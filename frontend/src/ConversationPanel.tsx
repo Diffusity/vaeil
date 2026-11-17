@@ -1,3 +1,4 @@
+import { RevealPanel } from './RevealPanel';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 
@@ -129,6 +130,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
 
   return <section aria-labelledby="conversation-heading">
     <h2 id="conversation-heading">Conversation</h2>
+    <RevealPanel conversationId={conversationId} onUnauthorized={onUnauthorized} />
     <p>Messages are checked before delivery. Demo only — use fictional details.</p>
     <button disabled={busy} onClick={() => void load()}>Refresh Conversation</button>
     {busy && <p role="status">Checking…</p>}

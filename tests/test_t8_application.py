@@ -68,7 +68,8 @@ def test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation
             assert unit.get_reveal_consents('ab').consented_member_ids == frozenset({'a','b'})
             unit.store_conversation(Conversation('ac', ('a','c')))
             unit.commit()
-        assert not app.read_reveal(actor=actors['a'], conversation_id='ac').revealed
+        ac = app.read_reveal(actor=actors['a'], conversation_id='ac')
+        assert not ac.revealed and not ac.viewer_consented
         assert set(serialize_member_view(app.read_partner(actor=actors['c'], conversation_id='ac'))) == {'pseudonym','values_profile'}
         # Revealed chat stays open but safety is still required.
         sent = messages.send_message(actor=actors['a'], conversation_id='ab', request_id=REQUEST, text='Hello again.')
@@ -170,3 +171,13 @@ def test_concurrent_transitions_commit_a_valid_serial_result_once(repository_url
             assert conversation.revealed
         if competing == 'block':
             assert conversation.blocked
+
+
+def test_twenty_recent_deliveries_cannot_use_old_creation_time(repository_url):
+    with open_repository(repository_url) as repo:
+        app, _, actors, clock = reveal_setup(repo, first_age=0)
+        assert not app.read_reveal(actor=actors['a'], conversation_id='ab').eligible
+        with pytest.raises(RevealNotEligibleError):
+            consent(app, actors['a'])
+        clock.moment += timedelta(hours=72)
+        assert app.read_reveal(actor=actors['a'], conversation_id='ab').eligible
