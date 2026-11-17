@@ -2,7 +2,7 @@
 
 **Approved by Parth on 17 November 2026. Implementation authorized at these seams, tests first.**
 
-Source: approved MVP spec #7 / docs/specs/mvp.md Rule4, identity payload and Conversation lifecycle; approved T7 delivery rules. T7 PR29 and H1 PR28 are merged. This is the previously missing T8 review document, not a new definition phase or a published ticket.
+Source: approved MVP spec #7 / docs/specs/mvp.md Rule4, identity payload and Conversation lifecycle; approved T7 delivery rules. T7 PR29 and H1 PR28 are merged. This is the previously missing T8 review document, not a new definition phase. Published as T8Issue30under#7 after approval.
 
 ## Settled behavior
 
@@ -90,7 +90,7 @@ Rule5 stays partial. Rule4 evidence remains partial until its complete deployed 
 
 ## Handoff and estimate
 
-Draft interfaces/storage/routes above require Parth approval before T8 tests. Publish the self-contained T8 ticket under #7 from this seam once approved; it is not currently in GitHub. Then invoke implement on T8, tests first. Optimistic planning allowance remains2lead sessions, not measured velocity or a promise. Roughly7.5core sessions remain against about8available before28November, with little review/rework buffer. Protect Reveal, Admin, Report handling and all six rules. No new agent tooling or deployment in this proposal.
+The approval gate is satisfied; Issue30tracks implementation of these approved interfaces. Tests-first implementation proceeds on codex/t8-reveal; PR review/merge and deployment remain separate gates. Optimistic planning allowance remains2lead sessions, not measured velocity or a promise. Roughly7.5core sessions remain against about8available before28November, with little review/rework buffer. Protect Reveal, Admin, Report handling and all six rules. No new agent tooling or deployment in this proposal.
 
 No new product questions identified; review the proposed technical interfaces and transition/error semantics above. H1Issue26 remains a separate human-understanding handoff; T4Issue11 and H7Issue16 still need their existing evidence/closure reconciled, not a renewed product interview.
 

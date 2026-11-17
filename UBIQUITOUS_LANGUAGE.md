@@ -27,7 +27,7 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | ---- | ---------- | ---------------- | ---------------- |
 | **Match** | A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again. | introduction, pairing, date | _(absent)_ |
 | **Icebreaker** | A short, AI-written opening line offered to a Match to help start the Conversation. | prompt, opener, pickup line | _(absent)_ |
-| **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 hours since the first delivered Message; Withheld does not count. | milestone, quota | _(absent)_ |
+| **Engagement Threshold** | The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 elapsed hours since the first delivered Message; Withheld does not count. | milestone, quota | `src/vaeil/domain/reveal.py:64` |
 
 ## Conversation & safety
 
@@ -38,11 +38,11 @@ The words the product is about. Same format as the IT643 labs; this file is part
 | **Withheld** | A Message not delivered, with a reason. Technical failure permits retry or explicit submission for Admin review; a model flag queues review automatically and prevents same-text resend. Pending review is not delivery; an Admin release or discard is audited. | blocked (see **Block**), filtered, rejected | `src/vaeil/domain/messaging.py:38`, `:44`, `:101`; review application at `src/vaeil/application/messaging.py:93` |
 | **Personal identifier** | A real name, email address, phone number, or social handle that ties text to a Member's identity; pre-Reveal moderation checks for identifiers heuristically. | PII, personal data, doxxing | `src/vaeil/domain/identifiers.py:11` and `:32` — implemented reason types and scanner; general name detection is not provided; owner-specific self-name checks implemented; T7 moderation integration implemented, undeployed |
 | **Escalated** | A Message approved by safety moderation, including audited human release, but identifier-flagged before Reveal; delivered, queued for Admin review and audited. | flagged, suspicious, quarantined | `src/vaeil/domain/messaging.py:78`, `src/vaeil/application/messaging.py:109` |
-| **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | _(absent)_ |
-| **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | _(absent)_ |
+| **Reveal** | The event that ends anonymity: both Members' identities become known to each other. | unmask, unlock | `src/vaeil/domain/reveal.py:83`, `src/vaeil/application/reveal.py:42` |
+| **Reveal Consent** | A Member's agreement to a Reveal. Both are required; either can be withdrawn until the Reveal happens; a completed Reveal is irreversible. | opt-in, approval | `src/vaeil/domain/reveal.py:40`, `:83` |
 | **Block** | An action available at any time; it ends the Conversation and prevents any future Match between the pair. After a Reveal the Reveal stands and both Members can still Report. | unmatch, ban | `src/vaeil/domain/conversation.py:92`; domain lifecycle only, API/Report wiring pending |
 | **Report** | A flag a Member can raise against the other Member. | complaint, flag | _(absent)_ |
-| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:44`, `src/vaeil/adapters/persistence.py:241`; T6 emits Invite/Vetting/human-admission events; T7 emits Message release/discard/escalation; Reveal/Report wiring remains later |
+| **Audit log** | An append-only record of invite redemption, Verdicts, escalation, Reveal, Block, Report, and Admin approve/reject decisions on admissions and queue items. No analytics. | event log, history, analytics | `src/vaeil/domain/repository.py:44`, `src/vaeil/adapters/persistence.py:241`; T6 emits Invite/Vetting/human-admission events; T7 emits Message release/discard/escalation; T8 emits Reveal completion; Report wiring remains later |
 
 ## Relationships
 
