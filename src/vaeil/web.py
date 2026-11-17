@@ -35,7 +35,7 @@ def demo_member() -> Member:
     return Member(identity, Pseudonym("Comet"), profile)
 
 
-def create_app(*, admission_application=None) -> FastAPI:
+def create_app(*, admission_application=None, message_application=None) -> FastAPI:
     runtime = RuntimeAdmission()
 
     @asynccontextmanager
@@ -50,7 +50,10 @@ def create_app(*, admission_application=None) -> FastAPI:
     def admission_provider():
         return admission_application if admission_application is not None else runtime.get()
 
-    attach_admission_routes(app, admission_provider)
+    def message_provider():
+        return message_application if message_application is not None else runtime.get_messages()
+
+    attach_admission_routes(app, admission_provider, message_provider=message_provider)
     member = demo_member()
     context = ConversationRevealState("demo-pair", ("demo-subject", "demo-viewer"), False)
 

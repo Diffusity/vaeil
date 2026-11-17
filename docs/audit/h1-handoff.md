@@ -44,3 +44,7 @@ Independent HTTP-boundary malformed-data tests and fresh async lifecycle review 
 Final restored local browser suite: **19/19 passed49.7seconds** after all four source mutations were restored. TypeScript/build pass; full Python regression remains615passed86explicitlocalPGskips31.49s. Product policy/source unchanged after that Python run. Final-head Windows/container/shared-Postgres CI will be checked before handoff.
 
 Current16November forecast:10.5remaining lead sessions versus roughly8–9slots before freeze, at least1.5–2.5gap plus review/rework. H1 was outside that estimate already; no new savings inferred.
+
+## 17 November integration review
+
+Parth authorized review/fix/merge of PR28 and PR29. A new SpecP2 identified old profile GET/PUT401 responses clearing a newer sign-in; two browser cases reproduced it after rebuilding the correct branch assets, and fix2d04057 made both green. The initial stale-assets run is excluded as setup failure. Effect-generation cleanup guards all post-await state/expiry/error/finally paths. Independent Spec/Standards recheck confirmed closure. Original Nevil-author feature commits and AI disclosure remain; this corrective/integration work uses the project author. Nevil understanding/viva handoff is not inferred from code merge.

@@ -24,4 +24,5 @@ select { font: inherit; padding: 0.6rem; width: 100%; box-sizing: border-box; }
 fieldset { min-width: 0; border: 1px solid #d9dfd5; padding: 16px; display: grid; gap: 12px; }
 form .profile-choice { display: flex; align-items: center; gap: 0.5rem; }
 .profile-choice input { width: auto; }
+.message-body { white-space: pre-wrap; overflow-wrap: anywhere; }
 button:disabled { opacity: 0.65; cursor: wait; }

@@ -119,3 +119,11 @@ Parth explicitly authorizes fresh code-review of PR24 against master, resolving 
 ## 2026-11-16 T7 seam and H1 implementation authorization
 
 Parth approves the proposed T7 seam including text/comparison/idempotency choices and documentation PR27; merged green as a4036b6 with merge commit. Parth directs H1 ownership to Nevil and author attribution using Nevil email/GitHub username, and asks Codex to implement on his behalf then provide ask-matt advice. Identity is not present in repo/contributors; exact username/email requested before assignment/commits, no identity guessed. AI assistance stays factual and visible; no independent human implementation claim. H1 approved T6 HTTP/browser seam and acceptance tests define implementation scope; no domain/audit modifications. T7 approval does not start T7 implementation in this H1-only task.
+
+## 2026-11-16 T7 implementation approved
+
+Parth explicitly invokes implement for T7#25 after approving its four text/comparison/idempotency choices and interfaces. H1#28 remains separate/unmerged. No model/tunnel/deployment or T7merge authorization inferred. Message bodies remain ordinary text under explicit mapping, no new identity unwrap; use immutable slotted non-dataclass body-holding records so generic dataclass export cannot copy text. This implementation detail preserves the approved generic-export refusal; revisit if explicit export contracts change.
+
+## 2026-11-17 PR29 and PR28 review/fix/merge authorized
+
+Parth explicitly authorizes code-review of T7 PR29 and Nevil-assigned H1 PR28 against master, resolving findings and merging both after green final-head CI. Use merge commits to preserve cited history. PR29 merged as b4d5eca after independent Standards0/Spec0. H1 review found one stale profile-response expiry bug, fixed at the existing approved browser seam; integration retains both UI flows and fixture inputs. This replaces the previous merge holds for these PRs only. T8 seam review is pending; no T8 implementation/deployment/model/tunnel authorization. Nevil still must understand/explain the AI-assisted H1 work; merging code does not certify that human handoff.

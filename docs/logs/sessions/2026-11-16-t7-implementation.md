@@ -1,0 +1,36 @@
+# T7 implementation
+
+Block start verified2026-11-16T10:32:23UTC (16:02:23Asia/Calcutta). User explicitly invokes implement for T7#25: Messages and human-reviewed moderated delivery. Read issue/approved seam, assumptions/workflow/TDD and current storage/auth/privacy modules. Basea4036b6, branchcodex/t7-messages. H1PR28OPENunmerged; preserve pendingH1CIlog in path-scoped stash plus .git patch, unrelated untracked files untouched. NoH1merge/deploy/model/tunnel authorized. T7commitsusecurrentprojectauthor, notNevil attribution (H1only).
+
+Pure assessment -> durable message transitions -> application/manual-review -> authenticated HTTP -> minimal ConversationUI, each red shown then green, onecommitpercycle. Final mutation/purity/AST/fullchecks/two-axisreview/PR required, no merge without later authorization. Rule5partial; current16Novembercalendar10.5corevs8–9slots remains risk, not verified human velocity.
+
+Cycle1assessmentred33missingmodule ->green35selectedincludingpurity. Approved outcome/scanner/normalization/pair/Block policy only; no delivery persistence yet.
+
+Cycle2repositoryred5local4PGskips ->green48selected4PGskips inclassessment/purity/AST. Singlecanonicalbody, immutable slotted non-dataclassrecords, request/reviewdigestuniqueconstraints, terminaltransitionguards, exactroundtrip/rollbacktested. PostgreSQLnotclaimedlocally; sharedCIwillrun.
+
+Cycle3applicationred11local11PGskips ->green59selected15PGskips inclrepository/assessment/purity/AST. Durable in-flight requestreservation exposes only technicalBusy receipt on replay, so cross-instance samekeydoesnotcallmoderationtwice; modelcalloutsidewrite. Finaltransitionfreshpair/Block/revealcheck, manualsubmission/terminalhumanrelease/discard+atomic audit, timestamponactualdelivery. Unfinishedservercrash attempt stays technicalBusy; newrequestkeycanretry, never counted/delivered. This is infrastructure failure behavior, not auto-approval.
+
+Cycle4HTTPred9local9PGskips unexpectedfactorykeyword ->green40passed40PGskips, including T6HTTP regressions. Routes use existing T6 session/Origin/exact/NoStore helpers; Messagebody DTOs explicit. NewHTTPfixture hash corrected toexistingfakecredentialencoding before behavioral checks; no policy assertion weakened. Body-only test mode remains trustedDI, no production approval switch.
+
+Cycle5runtimeconfigred3failed2pass5PGskips (productionmisuse/malformedaccepted,demofailureignored) ->green8selected5PGskips inclruntimeclock/purity. VAEIL_DEMO_LLM_FAILURE=1onlywithVAEIL_ENV=demo forcesTimeoutError; otherproductionusesrefused beforemessageapp, noHTTPswitch/noinference.
+
+Cycle6browserredmissingConversationcomposer ->green1realAPIbrowser16.8s; TypeScript/buildgreen. OwnedfixtureadmitsfictionalmembersviaexistingT6humanreviewandcompleteprofile, thencreatestrustedtestConversation. SendertechnicalWithheld->explicitsubmit->underreview; separateAdminAPIrelease->recipientonebody, repeatedrefreshnoduplicate. No public pair-create/modelcontrols, no H1codeimported. Firstcompleteverticalpathnowverifiedlocally, notdeployed.
+
+Cycle7contradictoryreviewreceiptredmissingalert ->fixedconditionalguardgreen3browser19.6s, TypeScript/buildgreen. Added backendscope/competingrelease/auditrollback/blockedrelease+discard tests:22passed21PGskips with repositorycases; raw independent SQL writer proves request/review unique constraints, SQLINFO log canary and directgenericstateexport guards retained. NewbrowserretryawaitsexplicitPOSTresponse, no weak timingoracle.
+
+FreshreviewStandards0hard/1judgment: reviewDTOwasDeliveredDTOsubtype despitependingcontent. Newpublicviewprivacyred1->green1local1PGskip after independentviewtypes share onlyimmutable/redactionbehavior, ConversationMessagesView genericcopy/exportrefused too. Specreviewfoundold-reviewactionclearsunrelateddraft and misleadingblockedretrywording; separateUIredtestsinprogress.
+
+Cycle9UIreviewredolder-reviewactionerasedunrelatedcomposertext; blockedstatuspromisedforbiddenactions. Conditionalclearonlymatchingdraft/attempt + flag-derivedguidance ->green5browser17.9s; typecheck/buildgreen. Firstreviewfinding1P2plusminorwordingfixed; typeviewjudgmentsmellfixedseparately. NoAPIpayloadchanges.
+
+Additionalcoveragegreen7browser18.7s including ambiguousnetworkretrykeepsrequestkey and HTMLlikereleasedtextinert. InitialHTMLtestselectedanolderlastrowbeforefreshsendsettled; tightenedsetup toawaitactualPOST+currentretryready, expectationsunchanged. AddedpendingadmissionHTTPdenial beforemodel. Firstbackendmutationrun26/27killed: removingonlyapplicationBlockguard survivesbecausepuredomainguardstillblocks; categoryfaultrefinedtocanonicalConversation.open_for_chatpolicy, testsunchanged. Allsourcesrestored. UserContinuekeepsT7objectiveandgatesunchanged.
+
+Cycle10provenanceassertionredmodelNeedsReviewlabelNONE ->green33selected22PGskips afterlabelMODEL; technicalfailuresremainNONEandhumanrelease/discardHUMAN. Timestampannotationsrefinedtodatetimewithoutbehaviorchange. Refinedbackendmatrixprior27/27killed; addprovenancefaultforfinal28matrix.
+
+Resumedblockverified2026-11-16T18:30:49UTC =17November00:00:49Asia/Calcutta. Priorlastverifiedcheckpoint11:23:15UTC; theinterveninggap/precisestoptimeisunverifiedandnotcountedasactiveeffort. Finalbackend28/28killedthenUIharnessstoppedafterfirstkillbecauseCRLFanchor; source/buildrestoredinfinally,noinvalidkillclaimed. NormalizeonlytemporarymutationtexttoLFforretry.
+
+Cycle11additionalreview-lockrace: red2local2PGskips (matchingtechnicalattemptadvertisedforbiddenactions; matchingreviewlockcreatedduringmoderationdidnotstoplateapproval). Finalizationrechecksreviewlockandreceiptsreflectfreshlockeligibility ->green28application/HTTP28PGskips. No policy change: enforce approvedper-sender/Conversationno-resend at finaltransition. Two targeted mutations added forfinal30matrix. UserContinuepreservesT7scope,nomerge/deploy.
+
+Finalrestoredlocalchecks687passed124explicitPGskips37.13s,Ruff/assumptions/purity/ASTgreen; TypeScript/buildgreen13browser27.7s. Backend30/30/browser5/5faultskilledexactbytesrestoredandnormalbuildregenerated. FinalsharedCIandPRpreparationnext; noT7merge/deployment/modelorH1merge. Rootdocs/glossarysyncandcitationupdatesperformedwithoutdefinitionchanges.
+
+
+Final handoff block end verified2026-11-16T19:29:50UTC (17November00:59:50Asia/Calcutta), after resumed checkpoint18:30:49UTC. This is an agent wall-time interval, not a verified human focused-session count; earlier gap and pretracking effort remain unverified. Final commit8fb4c0a579e509ceb7916facd00e512032b9f7c4, PR29 https://github.com/Diffusity/vaeil/pull/29 OPEN/unmerged. CI43939340020 allgreen onexacthead: Windows, container, sharedSQLite/Postgres, security. Downloaded artifacts verify T5 27/27, T6 69/69, T7 53/53 (23SQLite23Postgres6domain1AST) killed; localUI5/5. Finalnormal687passed124localPGskips,13browser. Both finaldoc contradictions fixed and reviewerconfirmedclear. Closes#25intentverified; issue remainsopenuntilreview/merge. H1PR28unmerged; no deployment/model/tunnel/T8implementation. NextreviewPR29thenT8eligibility/consentseam, protectedscopeandfreeze riskunchanged. This finalCI/endentry remainsuncommitted fornextauthorizedcommit so testedPRheadstaysfixed.

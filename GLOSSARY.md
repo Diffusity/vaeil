@@ -71,7 +71,7 @@ A single contribution to a Conversation, moderated before delivery.
 _Avoid_: text, line, post
 
 **Withheld**:
-A Message not delivered, with a reason: technical failure permits retry; a model flag means under Admin review, no same-text resend, and an audited Admin release or discard.
+A Message not delivered, with a reason. Technical failure permits retry or explicit submission for Admin review; a model flag queues review automatically and prevents same-text resend. Pending review is not delivery; an Admin release or discard is audited.
 _Avoid_: blocked (see Block), filtered, rejected
 
 **Personal identifier**:
@@ -79,7 +79,7 @@ A real name, email address, phone number, or social handle that ties text to a M
 _Avoid_: PII, personal data, doxxing
 
 **Escalated**:
-A Message approved by safety moderation but identifier-flagged before Reveal; delivered, queued for Admin review and audited.
+A Message approved by safety moderation, including audited human release, but identifier-flagged before Reveal; delivered, queued for Admin review and audited.
 _Avoid_: flagged, suspicious, quarantined
 
 **Reveal**:

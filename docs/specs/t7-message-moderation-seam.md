@@ -1,6 +1,6 @@
 # T7 Message/moderated-delivery seam — proposed
 
-**Approved by Parth on16November2026, including all four comparison/request proposals below.** Behavior derives from #7's approved7November human-review amendment. T6 merged as ba9212b. Technical choices below are proposals, not silently adopted product decisions. No tests/stubs/implementation in this step.
+**Approved by Parth on16November2026, including all four text/comparison/request choices.** Behavior derives from #7's approved7November human-review amendment. T6 merged as ba9212b. Technical choices below are proposals, not silently adopted product decisions. No tests/stubs/implementation in this step.
 
 ## Public seams
 
@@ -79,4 +79,4 @@ Approve the interfaces/types and four exact comparison/request proposals before 
 
 Roughly10slots remain at5/week to28November freeze: minimum0.5session gap,1.5if T7 takes4sessions. Review/rework adds risk; this is not measured human velocity. T6 review/merge is complete, so it is no longer a pending prerequisite. H1 was already outside the lead baseline and cannot be counted as new savings. Keep optional model/explanations/progress/Report UI/polish out; protect all six rules/Admin/Reveal/Report handling. No new features29November–4December; viva5December. Re-estimate after T7 first vertical cycle, using recorded active blocks plus the owner human ledger.
 
-Approval record: Parth explicitly reviewed/approved this seam and documentation PR27 (mergeda4036b6). Proposed wording above preserves what was reviewed; the listed choices are now approved. T7#25 is ready-for-agent; this H1 implementation task does not start T7 code.
+Implementation authorization: Parth invoked implement for T7#25 after approving this seam/docsPR27. The proposal wording records the approved interface; its approval gate is satisfied. This branch implements T7 only, with no new model/tunnel/deployment or merge authorization.
