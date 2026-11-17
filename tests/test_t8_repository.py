@@ -22,6 +22,10 @@ def test_pair_consents_roundtrip_and_rollback(repository_url):
     with open_repository(repository_url) as repo:
         with repo.transaction() as unit:
             assert unit.get_reveal_consents('ab') == RevealConsents('ab', frozenset({'a'}))
+            unit.store_reveal_consents(RevealConsents('ab', frozenset()))
+            unit.commit()
+        with repo.transaction() as unit:
+            assert unit.get_reveal_consents('ab').consented_member_ids == frozenset()
 
 
 def test_consent_storage_refuses_outside_pair(repository_url):

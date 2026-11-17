@@ -24,7 +24,7 @@ def test_exact_status_and_partner_payload_only_after_both_consents(repository_ur
             assert state.json() == dict(conversation_id='ab', eligible=True, viewer_consented=False, revealed=False)
             before = client.get('/api/conversations/ab/partner')
             assert set(before.json()) == {'pseudonym','values_profile'}
-            assert all(value not in before.text for value in ['b@example.invalid','2000-01-01','legal_name','date_of_birth','phone'])
+            assert all(value not in before.text for value in ['LegalCanaryZXQb','b@example.invalid','+919876543210','1987-03-14','2000-01-01','legal_name','date_of_birth','phone'])
             assert client.put('/api/conversations/ab/reveal/consent').json()['viewer_consented']
             assert not client.get('/api/conversations/ab/reveal').json()['revealed']
             assert not client.delete('/api/conversations/ab/reveal/consent').json()['viewer_consented']
@@ -35,6 +35,8 @@ def test_exact_status_and_partner_payload_only_after_both_consents(repository_ur
             after = client.get('/api/conversations/ab/partner')
             assert set(after.json()) == {'pseudonym','values_profile','legal_name','email','phone'}
             assert after.json()['email'] == 'b@example.invalid' and after.json()['pseudonym'] == 'Orbit'
+            assert after.json()['legal_name'] == 'LegalCanaryZXQb' and after.json()['phone'] == '+919876543210'
+            assert '1987-03-14' not in after.text
             assert after.headers['cache-control'] == 'no-store'
             assert 'date_of_birth' not in after.text
             assert client.delete('/api/conversations/ab/reveal/consent').status_code == 409

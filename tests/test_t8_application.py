@@ -13,14 +13,35 @@ from vaeil.domain.reveal import RevealNotEligibleError, RevealActorError, Reveal
 from vaeil.domain.repository import AuditKind, AuditEvent, RepositoryError
 from vaeil.domain.authentication import AccessDeniedError, Role
 from vaeil.domain.vetting import Verdict
-from test_t7_application import setup, REQUEST
+from test_t7_application import REQUEST
+from test_t6_application import FixedClock, Tokens
+from test_repository_contract import example_member
+from vaeil import domain as d
+from vaeil.domain.authentication import PrincipalRecord, AdmissionStatus
+from vaeil.domain.privacy import PrivateText
+from vaeil.application.admission import SessionPrincipal
+from vaeil.application.messaging import MessageApplication
 
 pytest_plugins = ['test_repository_contract']
 
 
 def reveal_setup(repo, *, delivered=20, first_age=72):
     from vaeil.application.reveal import RevealApplication
-    messages, actors, clock = setup(repo)
+    clock = FixedClock()
+    messages = MessageApplication(repo, tokens=Tokens(), clock=clock)
+    actors = {}
+    with repo.transaction() as unit:
+        for identifier, name in [('a','Comet'),('b','Orbit'),('c','Star'),('admin','Nova')]:
+            sample = example_member(identifier, name)
+            identity = d.MemberIdentity(identifier, 'LegalCanaryZXQ'+identifier, identifier+'@example.invalid',
+                                        '+919876543210' if identifier == 'b' else None, sample.identity.date_of_birth)
+            role = Role.ADMIN if identifier == 'admin' else Role.MEMBER
+            unit.add_principal(PrincipalRecord(identity, identity.email, PrivateText('test-only:fiction password'), role, AdmissionStatus.APPROVED))
+            if role is Role.MEMBER:
+                unit.add_member(d.Member(identity, sample.pseudonym, sample.values_profile))
+            actors[identifier] = SessionPrincipal(identifier, role, AdmissionStatus.APPROVED)
+        unit.store_conversation(Conversation('ab', ('a','b')))
+        unit.commit()
     first = clock.now()-timedelta(hours=first_age)
     with repo.transaction() as unit:
         conversation = unit.get_conversation('ab')
@@ -49,6 +70,9 @@ def test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation
         assert app.read_reveal(actor=actors['a'], conversation_id='ab').eligible
         before = app.read_partner(actor=actors['a'], conversation_id='ab')
         assert set(serialize_member_view(before)) == {'pseudonym','values_profile'}
+        for canary in ['LegalCanaryZXQb','b@example.invalid','+919876543210','1987-03-14']:
+            assert canary not in repr(before) and canary not in str(before)
+            assert canary not in str(serialize_member_view(before))
         assert not consent(app, actors['a']).revealed
         assert consent(app, actors['a']).viewer_consented
         assert not consent(app, actors['a'], False).viewer_consented
@@ -61,7 +85,9 @@ def test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation
         payload = serialize_member_view(after)
         assert set(payload) == {'pseudonym','values_profile','legal_name','email','phone'}
         assert payload['email'] == 'b@example.invalid'
-        assert payload['pseudonym'] == 'Orbit' and payload['phone'] is None
+        assert payload['pseudonym'] == 'Orbit' and payload['phone'] == '+919876543210'
+        assert payload['legal_name'] == 'LegalCanaryZXQb'
+        assert '1987-03-14' not in str(payload)
         assert 'b@example.invalid' not in repr(after) and 'b@example.invalid' not in str(after)
         assert len(events(repo)) == 1
         with repo.transaction() as unit:
