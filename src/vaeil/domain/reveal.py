@@ -1,6 +1,6 @@
 """Pure, pair-scoped eligibility and consent; no storage, clock reads or identity."""
 from dataclasses import dataclass, replace
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from vaeil.domain.conversation import Conversation
 
 MIN_DELIVERED_MESSAGES = 20
@@ -64,19 +64,20 @@ def _aware(value):
 def is_reveal_eligible(conversation: Conversation, *, delivered: tuple[DeliveredMessageEvidence, ...], now: datetime) -> bool:
     if not isinstance(conversation, Conversation) or not isinstance(delivered, tuple) or not _aware(now):
         raise RevealEvidenceError('Use validated delivered evidence and an aware time.')
+    now = now.astimezone(timezone.utc)
     identifiers = set()
     counts = dict.fromkeys(conversation.participant_ids, 0)
     for row in delivered:
         if (not isinstance(row, DeliveredMessageEvidence) or not isinstance(row.message_id, str) or not row.message_id
             or row.message_id in identifiers or row.conversation_id != conversation.conversation_id
             or not isinstance(row.sender_id, str) or row.sender_id not in counts
-            or not _aware(row.delivered_at) or row.delivered_at > now):
+            or not _aware(row.delivered_at) or row.delivered_at.astimezone(timezone.utc) > now):
             raise RevealEvidenceError('Use distinct delivered Messages from this participant pair.')
         identifiers.add(row.message_id)
         counts[row.sender_id] += 1
     return (conversation.active and len(delivered) >= MIN_DELIVERED_MESSAGES
             and all(count >= MIN_MESSAGES_PER_MEMBER for count in counts.values())
-            and now - min(row.delivered_at for row in delivered) >= MIN_ENGAGEMENT_AGE)
+            and now - min(row.delivered_at.astimezone(timezone.utc) for row in delivered) >= MIN_ENGAGEMENT_AGE)
 
 
 def change_reveal_consent(conversation: Conversation, *, consents: RevealConsents, actor_id: str,

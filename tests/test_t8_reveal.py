@@ -114,3 +114,18 @@ def test_body_free_shapes_are_frozen_slotted_and_no_ceremony_on_closed_pair():
     assert isinstance(state.consented_member_ids, frozenset)
     assert not is_reveal_eligible(replace(PAIR, blocked=True), delivered=evidence(), now=NOW)
     assert not is_reveal_eligible(replace(PAIR, revealed=True), delivered=evidence(), now=NOW)
+
+
+def test_72_hours_means_elapsed_utc_time_across_a_dst_change():
+    from datetime import tzinfo
+    class SpringClockZone(tzinfo):
+        def utcoffset(self, value):
+            return timedelta(hours=-5 if value.day < 8 else -4)
+        def dst(self, value):
+            return timedelta(0)
+    zone = SpringClockZone()
+    first = datetime(2026,3,6,12,tzinfo=zone)
+    rows = tuple(replace(row, delivered_at=first) for row in evidence())
+    #6Mar17:00UTC ->9Mar16:00UTC is71hours; at17:00UTC it is72.
+    assert not is_reveal_eligible(PAIR, delivered=rows, now=datetime(2026,3,9,12,tzinfo=zone))
+    assert is_reveal_eligible(PAIR, delivered=rows, now=datetime(2026,3,9,13,tzinfo=zone))
