@@ -127,3 +127,7 @@ Parth explicitly invokes implement for T7#25 after approving its four text/compa
 ## 2026-11-17 PR29 and PR28 review/fix/merge authorized
 
 Parth explicitly authorizes code-review of T7 PR29 and Nevil-assigned H1 PR28 against master, resolving findings and merging both after green final-head CI. Use merge commits to preserve cited history. PR29 merged as b4d5eca after independent Standards0/Spec0. H1 review found one stale profile-response expiry bug, fixed at the existing approved browser seam; integration retains both UI flows and fixture inputs. This replaces the previous merge holds for these PRs only. T8 seam review is pending; no T8 implementation/deployment/model/tunnel authorization. Nevil still must understand/explain the AI-assisted H1 work; merging code does not certify that human handoff.
+
+## 2026-11-17 T8 seam approved
+
+Parth approves docs/specs/t8-reveal-seam.md to move forward. This satisfies proposed domain/application/storage/HTTP/browser seam and transition semantics; publish T8 under#7 and implement tests-first. No merge/deployment/provider work authorized. Existing Reveal/Clock/identity/privacy rules unchanged; Rule5partial.
