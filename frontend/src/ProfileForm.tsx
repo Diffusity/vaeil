@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 
 type Draft = {
@@ -55,31 +55,41 @@ export function ProfileForm({ onSessionExpired }: { onSessionExpired: () => void
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const generation = useRef(0);
   const load = useCallback(async () => {
+    const version = generation.current;
     setBusy(true); setError('');
     try {
       const response = await fetch('/api/me/profile', { credentials: 'same-origin' });
+      if (version !== generation.current) return;
       if (response.status === 401) { onSessionExpired(); return; }
       if (!response.ok) throw new Error('Unavailable');
       const parsed = readProfile(await response.json());
+      if (version !== generation.current) return;
       setDraft(parsed.draft); setComplete(parsed.complete);
-    } catch { setError('Could not load your profile. Please retry.'); }
-    finally { setBusy(false); }
+    } catch { if (version === generation.current) setError('Could not load your profile. Please retry.'); }
+    finally { if (version === generation.current) setBusy(false); }
   }, [onSessionExpired]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+    return () => { generation.current += 1; };
+  }, [load]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft) return;
+    const version = generation.current;
     setBusy(true); setError(''); setMessage('');
     const { pseudonym, ...values } = draft;
     try {
       const response = await fetch('/api/me/profile', { method: 'PUT', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(complete ? values : { ...values, pseudonym: pseudonym || null }) });
+      if (version !== generation.current) return;
       if (response.status === 401) { onSessionExpired(); return; }
       if (!response.ok) {
         const failure = await response.json();
+        if (version !== generation.current) return;
         if (failure.reason === 'invalid_profile' && failure.field === 'about' && failure.can_rephrase === true) {
           setError('About: Rephrase without contact details or your own name.');
         } else if (failure.reason === 'pseudonym_taken') {
@@ -94,10 +104,11 @@ export function ProfileForm({ onSessionExpired }: { onSessionExpired: () => void
         return;
       }
       const parsed = readProfile(await response.json());
+      if (version !== generation.current) return;
       setDraft(parsed.draft); setComplete(parsed.complete);
       setMessage(parsed.complete ? 'Profile saved.' : 'Draft saved. Complete all choices and choose a Pseudonym when you are ready.');
-    } catch { setError('Could not save your profile. Your changes are still here; please retry.'); }
-    finally { setBusy(false); }
+    } catch { if (version === generation.current) setError('Could not save your profile. Your changes are still here; please retry.'); }
+    finally { if (version === generation.current) setBusy(false); }
   }
 
   return <section aria-labelledby="own-profile-heading">

@@ -205,3 +205,46 @@ test('a late session restoration snapshot cannot overwrite a newer explicit sign
     await expect(form).toBeVisible();
   } finally { release(); }
 });
+
+for (const [offset, method] of ['GET', 'PUT'].entries()) {
+  test(`late ${method} profile expiry cannot invalidate a newer sign-in`, async ({ page }) => {
+    let release;
+    let started;
+    let finished;
+    const held = new Promise(resolve => { release = resolve; });
+    const intercepted = new Promise(resolve => { started = resolve; });
+    const handled = new Promise(resolve => { finished = resolve; });
+    const holdExpired = async route => {
+      if (route.request().method() !== method) { await route.continue(); return; }
+      started();
+      await held;
+      try { await route.fulfill({ status: 401, contentType: 'application/json', body: '{"reason":"unauthenticated"}' }); }
+      finally { finished(); }
+    };
+    try {
+      if (method === 'GET') await page.route('**/api/me/profile', holdExpired, { times: 1 });
+      const email = await member(page, 14 + offset);
+      if (method === 'PUT') {
+        const form = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+        await expect(form).toBeVisible();
+        await page.route('**/api/me/profile', holdExpired, { times: 1 });
+        await form.getByLabel('About (optional)', { exact: true }).fill('I enjoy quiet walks.');
+        await form.getByRole('button', { name: 'Save profile', exact: true }).click();
+      }
+      await intercepted;
+      await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await page.getByLabel('Email', { exact: true }).fill(email);
+      await page.getByLabel('Password', { exact: true }).fill(password);
+      await page.getByRole('button', { name: 'Continue', exact: true }).click();
+      const newForm = page.getByRole('form', { name: 'Your Values Profile', exact: true });
+      await expect(newForm).toBeVisible();
+      release(); await handled;
+      // Let the delayed fetch callback and its React update run before asserting.
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible();
+      await expect(newForm).toBeVisible();
+      await expect(page.getByText('Your session has expired. Please sign in again.', { exact: true })).toHaveCount(0);
+    } finally { release(); }
+  });
+}
