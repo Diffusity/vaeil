@@ -1,0 +1,9 @@
+# T7 velocity and freeze forecast
+
+T7 estimate:3 optimistic lead sessions,3–4realistic,2–3focused hours each. First complete local tracer bullet was verified after about24minutes of agent elapsed time on16November; this is not a human-session measurement or evidence that the whole ticket took a fraction of a session. Additional work covered storage/races, generic-export protection, UI lifecycle/input retention, review findings, mutation coverage and graded docs. Human active sessions and pretracking effort remain unverified; no invented teammate delivery or speedup.
+
+Tracked start16November10:32:23UTC; checkpoints10:56:17 and11:23:15. Resumed checkpoint16November18:30:49UTC (17November00:00:49Asia/Calcutta). Exact intervening stop/activity gap is unverified and excluded from any active-time claim. Session log records block end at handoff; a wall span across this gap must not become an effort total.
+
+As of17November, roughly8lead sessions remain to27November at the agreed5/week average, depending on the owner ledger. Before T7acceptance, optimistic remaining core10.5sessions exceeds this. Conditional on T7review/merge, remaining T8Reveal2 + T9Admin1.5 + T10Matching1.5 + T11Block/Report1 + T13seed/evaluation1 + integration0.5 = **7.5sessions**, leaving very little room for outstanding review/rework. This is a conditional forecast, not a solved capacity gap or a commitment. Feature freeze28November;29November–4December rehearsal/fixes only; viva5December.
+
+No new optional features/models/explanations/progress/Report UI/polish. Never cut Admin, Reveal, Report handling or a rule. H1already sat outside the lead baseline, so its AI-assisted PR creates no extra counted savings; Nevil still needs handoff understanding and Parth review. Next technical frontier after T7 is the T8eligibility/consent seam; do not implement it in this ticket. T7is unmerged/undeployed until authorized.

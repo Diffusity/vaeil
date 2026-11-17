@@ -1,6 +1,6 @@
 # Testing
 
-**Current evidence:** 615 Python tests pass locally: 593 product/domain/application/transport/storage/boundary cases and 22 tooling cases; 86 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; six separate browser tests pass. The22 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; T6 admission/session/own-profile APIs and minimal registration/session UI are tested; Match/Conversation display and remaining product flows are pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
+**Current evidence:** 687 Python tests pass locally: 665 product/domain/application/transport/storage/boundary cases and 22 tooling cases; 124 PostgreSQL contract variants are explicitly skipped locally and run in disposable-database CI; 13 separate browser tests pass. The22 Python tooling cases include five benchmark-client guard regressions. T1 merged with401 after Windows CI passed on final head `6066868`, preserved by merge commit `4f9ca80`. Windows checks run Ruff, assumption validation and pytest. T1 adds identity/profile/projection, opaque private values and the exact unwrap boundary; T3 supplies only a fictional same-origin HTTP/React demo; T6 admission/session/own-profile APIs and minimal registration/session UI are tested; T7 provides a minimal Conversation reader/composer; Match display, deployed rule checks and remaining product flows are pending. **Coverage stays 3 of 6 rules domain-level, 0 of 6 end-to-end. Rule 5 is partial.**
 
 ## How to run
 
@@ -8,7 +8,7 @@
 .venv\Scripts\python.exe scripts/check.py
 ```
 
-Product/domain tests use no live provider/database or system clock. Logging tests capture diagnostics; bounded parser/predicate subprocesses enforce generous regression deadlines, not latency claims. The AST tests inspect source for purity and the private extraction boundary. Tooling tests do not increase rule coverage.
+Pure domain tests use no live provider/database or system clock. Repository tests use owned SQLite or disposable loopback PostgreSQL; browser fixtures use real runtime timestamps without time-based safety assertions. Injected Clock tests pin delivery/admission time behavior. Logging tests capture diagnostics; bounded parser/predicate subprocesses enforce generous regression deadlines, not latency claims. The AST tests inspect source for purity and the private extraction boundary. Tooling tests do not increase rule coverage.
 
 ## Rules → tests
 
@@ -16,7 +16,7 @@ Product/domain tests use no live provider/database or system clock. Logging test
 | --- | --- | --- | --- |
 | 1 | Invite-only | `tests/test_invite_redemption.py:123`, `:133`, `:138` | Single-use/unknown/invalid Invite refusal; T6 admission/API tests add pre-vetting Invite checks, atomic redemption and role gates; Admin Invite console remains T9. |
 | 2 | Vetting never rejects | `tests/test_vetting.py:42`, `:58`, `:64`, `:70`, `:76` | Closed Verdict and safe wrapper; T6 implements human admission decisions; the real model, Admin console and deployed admission evidence remain pending. |
-| 3 | Moderated delivery | — | Message delivery/moderation not implemented; Vetting failure tests do not prove delivery. |
+| 3 | Moderated delivery — **partial** | `tests/test_t7_assessment.py:18`, `tests/test_t7_application.py:46`, `tests/test_t7_http.py:26` | Human-review baseline, delivery isolation, retry, release/discard/audit locally verified. Deployed complete-rule path and Admin console remain future work; no real-model accuracy claim. |
 | 4 | Consensual Reveal | — | Eligibility, Clock timestamps and bilateral consent not implemented. T1 Reveal fixtures are projection inputs only. |
 | 5 | Anonymity before Reveal — **partial** | `tests/test_member_identity_red.py:107`, `:119`, `:189`, `:508`; `tests/test_opaque_private_values.py:23`, `:39`, `:144`, `:165`, `:179`; `tests/test_private_unwrap_boundary.py:62` | Exact view shape, graph/serialization canaries, pair isolation, owner checks and opaque scalars/authorized payload. In-memory Conversation state authority is covered by T2 (`tests/test_conversation.py:211`); Explicit storage round trips are covered by T5; T6 covers session/own-profile authority; Match/Conversation product display and moderated transport remain pending. |
 | 6 | Age gate | `tests/test_invite_redemption.py:56`, `:61`, `:70`, `:79`, `:93`, `:106`, `:114`, `:152` | 18+ before consume, birthday/leap boundaries and injected Clock; T6 tests age-gated registration/admission integration; deployed flow evidence remains pending. |
@@ -126,7 +126,7 @@ Frontend TypeScript is checked by `npm.cmd run typecheck --prefix frontend`. Pyt
 
 The same contract runs against file SQLite and disposable PostgreSQL18 in CI. Fixtures refuse non-loopback Postgres URLs and create/drop isolated test databases; production Neon is never a routine fixture. Fixed timestamp inputs and no live model. These are infrastructure checks, not a newly completed product rule.
 
-New exact unwrap site: `src/vaeil/adapters/persistence.py:85`; existing three sites retained. `tests/test_private_unwrap_boundary.py:89` rejects wrong mapper functions/modules. Generic private serialization remains refused.
+New exact unwrap site: `src/vaeil/adapters/persistence.py:86`; existing three sites retained. `tests/test_private_unwrap_boundary.py:89` rejects wrong mapper functions/modules. Generic private serialization remains refused.
 
 Run `python scripts/mutate_persistence.py` alone. Final matrix at19ccb9e:13/13SQLite,13/13PostgreSQL and1/1sharedAST mutations killed; normal contracts passed after exact source restoration. CIrun43081827304. Results: docs/audit/t5-mutations-both-databases.json; readable table: docs/audit/t5-mutation-results.md. Supplementary T2mutations19/19 and Slice2mutations12/12 also killed after policy extraction. An isolated Neon fixture survived a Render restart on14November; see docs/audit/t5-deployed-survival-2026-11-14.md. Rule5 stays partial.
 
@@ -155,3 +155,20 @@ Run mutation writers alone: `python scripts/mutate_admission.py`, then normal ch
 Additional T6 gates: `tests/test_t6_application.py:277` pins NFKC/casefold login; :285 proves KDF work releases the repository lock. `tests/test_t6_http.py:123` checks safe409 email conflict and rollback/retry. `tests/test_t6_profiles.py:83` pins stored-note exclusion through both recipient projections and explicit JSON. Concrete H1 request/response semantics: docs/specs/t6-profile-http-contract.md.
 
 Fresh PR24 review added `tests/test_t6_http.py:142` (six registration fields) and :155 (About) for JSON-escaped lone surrogates. Safe400 must precede writes, preserve the Invite/draft, and never echo canaries. Shared transport validation leaves frozen T1 profile policies unchanged.
+
+
+## T7 Message/human-review evidence
+
+`tests/test_t7_assessment.py:18` pins all identifier categories and per-Conversation Reveal; :29 all Withheld reasons/invalid verdicts; :42 invalid text/no echo; :52 normalized2000-code-point boundaries/chat whitespace; :57 participant/Block policy. Scanner still decides reasons only. No live inference or accuracy claim.
+
+`tests/test_t7_repository.py:32` canonical roundtrip/SQLINFO canary/undelivered exclusion; :52 frozen/slotted/copy/pickle/asdict/JSON/state refusal; :63 request uniqueness; :79 review lock/terminal delivery; :110 rollback; :123 independent SQL writer proves both unique constraints. The same contract runs on SQLite/PostgreSQL; production is never a test target.
+
+`tests/test_t7_application.py:46` human baseline/replay/one audited release/actual delivery time; :73 model NeedsReview/no normalized resend/provenance; :90 Escalated/post-Reveal chat; :111 forged roles/pair/key collision; :131 typed failures; :141 concurrent cross-instance replay outside a write lock; :169 Block during moderation; :184 human Escalation; :198 sender/Conversation/case scope; :217 matching manual review locks disable actions; :231 competing decisions; :255 audit-failure rollback; :286 Blocked release/discard; :303 independent private view types/export; :325 matching review claim created during an external call prevents late approval.
+
+`tests/test_t7_http.py:26` recipient sees no pending body before explicit review/release; :53 client authority/model/Reveal inputs refused; :60 cookie/role/Origin and non-disclosing404; :77 validation before model/storage; :89 pending admission refusal. `tests/test_t7_runtime.py:15` proves demo-only failure configuration never enables approval. Existing exact five private extraction sites and purity guards remain unchanged.
+
+`frontend/tests/conversation.spec.js:12` local real-API sender/recipient/human release, exactly once; :43 checking and new key on confirmed technical retry; :72 inconsistent review retry flags refused; :88 unrelated draft retained on old-attempt review; :101 truthful unavailable actions; :118 ambiguous network retry reuses key; :140 released HTML-like content remains inert. Synthetic fixture uses audited admission and trusted test Conversation setup, not a public bypass. These are local component paths, not complete deployed-rule evidence. H1 browser cases are not part of this branch; H1PR28 is separate.
+
+Mutation writers run alone. Reproduce backend faults with `python scripts/mutate_messages.py`; final local/backend+browser tables are in docs/audit/t7-mutation-results.md and raw JSON files. Source bytes restored and normal frontend build regenerated after mutation runs. Initial redundant application-only Block guard removal survived because the pure guard still protected delivery; the category mutation disables canonical Conversation Block policy and is killed. Tests were not loosened. Final shared PostgreSQL matrices and Windows/container/browser CI are required on the PR head.
+
+Rule3 now has partial domain/application/HTTP/local-browser evidence; Rule5 stays partial. Counts remain3/6domain and0/6complete-ruleE2E until the deployed full checks land. Message delivery/model accuracy/safety are not inferred from Vetting-only or fake Approved results.

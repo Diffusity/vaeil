@@ -1,0 +1,30 @@
+{
+  "results": [
+    {
+      "mutation": "discard unrelated composer draft",
+      "killed": true,
+      "test": "older withheld"
+    },
+    {
+      "mutation": "accept contradictory review retry flags",
+      "killed": true,
+      "test": "inconsistent"
+    },
+    {
+      "mutation": "enable duplicate send while checking",
+      "killed": true,
+      "test": "checking disables"
+    },
+    {
+      "mutation": "reuse completed request key for deliberate technical retry",
+      "killed": true,
+      "test": "checking disables"
+    },
+    {
+      "mutation": "promise forbidden retry actions",
+      "killed": true,
+      "test": "never promises"
+    }
+  ],
+  "restored_sha256": "121ea2f5b3f4205fbc9b90a774ea966d58b36e98876650db0f9240bb86055b79"
+}

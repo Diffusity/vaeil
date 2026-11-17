@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { ConversationPanel } from './ConversationPanel';
 import type { FormEvent } from 'react';
 
 type Principal = { role: 'applicant' | 'member' | 'admin'; admission: 'NeedsReview' | 'Approved' | 'Rejected' };
@@ -9,6 +10,11 @@ export function AdmissionPanel() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [principal, setPrincipal] = useState<Principal | null>(null);
+
+  const sessionExpired = useCallback(() => {
+    setPrincipal(null); setMode(null); setMessage('Your session has expired. Please sign in again.');
+  }, []);
+  const conversationId = new URLSearchParams(window.location.search).get('conversation');
 
   function select(next: 'apply' | 'login') {
     setMode(next); setError(''); setMessage('');
@@ -65,6 +71,8 @@ export function AdmissionPanel() {
       <button onClick={() => select('apply')} disabled={busy}>Apply with an Invite</button>
       <button onClick={() => select('login')} disabled={busy}>Sign in</button>
     </nav>}
+    {principal?.role === 'member' && principal.admission === 'Approved' && conversationId
+      && <ConversationPanel conversationId={conversationId} onUnauthorized={sessionExpired} />}
     {mode && <form onSubmit={submit}>
       {mode === 'apply' && <>
         <p>Demo only — use fictional details.</p>
