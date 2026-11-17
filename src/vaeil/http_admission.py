@@ -17,7 +17,7 @@ from vaeil.adapters.authentication import PasswordPolicyError, PasswordBusyError
 COOKIE = "vaeil_session"
 
 
-def attach_admission_routes(app, provider, *, message_provider=None):
+def attach_admission_routes(app, provider, *, message_provider=None, reveal_provider=None):
     def safe_response(payload, status=200):
         return JSONResponse(payload, status_code=status, headers={"Cache-Control": "no-store"})
 
@@ -138,3 +138,7 @@ def attach_admission_routes(app, provider, *, message_provider=None):
     if message_provider is not None:
         from vaeil.http_messaging import attach_message_routes
         attach_message_routes(app, message_provider, actor=actor, check_origin=check_origin, exact=exact, safe_response=safe_response)
+
+    if reveal_provider is not None:
+        from vaeil.http_reveal import attach_reveal_routes
+        attach_reveal_routes(app, reveal_provider, actor=actor, check_origin=check_origin, exact=exact, safe_response=safe_response)
