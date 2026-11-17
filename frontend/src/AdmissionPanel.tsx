@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ProfileForm } from './ProfileForm';
 import { ConversationPanel } from './ConversationPanel';
 import type { FormEvent } from 'react';
 
@@ -9,19 +10,36 @@ export function AdmissionPanel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const authVersion = useRef(0);
   const [principal, setPrincipal] = useState<Principal | null>(null);
 
   const sessionExpired = useCallback(() => {
+    authVersion.current += 1;
     setPrincipal(null); setMode(null); setMessage('Your session has expired. Please sign in again.');
+  }, []);
+  useEffect(() => {
+    let active = true;
+    const version = authVersion.current;
+    void fetch('/api/session', { credentials: 'same-origin' }).then(async response => {
+      if (!response.ok) return;
+      const data = await response.json();
+      if (active && version === authVersion.current && ['applicant', 'member', 'admin'].includes(data.role)
+          && ['NeedsReview', 'Approved', 'Rejected'].includes(data.admission)) {
+        setPrincipal({ role: data.role, admission: data.admission });
+      }
+    }).catch(() => {});
+    return () => { active = false; };
   }, []);
   const conversationId = new URLSearchParams(window.location.search).get('conversation');
 
   function select(next: 'apply' | 'login') {
+    authVersion.current += 1;
     setMode(next); setError(''); setMessage('');
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    authVersion.current += 1;
     const form = event.currentTarget;
     const body = Object.fromEntries(new FormData(form));
     setBusy(true); setError(''); setMessage('');
@@ -52,6 +70,7 @@ export function AdmissionPanel() {
   }
 
   async function signOut() {
+    authVersion.current += 1;
     setBusy(true); setError('');
     try {
       const response = await fetch('/api/session', { method: 'DELETE', credentials: 'same-origin' });
@@ -71,6 +90,7 @@ export function AdmissionPanel() {
       <button onClick={() => select('apply')} disabled={busy}>Apply with an Invite</button>
       <button onClick={() => select('login')} disabled={busy}>Sign in</button>
     </nav>}
+    {principal?.role === 'member' && principal.admission === 'Approved' && <ProfileForm onSessionExpired={sessionExpired} />}
     {principal?.role === 'member' && principal.admission === 'Approved' && conversationId
       && <ConversationPanel conversationId={conversationId} onUnauthorized={sessionExpired} />}
     {mode && <form onSubmit={submit}>

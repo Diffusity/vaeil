@@ -1,6 +1,6 @@
 ## Parent
 
-Part of #7. Ready-for-human, **unassigned**; Parth confirms ownership and reviews the PR. Every owner must explain their work at the viva.
+Part of #7. Assigned to **Nevil-Nandasana** by Parth on16November2026; Parth reviews the PR. Codex implements with explicit AI assistance on Nevil's behalf. Every owner must explain their work at the viva.
 
 ## What to build
 
@@ -20,4 +20,4 @@ React form over the merged T6 own-profile API: load/save a private draft, comple
 
 T6 #13 closed; can start locally now. Contract: docs/specs/t6-profile-http-contract.md. Choice codes pinned by existing tests. Fictional setup stays test-only; no public account/Invite bypass. Report API gaps rather than editing core/audit.
 
-**1–1.5 teammate sessions plus lead review**, estimate only. Already excluded from lead baseline, not new gap savings. No assignee or outbound teammate messages.
+**1–1.5 teammate sessions plus lead review**, estimate only. Already excluded from lead baseline, not new gap savings. Assigned via GitHub to Nevil-Nandasana; no outbound teammate messages.

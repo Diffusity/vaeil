@@ -20,6 +20,8 @@ def main():
         with open_repository(url) as repository:
             with repository.transaction() as unit:
                 unit.issue_invite("browser-invite", issuer_id="fictional-browser-admin")
+                for index in range(40):
+                    unit.issue_invite(f"h1-invite-{index}", issuer_id="fictional-browser-admin")
                 unit.commit()
         from datetime import date
         from vaeil.application.admission import AdmissionApplication, ApplicationSubmission, SessionPrincipal

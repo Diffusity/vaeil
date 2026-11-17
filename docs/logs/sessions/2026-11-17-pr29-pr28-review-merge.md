@@ -1,0 +1,7 @@
+# PR29 and PR28 review and merge
+
+Working block start verified2026-11-17T06:32:09UTC (12:02:09Asia/Calcutta). User explicitly requests code-review of T7PR29 and Nevil H1PR28 against master, resolve findings and merge both. Merge commits preserve cited history. T8implementation remains on hold pending seam review; no deployment/model/tunnel authorization.
+
+Pinned master a4036b6702aed3748680cb48542bb2186741078c; T7head8fb4c0a579e509ceb7916facd00e512032b9f7c4; H1head6789bcec0e535375374c84aa3e4c8d0c733fd4c4. Two parallel independent review axes required by code-review skill. Preserve pending T7finalCI/session entry, H1finalCIstash/patch and all unrelated untracked files. H1author identity remains Nevil only for its assisted feature commits, with assistance disclosed; merge/review integration uses project author.
+
+Independent review StandardsPR29=0/PR28=0; SpecPR29=0/PR28=1P2 (stale profileGET/PUT401clearsnewsign-in). Rebuilt correctH1assets:2behavioralreds (initialstaleassetfailuresnotcounted); generationcleanupfix2d04057 ->2green18.8s, bothreviewaxesconfirmedclosure. PR29mergedb4d5eca, issue25closed. H1integratesmaster, resolves8conflicts retainingbothUI/authguards/fixtures; no source policy/audit changes for H1. Combined687passed124localPGskips55.99s,28browser1.5min,TypeScript/build/Ruff/assumptions/purity/ASTgreen. FinalH1headCIandmergepending. PendingT7/H1finalCIlogsrecoveredfrompath-scopedstasheswithoutdroppingthem.
