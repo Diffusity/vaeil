@@ -390,6 +390,26 @@ class SqlUnitOfWork:
             ).order_by(messages.c.created_at, messages.c.message_id)))
 
 
+    def get_reveal_consents(self, conversation_id):
+        from vaeil.domain.reveal import RevealConsents
+        self.get_conversation(conversation_id)
+        ids = self._execute(select(reveal_consents.c.member_id).where(
+            reveal_consents.c.conversation_id == conversation_id)).scalars()
+        return RevealConsents(conversation_id, frozenset(ids))
+
+    def store_reveal_consents(self, consents):
+        from vaeil.domain.reveal import RevealConsents, RevealEvidenceError
+        if not isinstance(consents, RevealConsents):
+            raise RevealEvidenceError('Store validated Conversation consent.')
+        conversation = self.get_conversation(consents.conversation_id)
+        if (not isinstance(consents.consented_member_ids, frozenset)
+            or not consents.consented_member_ids.issubset(conversation.participant_ids)):
+            raise RevealEvidenceError('Store consent only for this participant pair.')
+        self._execute(delete(reveal_consents).where(reveal_consents.c.conversation_id == consents.conversation_id))
+        for member_id in sorted(consents.consented_member_ids):
+            self._execute(insert(reveal_consents).values(conversation_id=consents.conversation_id, member_id=member_id))
+
+
 class SqlRepository:
     def __init__(self, engine):
         self._engine = engine
@@ -515,3 +535,10 @@ def row_to_message(row):
         assessment, datetime.fromisoformat(row['created_at']),
         delivered_at=None if row['delivered_at'] is None else datetime.fromisoformat(row['delivered_at']),
         review_state=m.ReviewState(row['review_state']), provenance=m.MessageProvenance(row['provenance']))
+
+
+reveal_consents = Table(
+    "reveal_consents", metadata,
+    Column("conversation_id", String, ForeignKey("conversations.conversation_id"), primary_key=True),
+    Column("member_id", String, ForeignKey("members.member_id"), primary_key=True),
+)

@@ -1,0 +1,155 @@
+{
+  "results": [
+    {
+      "mutation": "threshold MIN_DELIVERED_MESSAGES = 19",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "threshold MIN_DELIVERED_MESSAGES = 21",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "threshold MIN_MESSAGES_PER_MEMBER = 4",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "threshold MIN_MESSAGES_PER_MEMBER = 6",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "threshold timedelta(hours=71)",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "threshold timedelta(hours=73)",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_all_threshold_boundaries"
+    },
+    {
+      "mutation": "measure DST wall time",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_72_hours_means_elapsed_utc_time_across_a_dst_change"
+    },
+    {
+      "mutation": "unilateral completion",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_bilateral_consent_withdrawal_idempotence_and_irreversibility"
+    },
+    {
+      "mutation": "ignore withdrawal",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_bilateral_consent_withdrawal_idempotence_and_irreversibility"
+    },
+    {
+      "mutation": "permit completed withdrawal",
+      "backend": "domain",
+      "killed": true,
+      "test": "tests/test_t8_reveal.py::test_bilateral_consent_withdrawal_idempotence_and_irreversibility"
+    },
+    {
+      "mutation": "ignore participant authority",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_role_pair_block_guards_and_active_slot_before_completion"
+    },
+    {
+      "mutation": "trust forged Member role",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_role_pair_block_guards_and_active_slot_before_completion"
+    },
+    {
+      "mutation": "count Withheld evidence",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_withheld_and_creation_time_cannot_satisfy_threshold_late_release_counts_once"
+    },
+    {
+      "mutation": "use creation not actual delivery",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_twenty_recent_deliveries_cannot_use_old_creation_time"
+    },
+    {
+      "mutation": "omit completion audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation"
+    },
+    {
+      "mutation": "audit again on repeated consent",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation"
+    },
+    {
+      "mutation": "commit Reveal before audit",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_reveal_and_consent_rollback_if_audit_fails"
+    },
+    {
+      "mutation": "share consent across Conversations",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation"
+    },
+    {
+      "mutation": "retain withdrawn consent in storage",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_repository.py::test_pair_consents_roundtrip_and_rollback"
+    },
+    {
+      "mutation": "expose pre-Reveal identity",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_durable_bilateral_reveal_exact_payload_audit_slot_release_and_isolation"
+    },
+    {
+      "mutation": "add DOB to revealed JSON",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_http.py::test_exact_status_and_partner_payload_only_after_both_consents"
+    },
+    {
+      "mutation": "accept client Reveal flag",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_http.py::test_session_role_pair_origin_and_safe_unknown_input_guards"
+    },
+    {
+      "mutation": "bypass all Block checks",
+      "backend": "sqlite",
+      "killed": true,
+      "test": "tests/test_t8_application.py::test_role_pair_block_guards_and_active_slot_before_completion"
+    },
+    {
+      "mutation": "unwrap outside approved Reveal sites",
+      "backend": "architecture",
+      "killed": true,
+      "test": "tests/test_private_unwrap_boundary.py::test_production_unwrap_sites_are_exactly_the_approved_functions"
+    }
+  ],
+  "restored_sha256": {
+    "src\\vaeil\\domain\\reveal.py": "4a729def5a2f72282587ae224205c1fe93de59ec22ae6cad1c29cb1c03079fa9",
+    "src\\vaeil\\application\\reveal.py": "605e71978007f34336308675bdcb0fa485be8fba8217864d00c1f352e127b3df",
+    "src\\vaeil\\adapters\\persistence.py": "68a419b30f095b0f897b2838708039d655d729c9c2a8bfef80d150dca40bedea",
+    "src\\vaeil\\domain\\member.py": "e7e7f6e37a22572e6ed8274923fec7be8e4f8f1830c5631e2ab71e747e6341eb",
+    "src\\vaeil\\http_reveal.py": "aeba96f02a4f463dc235dc9b1816d55698da9906dfc18c4886c20a200c43446f"
+  }
+}

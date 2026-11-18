@@ -1,0 +1,13 @@
+{
+  "results": [
+    {
+      "mutation": "ignore withdrawal action",
+      "killed": true
+    },
+    {
+      "mutation": "offer consent while ineligible",
+      "killed": true
+    }
+  ],
+  "restored_sha256": "1ef7a2d50d33c166c8c2ed79b48040718faeed1b4eca478b5fbea0ae27b12625"
+}

@@ -36,7 +36,7 @@ def main():
                                              clock=RuntimeClock(), model=HumanReviewModel())
             admission.seed_admin(email='browser.admin@example.invalid', password='Fictional admin password')
             admin = SessionPrincipal('admin', Role.ADMIN, AdmissionStatus.APPROVED)
-            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise')]:
+            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise'), ('reveal-a', 'FictionalRiver', 'River'), ('reveal-b', 'FictionalMeadow', 'Meadow')]:
                 code = 'invite-' + identifier
                 with repository.transaction() as unit:
                     unit.issue_invite(code, issuer_id='admin')
@@ -51,6 +51,22 @@ def main():
                     communication_style='direct', pace_and_lifestyle='quiet_and_routine'))
             with repository.transaction() as unit:
                 unit.store_conversation(Conversation('browser-conversation', ('browser-a', 'browser-b')))
+                unit.commit()
+        from datetime import timedelta
+        from uuid import UUID
+        from vaeil.domain.messaging import MessageRecord, assess_message
+        from vaeil.domain.vetting import Verdict
+        with open_repository(url) as repository:
+            with repository.transaction() as unit:
+                conversation = Conversation('reveal-conversation', ('reveal-a', 'reveal-b'))
+                unit.store_conversation(conversation)
+                first_delivery = RuntimeClock().now() - timedelta(hours=73)
+                for index in range(20):
+                    sender = 'reveal-a' if index < 15 else 'reveal-b'
+                    text = 'A fictional delivered conversation.'
+                    assessment = assess_message(text, sender_id=sender, conversation=conversation, moderation=Verdict.APPROVED)
+                    unit.add_message(MessageRecord('reveal-seed-' + str(index), conversation.conversation_id, sender, text,
+                        str(UUID(int=index+500)), assessment, first_delivery, delivered_at=first_delivery))
                 unit.commit()
         uvicorn.run("vaeil.web:create_app", factory=True, host="127.0.0.1", port=8765)
 

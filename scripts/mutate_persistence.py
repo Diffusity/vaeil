@@ -93,7 +93,7 @@ def main(mutations=None, output_path="docs/audit/t5-mutations.json"):
             # Invalidate timestamp/size bytecode caches even for equal-size edits.
             os.utime(path, (mtimes[path] + number + 2, mtimes[path] + number + 2))
             try:
-                is_database = not any(name in test for name in ("test_remote_postgres_uses_verified_tls", "test_message_body_record_refuses_accidental_export_copy_and_mutation")) and test.split("::", 1)[0] in {"tests/test_repository_contract.py", "tests/test_t6_repository.py", "tests/test_t6_application.py", "tests/test_t6_profiles.py", "tests/test_t6_http.py", "tests/test_t7_repository.py", "tests/test_t7_application.py", "tests/test_t7_http.py", "tests/test_t7_runtime.py"}
+                is_database = not any(name in test for name in ("test_remote_postgres_uses_verified_tls", "test_message_body_record_refuses_accidental_export_copy_and_mutation")) and test.split("::", 1)[0] in {"tests/test_repository_contract.py", "tests/test_t6_repository.py", "tests/test_t6_application.py", "tests/test_t6_profiles.py", "tests/test_t6_http.py", "tests/test_t7_repository.py", "tests/test_t7_application.py", "tests/test_t7_http.py", "tests/test_t7_runtime.py", "tests/test_t8_repository.py", "tests/test_t8_application.py", "tests/test_t8_http.py"}
                 matrix = ["architecture"] if test == BOUNDARY else (backends if is_database else ["domain"])
                 for backend in matrix:
                     command = [sys.executable, "-m", "pytest", test, "-q", "--tb=short"]

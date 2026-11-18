@@ -49,6 +49,7 @@ class RuntimeAdmission:
         self._context = None
         self._application = None
         self._messages = None
+        self._reveal = None
 
     def get(self):
         with self._lock:
@@ -79,8 +80,16 @@ class RuntimeAdmission:
                 self._messages = MessageApplication(application.repository, tokens=application.tokens, clock=application.clock, moderator=moderator)
             return self._messages
 
+    def get_reveal(self):
+        from vaeil.application.reveal import RevealApplication
+        application = self.get()
+        with self._lock:
+            if self._reveal is None:
+                self._reveal = RevealApplication(application.repository, tokens=application.tokens, clock=application.clock)
+            return self._reveal
+
     def close(self):
         with self._lock:
             if self._context is not None:
                 self._context.__exit__(None, None, None)
-                self._context, self._application, self._messages = None, None, None
+                self._context, self._application, self._messages, self._reveal = None, None, None, None

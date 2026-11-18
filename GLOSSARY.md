@@ -57,7 +57,7 @@ A short, AI-written opening line offered to a Match to help start the Conversati
 _Avoid_: prompt, opener, pickup line
 
 **Engagement Threshold**:
-The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 hours since the first delivered Message; Withheld does not count.
+The condition that makes a pair eligible to be offered a Reveal: at least 20 delivered Messages, including Escalated, at least 5 delivered by each Member, and at least 72 elapsed hours since the first delivered Message; Withheld does not count.
 _Avoid_: milestone, quota
 
 ### Conversation & safety

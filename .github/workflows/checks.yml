@@ -33,7 +33,7 @@ jobs:
       - name: Run the same contract against SQLite and disposable PostgreSQL
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
-        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py tests/test_t6_profiles.py tests/test_t6_http.py tests/test_t7_repository.py tests/test_t7_application.py tests/test_t7_http.py tests/test_t7_runtime.py -q
+        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py tests/test_t6_profiles.py tests/test_t6_http.py tests/test_t7_repository.py tests/test_t7_application.py tests/test_t7_http.py tests/test_t7_runtime.py tests/test_t8_repository.py tests/test_t8_application.py tests/test_t8_http.py -q
       - name: Kill persistence mutations on both databases
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
@@ -46,10 +46,14 @@ jobs:
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
         run: python scripts/mutate_messages.py
+      - name: Kill T8 Reveal eligibility and consent mutations
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python scripts/mutate_reveal.py
       - name: Verify restored contracts and privacy boundary
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
-        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py tests/test_t6_profiles.py tests/test_t6_http.py tests/test_t7_repository.py tests/test_t7_application.py tests/test_t7_http.py tests/test_t7_runtime.py tests/test_private_unwrap_boundary.py tests/test_domain_purity.py -q
+        run: python -m pytest tests/test_repository_contract.py tests/test_t6_repository.py tests/test_t6_application.py tests/test_t6_profiles.py tests/test_t6_http.py tests/test_t7_repository.py tests/test_t7_application.py tests/test_t7_http.py tests/test_t7_runtime.py tests/test_t8_repository.py tests/test_t8_application.py tests/test_t8_http.py tests/test_private_unwrap_boundary.py tests/test_domain_purity.py -q
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -58,6 +62,7 @@ jobs:
             docs/audit/t5-mutations.json
             docs/audit/t6-mutations.json
             docs/audit/t7-mutations.json
+            docs/audit/t8-mutations.json
   container:
     runs-on: ubuntu-latest
     timeout-minutes: 15
