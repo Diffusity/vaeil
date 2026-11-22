@@ -47,7 +47,7 @@ npm.cmd run build --prefix frontend
 .venv\Scripts\python.exe -m uvicorn vaeil.web:create_app --factory --host 127.0.0.1 --port 8000
 ```
 
-Open http://127.0.0.1:8000 and stop with Ctrl+C. **Demo only — don't enter real personal details.** The fixed demo profile remains fictional and anonymous. T6 adds registration/session and own-profile APIs using default local SQLite; normal runtime never seeds the browser-test Invite. Admission remains human-review-first. Admin seeding requires VAEIL_ADMIN_EMAIL and VAEIL_ADMIN_PASSWORD together in the process environment (no defaults); Invite issuance UI remains T9. Use fictional details only. FastAPI serves the built React assets and relative API routes on the same origin. A missing build returns a setup message; unknown API paths stay404. Rebuild and restart after frontend edits.
+Open http://127.0.0.1:8000 and stop with Ctrl+C. **Demo only — don't enter real personal details.** The fixed demo profile remains fictional and anonymous. T6 adds registration/session and own-profile APIs using default local SQLite; normal runtime never seeds the browser-test Invite. Admission remains human-review-first. Admin seeding requires VAEIL_ADMIN_EMAIL and VAEIL_ADMIN_PASSWORD together in the process environment (no defaults); A signed-in Admin can issue single-use Invites from the console in T9. Use fictional details only. FastAPI serves the built React assets and relative API routes on the same origin. A missing build returns a setup message; unknown API paths stay404. Rebuild and restart after frontend edits.
 
 After setup, Python checks use `.venv\Scripts\python.exe scripts/check.py`. Frontend checks use `npm.cmd run typecheck --prefix frontend` and `npm.cmd test --prefix frontend`; local browser tests use installed Microsoft Edge, while CI installs Chromium. Browser tests launch/stop their own local server. The suite includes loopback HTTP/browser tests; it uses no live LLM or production database; browser tests own a temporary SQLite fixture. Windows CI runs the Python checks, typecheck, frontend build and browser tests.
 
@@ -86,6 +86,10 @@ Authenticated participants can send a Message, see technical Withheld, explicitl
 
 ## T8 Reveal ceremony
 
-[T8 #30](https://github.com/Diffusity/vaeil/issues/30) is implemented at its approved seam, pending PR review. The server enforces20delivered Messages,5per Member and72elapsed hours, bilateral withdrawable consent and irreversible atomic completion/audit. The minimal Conversation UI shows only the authorized pre/post-Reveal view. No DOB/photos or new private unwrap. No T8 deployment is claimed; Rules4/5remainpartial. Evidence: docs/audit/t8-evidence.md and docs/audit/t8-mutation-results.md.
+[T8 #30](https://github.com/Diffusity/vaeil/issues/30) merged in PR #31. The server enforces20delivered Messages,5per Member and72elapsed hours, bilateral withdrawable consent and irreversible atomic completion/audit. The minimal Conversation UI shows only the authorized pre/post-Reveal view. No DOB/photos or new private unwrap. No T8 deployment is claimed; Rules4/5remainpartial. Evidence: docs/audit/t8-evidence.md and docs/audit/t8-mutation-results.md.
 
-Conditional on T8 acceptance, T9–T11/T13 plus integration total5.5optimistic lead sessions. T8 review/rework still needs buffer; the calendar slots above are not an active-time measurement or a promise. Next core work is the Admin console and the deployed six-rule checkpoint. No optional models/progress/polish added.
+The pre-T9 forecast was 5.5 optimistic lead sessions for T9–T11/T13 and integration. T9 is implemented locally for review. The next milestone is the deployed checkpoint once authorized, followed by Matching, Block and Report, and demo data and evaluation. The 28 November freeze and Plan B still apply.
+
+## T9 Admin console
+
+[T9 #32](https://github.com/Diffusity/vaeil/issues/32) adds local Admin Invite issuance and separate queues for applications, withheld Messages and Escalated deliveries. Escalated decisions are audited and leave the delivered Message in place. The Report queue is explicitly unavailable until T11. This branch has no deployed validation yet.
