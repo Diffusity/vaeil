@@ -140,3 +140,21 @@ def test_escalation_audit_failure_rolls_back_and_concurrent_decisions_record_one
                 "queue_approved" if winner is EscalationDecision.APPROVE else "queue_rejected"
             ]
         assert app.list_review_messages(actor=admin) == ()
+
+
+
+def test_resolving_escalated_delivery_preserves_reveal_at_exact_threshold(repository_url):
+    from test_t8_application import reveal_setup
+    from vaeil.domain.messaging import EscalationDecision
+
+    with open_repository(repository_url) as repo:
+        reveal, messages, actors, _ = reveal_setup(repo, delivered=20)
+        member, admin = actors["a"], actors["admin"]
+        # The fixture has exactly 20 qualifying deliveries, exactly five from B,
+        # and the first of B's five is the only Escalated Message.
+        pending, = messages.list_review_messages(actor=admin)
+        before = reveal.read_reveal(actor=member, conversation_id="ab")
+        assert before.eligible
+        messages.decide_escalation(actor=admin, message_id=pending.message_id, decision=EscalationDecision.REJECT)
+        assert messages.list_review_messages(actor=admin) == ()
+        assert reveal.read_reveal(actor=member, conversation_id="ab") == before
