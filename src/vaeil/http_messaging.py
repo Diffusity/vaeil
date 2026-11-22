@@ -57,3 +57,13 @@ def attach_message_routes(app, provider, *, actor, check_origin, exact, safe_res
             raise m.MessageShapeError('Use a human Message review decision.') from None
         messages.decide_message(actor=principal, message_id=message_id, decision=decision)
         return Response(status_code=204, headers={'Cache-Control': 'no-store'})
+
+    @app.post('/api/admin/messages/{message_id}/escalation-decision', dependencies=[Depends(check_origin)])
+    def decide_escalation(message_id: str, body: dict = Body(...), principal=Depends(actor), messages=Depends(provider)):
+        exact(body, {'decision'})
+        try:
+            decision = m.EscalationDecision(body['decision'])
+        except (TypeError, ValueError):
+            raise m.MessageShapeError('Use an Escalated queue decision.') from None
+        messages.decide_escalation(actor=principal, message_id=message_id, decision=decision)
+        return Response(status_code=204, headers={'Cache-Control': 'no-store'})

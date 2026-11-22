@@ -4,7 +4,7 @@ from vaeil.application.admission import SessionPrincipal
 from vaeil.domain.authentication import Role, AdmissionStatus, AccessDeniedError
 from vaeil.domain.messaging import (
     MessageRecord, MessageOutcome, ModerationFailure, ReviewReason,
-    ReviewState, MessageProvenance, MessageReviewDecision, SenderMessageView,
+    ReviewState, MessageProvenance, MessageReviewDecision, EscalationDecision, SenderMessageView,
     DeliveredMessageView, ReviewMessageView, ConversationMessagesView,
     MessageConflictError, MessageActorError, MessageBlockedError, MessageShapeError,
     normalize_message_text, message_request_key, assess_message,
@@ -143,6 +143,24 @@ class MessageApplication:
                 open_for_chat=conversation.open_for_chat,
                 review_locked=unit.review_text_exists(conversation_id, actor.principal_id, message.text_digest)) for message in unit.list_sender_messages(conversation_id, actor.principal_id))
             return ConversationMessagesView(conversation_id, delivered, attempts)
+
+    def decide_escalation(self, *, actor, message_id, decision: EscalationDecision) -> None:
+        if not isinstance(decision, EscalationDecision):
+            raise MessageShapeError("Use an Escalated queue decision.")
+        with self.repository.transaction() as unit:
+            self._require(unit, actor, Role.ADMIN)
+            message = unit.get_message(message_id)
+            if message.assessment.outcome is not MessageOutcome.ESCALATED:
+                raise MessageConflictError("Message is not Escalated.")
+            previous = unit.get_escalation_decision(message_id)
+            if previous is decision:
+                return
+            if previous is not None:
+                raise MessageConflictError("Escalated review has already completed.")
+            unit.store_escalation_decision(message_id, decision)
+            kind = AuditKind.QUEUE_APPROVED if decision is EscalationDecision.APPROVE else AuditKind.QUEUE_REJECTED
+            self._event(unit, kind, message, actor.principal_id, reasons=message.assessment.identifier_reasons)
+            unit.commit()
 
     def list_review_messages(self, *, actor):
         with self.repository.transaction() as unit:

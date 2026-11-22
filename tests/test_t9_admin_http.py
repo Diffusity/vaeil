@@ -35,3 +35,32 @@ def test_admin_issues_single_use_invite_then_approves_application(repository_url
         approvals = [event for event in events if event.kind.value == "admission_approved"]
         assert len(approvals) == 1 and approvals[0].actor_id == "admin"
         assert code not in applied.text + queue.text + decision.text + reuse.text + repr(events) + caplog.text
+
+
+def test_escalation_decision_is_audited_once_without_retracting_delivery(repository_url):
+    from test_t7_http import client_for as chat_client, login, REQUEST
+    from test_t7_application import Moderator
+    from vaeil.domain.vetting import Verdict
+
+    with open_repository(repository_url) as repo:
+        with chat_client(repo, Moderator(Verdict.APPROVED)) as client:
+            login(client, "a")
+            text = "My number is 98765.43210"
+            sent = client.post("/api/conversations/ab/messages", json={"request_id": REQUEST, "text": text})
+            assert sent.status_code == 202 and sent.json()["outcome"] == "Escalated"
+            identifier = sent.json()["message_id"]
+            route = f"/api/admin/messages/{identifier}/escalation-decision"
+            assert client.post(route, json={"decision": "reject"}).status_code == 403
+            login(client, "admin")
+            assert [item["message_id"] for item in client.get("/api/admin/messages").json()["messages"]] == [identifier]
+            assert client.post(route, json={"decision": "reject"}).status_code == 204
+            assert client.post(route, json={"decision": "reject"}).status_code == 204
+            assert client.post(route, json={"decision": "approve"}).status_code == 409
+            assert client.get("/api/admin/messages").json() == {"messages": []}
+            login(client, "b")
+            delivered = client.get("/api/conversations/ab/messages").json()["delivered"]
+            assert [(item["message_id"], item["text"]) for item in delivered] == [(identifier, text)]
+        with repo.transaction() as unit:
+            entries = unit.list_audit(subject_id=identifier)
+        assert [item.actor_id for item in entries if item.kind.value == "queue_rejected"] == ["admin"]
+        assert not any(item.kind.value == "queue_approved" for item in entries)

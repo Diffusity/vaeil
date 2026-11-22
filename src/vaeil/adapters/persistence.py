@@ -390,9 +390,21 @@ class SqlUnitOfWork:
 
     def list_review_message_ids(self):
         return tuple(row[0] for row in self._execute(select(messages.c.message_id).where(
-            (messages.c.review_state == m.ReviewState.PENDING.value) | (messages.c.outcome == m.MessageOutcome.ESCALATED.value)
+            (messages.c.review_state == m.ReviewState.PENDING.value) | (
+                (messages.c.outcome == m.MessageOutcome.ESCALATED.value)
+                & ~select(escalation_decisions.c.message_id).where(
+                    escalation_decisions.c.message_id == messages.c.message_id).exists()
+            )
             ).order_by(messages.c.created_at, messages.c.message_id)))
 
+
+    def get_escalation_decision(self, message_id: str):
+        value = self._execute(select(escalation_decisions.c.decision).where(
+            escalation_decisions.c.message_id == message_id)).scalar_one_or_none()
+        return None if value is None else m.EscalationDecision(value)
+
+    def store_escalation_decision(self, message_id: str, decision: m.EscalationDecision):
+        self._execute(insert(escalation_decisions).values(message_id=message_id, decision=decision.value))
 
     def get_reveal_consents(self, conversation_id):
         from vaeil.domain.reveal import RevealConsents
@@ -510,6 +522,11 @@ messages = Table(
     Column('review_state', String, nullable=False), Column('provenance', String, nullable=False),
     Column('created_at', String, nullable=False), Column('delivered_at', String),
     UniqueConstraint('conversation_id', 'sender_id', 'request_id', name='message_request_owner'),
+)
+escalation_decisions = Table(
+    "escalation_decisions", metadata,
+    Column("message_id", String, ForeignKey("messages.message_id"), primary_key=True),
+    Column("decision", String, nullable=False),
 )
 message_review_claims = Table(
     'message_review_claims', metadata,
