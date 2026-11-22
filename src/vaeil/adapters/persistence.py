@@ -13,7 +13,7 @@ from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain import messaging as m
 from vaeil.domain.privacy import PrivateDate, PrivateText
-from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError
+from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError, InviteConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
@@ -293,6 +293,10 @@ class SqlUnitOfWork:
                 or 'messages.' in str(original) or 'message_review_claims.' in str(original)
             ):
                 raise m.MessageConflictError('Message conflicts with an existing request or review.') from None
+            if isinstance(error, IntegrityError) and (
+                constraint == "invites_pkey" or "invites.code_digest" in str(original)
+            ):
+                raise InviteConflictError("Invite issuance conflicts with an existing Invite.") from None
             raise RepositoryError("Repository operation failed.") from None
 
     def commit(self) -> None:

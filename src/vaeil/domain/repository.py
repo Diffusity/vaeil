@@ -24,6 +24,10 @@ class ApplicationConflictError(RepositoryError):
     """An application conflicts with a stored principal; no input is echoed."""
 
 
+class InviteConflictError(RepositoryError):
+    """An Invite digest already exists."""
+
+
 class AuditKind(str, Enum):
     INVITE_REDEEMED = "invite_redeemed"
     VETTING_APPROVED = "vetting_approved"
