@@ -60,6 +60,12 @@ class SessionGrant(PrivateRecord):
     __str__ = __repr__
 
 
+@dataclass(frozen=True, slots=True)
+class IssuedInvite(PrivateRecord):
+    __getstate__ = PrivateRecord.__getstate__
+    invite_code: str = field(repr=False)
+
+
 def token_digest(token: str) -> str:
     if not isinstance(token, str) or not token:
         raise AuthenticationError("Invalid credentials.")
@@ -141,6 +147,14 @@ class AdmissionApplication:
         if principal is None or principal.role is not role or principal.admission is not AdmissionStatus.APPROVED:
             raise AccessDeniedError("Access is not permitted.")
         return principal
+
+    def issue_invite(self, *, actor: SessionPrincipal) -> IssuedInvite:
+        with self.repository.transaction() as unit:
+            admin = self._require(unit, actor, Role.ADMIN)
+            code = self.tokens.new_token()
+            unit.issue_invite(code, issuer_id=admin.identity.member_id)
+            unit.commit()
+        return IssuedInvite(code)
 
     def pending_applications(self, *, actor: SessionPrincipal):
         with self.repository.transaction() as unit:

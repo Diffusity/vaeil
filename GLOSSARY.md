@@ -79,7 +79,7 @@ A real name, email address, phone number, or social handle that ties text to a M
 _Avoid_: PII, personal data, doxxing
 
 **Escalated**:
-A Message approved by safety moderation, including audited human release, but identifier-flagged before Reveal; delivered, queued for Admin review and audited.
+A Message approved by safety moderation, including audited human release, but identifier-flagged before Reveal; delivered, queued for Admin review and audited. The Admin decision closes the queue item without retracting delivery.
 _Avoid_: flagged, suspicious, quarantined
 
 **Reveal**:

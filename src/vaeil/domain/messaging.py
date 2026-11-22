@@ -191,6 +191,11 @@ class MessageRecord(PrivateRecord):
         return self.__reduce__()
 
 
+class EscalationDecision(str, Enum):
+    APPROVE = "approve"
+    REJECT = "reject"
+
+
 class MessageReviewDecision(str, Enum):
     RELEASE = 'release'
     DISCARD = 'discard'

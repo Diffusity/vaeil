@@ -11,7 +11,7 @@ from vaeil.domain import InvalidPseudonymError, PseudonymAlreadySetError, Pseudo
 from vaeil.domain.admission import ApplicationNoteError
 from vaeil.domain.authentication import AuthenticationError, AccessDeniedError, AdmissionConflictError, AdmissionDecision
 from vaeil.domain.profile import InvalidValuesProfileError, ProfileDraftInput, profile_draft_payload
-from vaeil.domain.repository import RepositoryError, ApplicationConflictError
+from vaeil.domain.repository import RepositoryError, ApplicationConflictError, InviteConflictError
 from vaeil.adapters.authentication import PasswordPolicyError, PasswordBusyError
 
 COOKIE = "vaeil_session"
@@ -32,7 +32,7 @@ def attach_admission_routes(app, provider, *, message_provider=None, reveal_prov
         ApplicationNoteError: (400, "invalid_note"), InvalidValuesProfileError: (400, "invalid_profile"),
         InvalidPseudonymError: (400, "invalid_pseudonym"), PseudonymAlreadySetError: (409, "pseudonym_fixed"),
         PseudonymTakenError: (409, "pseudonym_taken"), AdmissionConflictError: (409, "admission_conflict"),
-        ApplicationConflictError: (409, "application_conflict"),
+        ApplicationConflictError: (409, "application_conflict"), InviteConflictError: (409, "invite_conflict"),
         RepositoryError: (503, "unavailable"), PasswordBusyError: (503, "busy"), PasswordPolicyError: (400, "password_policy"),
     }
     for error_type, (status, reason) in errors.items():
@@ -118,6 +118,12 @@ def attach_admission_routes(app, provider, *, message_provider=None, reveal_prov
         except TypeError:
             raise HTTPException(400, detail="Invalid request.") from None
         return safe_response(own_payload(application.save_own_profile(actor=principal, draft=draft)))
+
+    @app.post("/api/admin/invites", dependencies=[Depends(check_origin)])
+    def issue_invite(body: dict = Body(default={}), principal=Depends(actor), application=Depends(provider)):
+        exact(body, set())
+        issued = application.issue_invite(actor=principal)
+        return safe_response({"invite_code": issued.invite_code}, 201)
 
     @app.get("/api/admin/applications")
     def applications(principal=Depends(actor), application=Depends(provider)):
