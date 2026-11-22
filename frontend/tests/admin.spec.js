@@ -39,3 +39,29 @@ test('Admin issues an Invite and approves the resulting pending application', as
   await expect(pending).toHaveCount(0);
   await expect(consolePanel.getByText('No applications awaiting review.')).toBeVisible();
 });
+
+test('queue decisions wait for both initial responses before refreshing', async ({ page }) => {
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/admin/messages', async route => {
+    await held;
+    await route.fulfill({ json: { messages: [] } });
+  });
+  await page.route('**/api/admin/applications', route => route.fulfill({
+    json: { applications: [{ applicant_id: 'fixture', application_note: 'A queued application.' }] },
+  }));
+  try {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await page.getByLabel('Email', { exact: true }).fill('browser.admin@example.invalid');
+    await page.getByLabel('Password', { exact: true }).fill('Fictional admin password');
+    await page.getByRole('button', { name: 'Continue' }).click();
+    const approve = page.getByRole('button', { name: 'Approve', exact: true });
+    await expect(approve).toBeVisible();
+    await expect(approve).toBeDisabled({ timeout: 2000 });
+    release();
+    await expect(approve).toBeEnabled();
+  } finally {
+    release();
+  }
+});

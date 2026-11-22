@@ -104,7 +104,10 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
     });
   }
 
+  const queuesLoading = pending.status === 'loading' || moderation.status === 'loading';
+
   function recordDecision(path: string, decision: string) {
+    if (queuesLoading) return;
     return run(async signal => {
       await request(path, signal, { decision });
       if (signal.aborted) return;
@@ -133,7 +136,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
       {queueStatus(queue, 'No items in this queue.')}
       {!!queue.items.length && <ul>{queue.items.map(item => <li key={item.message_id}>
         <p>{item.text}</p>
-        {options.map(decision => <button key={decision} disabled={working}
+        {options.map(decision => <button key={decision} disabled={working || queuesLoading}
           onClick={() => void recordDecision('/api/admin/messages/' + encodeURIComponent(item.message_id) + '/' + endpoint, decision)}>
           {decision[0].toUpperCase() + decision.slice(1)}
         </button>)}
@@ -148,7 +151,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
       <label>Issued Invite code<input readOnly value={code} /></label>
       <button onClick={() => void copyInvite()} disabled={working}>Copy Invite</button>
     </>}
-    <button onClick={() => void run(refresh)} disabled={working || pending.status === 'loading' || moderation.status === 'loading'}>Refresh queues</button>
+    <button onClick={() => void run(refresh)} disabled={working || queuesLoading}>Refresh queues</button>
     {status && <p role="status">{status}</p>}
     {error && <p role="alert">{error}</p>}
     <section>
@@ -156,7 +159,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
       {queueStatus(pending, 'No applications awaiting review.')}
       {!!pending.items.length && <ul>{pending.items.map(item => <li key={item.applicant_id}>
         <p>{item.application_note}</p>
-        {['approve', 'reject'].map(decision => <button key={decision} disabled={working}
+        {['approve', 'reject'].map(decision => <button key={decision} disabled={working || queuesLoading}
           onClick={() => void recordDecision('/api/admin/applications/' + encodeURIComponent(item.applicant_id) + '/decision', decision)}>
           {decision === 'approve' ? 'Approve' : 'Reject'}
         </button>)}
