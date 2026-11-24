@@ -13,6 +13,7 @@ from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain import messaging as m
 from vaeil.domain.matching import Match, MatchDecision, MatchNotFoundError
+from vaeil.domain.safety import Report, ReportDecision, ReportReason, ReportNotFoundError
 from vaeil.domain.privacy import PrivateDate, PrivateText
 from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError, InviteConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
@@ -47,6 +48,17 @@ conversations = Table(
     Column("participant_two", String, ForeignKey("members.member_id"), nullable=False),
     Column("revealed", Boolean, nullable=False),
     Column("blocked", Boolean, nullable=False),
+)
+
+reports = Table(
+    "reports", metadata,
+    Column("report_id", String, primary_key=True),
+    Column("conversation_id", String, ForeignKey("conversations.conversation_id"), nullable=False),
+    Column("reporter_id", String, ForeignKey("members.member_id"), nullable=False),
+    Column("reason", String, nullable=False),
+    Column("created_at", String, nullable=False),
+    Column("decision", String),
+    UniqueConstraint("conversation_id", "reporter_id", name="report_conversation_reporter"),
 )
 
 audit_events = Table(
@@ -289,6 +301,35 @@ class SqlUnitOfWork:
         previous = self.get_member(member_id)
         member = d.Member(previous.identity, previous.pseudonym, profile)
         self._execute(update(members).where(members.c.member_id == member_id).values(profile=member_to_row(member)["profile"]))
+
+    @staticmethod
+    def _report_from_row(row) -> Report:
+        decision = None if row["decision"] is None else ReportDecision(row["decision"])
+        return Report(row["report_id"], row["conversation_id"], row["reporter_id"], ReportReason(row["reason"]),
+                      datetime.fromisoformat(row["created_at"]), decision)
+
+    def find_report(self, conversation_id, reporter_id):
+        row = self._execute(select(reports).where(reports.c.conversation_id == conversation_id,
+                                                   reports.c.reporter_id == reporter_id)).mappings().one_or_none()
+        return None if row is None else self._report_from_row(row)
+
+    def add_report(self, report: Report):
+        self._execute(insert(reports).values(report_id=report.report_id, conversation_id=report.conversation_id,
+            reporter_id=report.reporter_id, reason=report.reason.value, created_at=report.created_at.isoformat()))
+
+    def get_report(self, report_id: str) -> Report:
+        row = self._execute(select(reports).where(reports.c.report_id == report_id)).mappings().one_or_none()
+        if row is None:
+            raise ReportNotFoundError("Report not found.")
+        return self._report_from_row(row)
+
+    def list_pending_reports(self):
+        rows = self._execute(select(reports).where(reports.c.decision.is_(None)).order_by(
+            reports.c.created_at, reports.c.report_id)).mappings()
+        return tuple(self._report_from_row(row) for row in rows)
+
+    def set_report_decision(self, report_id: str, decision: ReportDecision):
+        self._execute(update(reports).where(reports.c.report_id == report_id).values(decision=decision.value))
 
     def append_audit(self, event: AuditEvent) -> None:
         if not isinstance(event, AuditEvent):

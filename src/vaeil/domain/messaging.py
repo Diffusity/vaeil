@@ -258,3 +258,4 @@ class ConversationMessagesView(PrivateRecord):
     conversation_id: str
     delivered: tuple[DeliveredMessageView, ...]
     attempts: tuple[SenderMessageView, ...]
+    blocked: bool = False

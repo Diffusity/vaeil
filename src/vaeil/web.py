@@ -8,6 +8,7 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from vaeil.runtime import RuntimeAdmission
 from vaeil.application.matching import MatchingApplication
+from vaeil.application.safety import SafetyApplication
 from vaeil.http_admission import attach_admission_routes
 import os
 from vaeil.adapters.readiness import check_database_ready
@@ -60,8 +61,11 @@ def create_app(*, admission_application=None, message_application=None, reveal_a
     def matching_provider(application=Depends(admission_provider)):
         return MatchingApplication(application.repository, tokens=application.tokens)
 
+    def safety_provider(application=Depends(admission_provider)):
+        return SafetyApplication(application.repository, tokens=application.tokens, clock=application.clock)
+
     attach_admission_routes(app, admission_provider, message_provider=message_provider,
-                            reveal_provider=reveal_provider, matching_provider=matching_provider)
+                            reveal_provider=reveal_provider, matching_provider=matching_provider, safety_provider=safety_provider)
     member = demo_member()
     context = ConversationRevealState("demo-pair", ("demo-subject", "demo-viewer"), False)
 

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 type Application = { applicant_id: string; application_note: string };
 type Message = { message_id: string; text: string; outcome: 'Withheld' | 'Escalated' };
+const reportLabels = { harassment: 'Harassment', identity_pressure: 'Identity pressure', scam: 'Scam', other: 'Other' };
+type Report = { report_id: string; conversation_id: string; reason: keyof typeof reportLabels; created_at: string };
 type Queue<T> = { items: T[]; status: 'loading' | 'ready' | 'error' };
 
 function record(value: unknown): value is Record<string, unknown> {
@@ -25,6 +27,18 @@ function messages(value: unknown): Message[] {
   });
 }
 
+function reports(value: unknown): Report[] {
+  if (!record(value) || !Array.isArray(value.reports)) throw new Error('Invalid Report queue');
+  return value.reports.map((row: unknown) => {
+    if (!record(row) || typeof row.report_id !== 'string' || typeof row.conversation_id !== 'string'
+        || typeof row.reason !== 'string' || !Object.hasOwn(reportLabels, row.reason)
+        || typeof row.created_at !== 'string' || !Number.isFinite(Date.parse(row.created_at))
+        || row.status !== 'pending') throw new Error('Invalid Report');
+    return { report_id: row.report_id, conversation_id: row.conversation_id,
+      reason: row.reason as Report['reason'], created_at: row.created_at };
+  });
+}
+
 function queueStatus<T>(queue: Queue<T>, empty: string) {
   if (queue.status === 'loading') return <p role="status">Loading queue…</p>;
   if (queue.status === 'error') return <p role="alert">Could not load this queue. Refresh to try again.</p>;
@@ -35,6 +49,7 @@ function queueStatus<T>(queue: Queue<T>, empty: string) {
 export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => void }) {
   const [pending, setPending] = useState<Queue<Application>>({ items: [], status: 'loading' });
   const [moderation, setModeration] = useState<Queue<Message>>({ items: [], status: 'loading' });
+  const [reportQueue, setReportQueue] = useState<Queue<Report>>({ items: [], status: 'loading' });
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -69,6 +84,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
     await Promise.all([
       load('/api/admin/applications', applications, setPending),
       load('/api/admin/messages', messages, setModeration),
+      load('/api/admin/reports', reports, setReportQueue),
     ]);
   }, [request]);
 
@@ -104,7 +120,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
     });
   }
 
-  const queuesLoading = pending.status === 'loading' || moderation.status === 'loading';
+  const queuesLoading = pending.status === 'loading' || moderation.status === 'loading' || reportQueue.status === 'loading';
 
   function recordDecision(path: string, decision: string) {
     if (queuesLoading) return;
@@ -178,6 +194,18 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
     </section>
     {messageQueue('Withheld', 'Messages under review')}
     {messageQueue('Escalated', 'Escalated deliveries')}
-    <section><h4>Reports</h4><p>Report queue is unavailable.</p></section>
+    <section aria-labelledby="reports-heading">
+      <h4 id="reports-heading">Reports</h4>
+      {queueStatus(reportQueue, 'No Reports awaiting review.')}
+      {!!reportQueue.items.length && <ul>{reportQueue.items.map(item => <li key={item.report_id}>
+        <p>{reportLabels[item.reason]} · Pending review</p>
+        <p>Report {item.report_id}</p>
+        <p>Conversation {item.conversation_id} · <time dateTime={item.created_at}>{item.created_at}</time></p>
+        {['approve', 'reject'].map(decision => <button key={decision} disabled={working || queuesLoading}
+          onClick={() => void recordDecision('/api/admin/reports/' + encodeURIComponent(item.report_id) + '/decision', decision)}>
+          {decision === 'approve' ? 'Approve' : 'Reject'}
+        </button>)}
+      </li>)}</ul>}
+    </section>
   </section>;
 }

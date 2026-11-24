@@ -31,6 +31,8 @@ def attach_message_routes(app, provider, *, actor, check_origin, exact, safe_res
     @app.get('/api/conversations/{conversation_id}/messages')
     def read(conversation_id: str, principal=Depends(actor), messages=Depends(provider)):
         view = messages.read_conversation(actor=principal, conversation_id=conversation_id)
+        if view.blocked:
+            return safe_response(dict(conversation_id=view.conversation_id, blocked=True, delivered=[], attempts=[]))
         return safe_response(dict(conversation_id=view.conversation_id,
             delivered=[dict(message_id=item.message_id, sender_id=item.sender_id, text=item.text,
                             delivered_at=item.delivered_at.isoformat()) for item in view.delivered],

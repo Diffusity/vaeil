@@ -135,3 +135,7 @@ Parth approves docs/specs/t8-reveal-seam.md to move forward. This satisfies prop
 ## 2026-11-24 T10 Matching seam approved
 
 Parth approved the proposed T10 weights and integer rounding, canonical pair tie-break, greedy disjoint proposals, at most one pending Match per Member, and no repeat introduction after a pair opened a Conversation. The approved interface still requires two acceptances and preserves the existing active/Blocked rules, values-only scope and exact anonymous partner view. Supersede only if Parth changes the Matching policy. No deployment or merge authorization from the seam approval.
+
+## 2026-11-24 T11 Block and Report seam approved
+
+Parth approved the closed shell behavior, reason codes and one Report per participant, terminal Admin disposition without automatic Block, and API-only Member Report submission. Keep the already-completed Reveal and permanent Block exclusion. This approval covers implementation, not merge or deployment.

@@ -5,7 +5,7 @@ from vaeil.domain.member import project_member_for_viewer
 from vaeil.domain.repository import AuditEvent, AuditKind
 from vaeil.domain.reveal import (
     DeliveredMessageEvidence, RevealStatusView, RevealActorError,
-    is_reveal_eligible, change_reveal_consent,
+    is_reveal_eligible, change_reveal_consent, RevealBlockedError,
 )
 
 
@@ -57,6 +57,8 @@ class RevealApplication:
     def read_partner(self, *, actor, conversation_id):
         with self.repository.transaction() as unit:
             conversation = self._pair(unit, actor, conversation_id)
+            if conversation.blocked:
+                raise RevealBlockedError("This Conversation is closed.")
             other = next(identifier for identifier in conversation.participant_ids if identifier != actor.principal_id)
             return project_member_for_viewer(unit.get_member(other), viewer_id=actor.principal_id,
                                             conversation=conversation.reveal_state())

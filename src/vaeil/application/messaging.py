@@ -138,6 +138,8 @@ class MessageApplication:
     def read_conversation(self, *, actor, conversation_id):
         with self.repository.transaction() as unit:
             conversation = self._pair(unit, actor, conversation_id)
+            if conversation.blocked:
+                return ConversationMessagesView(conversation_id, (), (), blocked=True)
             delivered = tuple(DeliveredMessageView(message) for message in unit.list_delivered_messages(conversation_id))
             attempts = tuple(self._receipt(message, processing=unit.message_is_processing(message.message_id),
                 open_for_chat=conversation.open_for_chat,

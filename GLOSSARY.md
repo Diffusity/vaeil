@@ -95,7 +95,7 @@ An action available at any time; it ends the Conversation and prevents any futur
 _Avoid_: unmatch, ban
 
 **Report**:
-A flag a Member can raise against the other Member.
+A typed reason a Member submits about the other participant in a Conversation. It stays available after Block. Each participant can submit one Report per Conversation for an Admin decision.
 _Avoid_: complaint, flag
 
 **Audit log**:

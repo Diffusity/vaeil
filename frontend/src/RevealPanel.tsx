@@ -34,7 +34,9 @@ function partnerFrom(value: unknown, revealed: boolean): Partner {
 }
 const label = (code: string) => code.replaceAll('_', ' ');
 
-export function RevealPanel({ conversationId, onUnauthorized }: { conversationId: string; onUnauthorized: () => void }) {
+export function RevealPanel({ conversationId, onUnauthorized, onClosed }: {
+  conversationId: string; onUnauthorized: () => void; onClosed: () => void;
+}) {
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -50,18 +52,28 @@ export function RevealPanel({ conversationId, onUnauthorized }: { conversationId
       });
       if (controller.signal.aborted) return;
       if (response.status === 401) { onUnauthorized(); return; }
+      if (response.status === 409) {
+        const failure = record(await response.json());
+        if (controller.signal.aborted) return;
+        if (failure.reason === 'conversation_closed') { onClosed(); return; }
+      }
       if (!response.ok) throw new Error('Unavailable');
       const state = stateFrom(await response.json(), conversationId);
       if (controller.signal.aborted) return;
       const partnerResponse = await fetch(path + '/partner', { credentials: 'same-origin', signal: controller.signal });
       if (controller.signal.aborted) return;
       if (partnerResponse.status === 401) { onUnauthorized(); return; }
+      if (partnerResponse.status === 409) {
+        const failure = record(await partnerResponse.json());
+        if (controller.signal.aborted) return;
+        if (failure.reason === 'conversation_closed') { onClosed(); return; }
+      }
       if (!partnerResponse.ok) throw new Error('Unavailable');
       const partner = partnerFrom(await partnerResponse.json(), state.revealed);
       if (!controller.signal.aborted) setView({ state, partner });
     } catch { if (!controller.signal.aborted) setError('Could not confirm Reveal. Refresh to check the current state.'); }
     finally { if (!controller.signal.aborted) setBusy(false); }
-  }, [path, conversationId, onUnauthorized]);
+  }, [path, conversationId, onUnauthorized, onClosed]);
   useEffect(() => {
     setView(null); void perform();
     return () => operation.current?.abort();

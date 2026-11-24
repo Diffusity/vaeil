@@ -91,11 +91,15 @@ class ConversationDirectory:
 
     def block(self, conversation_id: str, *, actor_id: str) -> Conversation:
         conversation = self.get(conversation_id)
-        if actor_id not in conversation.participant_ids:
-            raise ConversationActorError("Only a participant can Block this Conversation.")
-        blocked = replace(conversation, blocked=True)
+        blocked = block_conversation(conversation, actor_id=actor_id)
         self._conversations[conversation_id] = blocked
         return blocked
+
+
+def block_conversation(conversation: Conversation, *, actor_id: str) -> Conversation:
+    if actor_id not in conversation.participant_ids:
+        raise ConversationActorError("Only a participant can Block this Conversation.")
+    return conversation if conversation.blocked else replace(conversation, blocked=True)
 
 
 def validate_conversation_storage(conversation: Conversation, existing_conversations: tuple[Conversation, ...]) -> None:
