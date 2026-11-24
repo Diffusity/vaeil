@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ProfileForm } from './ProfileForm';
 import { AdminConsole } from './AdminConsole';
+import { MatchPanel } from './MatchPanel';
 import { ConversationPanel } from './ConversationPanel';
 import type { FormEvent } from 'react';
 
@@ -92,7 +93,10 @@ export function AdmissionPanel() {
       <button onClick={() => select('login')} disabled={busy}>Sign in</button>
     </nav>}
     {principal?.role === 'admin' && principal.admission === 'Approved' && <AdminConsole onSessionExpired={sessionExpired} />}
-    {principal?.role === 'member' && principal.admission === 'Approved' && <ProfileForm onSessionExpired={sessionExpired} />}
+    {principal?.role === 'member' && principal.admission === 'Approved' && <>
+      <ProfileForm onSessionExpired={sessionExpired} />
+      <MatchPanel onSessionExpired={sessionExpired} />
+    </>}
     {principal?.role === 'member' && principal.admission === 'Approved' && conversationId
       && <ConversationPanel conversationId={conversationId} onUnauthorized={sessionExpired} />}
     {mode && <form onSubmit={submit}>
