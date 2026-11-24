@@ -36,7 +36,7 @@ def main():
                                              clock=RuntimeClock(), model=HumanReviewModel())
             admission.seed_admin(email='browser.admin@example.invalid', password='Fictional admin password')
             admin = SessionPrincipal('admin', Role.ADMIN, AdmissionStatus.APPROVED)
-            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise'), ('reveal-a', 'FictionalRiver', 'River'), ('reveal-b', 'FictionalMeadow', 'Meadow'), ('matching-a', 'FictionalGrove', 'Horizon'), ('matching-b', 'FictionalOrchard', 'Watchtower')]:
+            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise'), ('reveal-a', 'FictionalRiver', 'River'), ('reveal-b', 'FictionalMeadow', 'Meadow'), ('matching-a', 'FictionalGrove', 'Horizon'), ('matching-b', 'FictionalOrchard', 'Watchtower'), ('safety-a', 'FictionalHarbor', 'Harborview'), ('safety-b', 'FictionalDune', 'Sandstone')]:
                 code = 'invite-' + identifier
                 with repository.transaction() as unit:
                     unit.issue_invite(code, issuer_id='admin')
@@ -52,6 +52,7 @@ def main():
                     about='<b>Quiet afternoons.</b>' if identifier == 'matching-b' else ''))
             with repository.transaction() as unit:
                 unit.store_conversation(Conversation('browser-conversation', ('browser-a', 'browser-b')))
+                unit.store_conversation(Conversation('safety-conversation', ('safety-a', 'safety-b')))
                 unit.commit()
         from datetime import timedelta
         from uuid import UUID

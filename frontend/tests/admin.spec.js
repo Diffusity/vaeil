@@ -18,7 +18,7 @@ test('Admin issues an Invite and approves the resulting pending application', as
   await expect(code).toHaveValue(/^[A-Za-z0-9_-]{40,}$/);
   const invite = await code.inputValue();
   await expect(consolePanel.getByRole('button', { name: 'Copy Invite' })).toBeEnabled();
-  await expect(consolePanel.getByText('Report queue is unavailable.')).toBeVisible();
+  await expect(consolePanel.getByText('No Reports awaiting review.')).toBeVisible();
 
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(code).toHaveCount(0);
