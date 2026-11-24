@@ -12,11 +12,22 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from vaeil import domain as d
 from vaeil.domain import conversation as c
 from vaeil.domain import messaging as m
+from vaeil.domain.matching import Match, MatchDecision, MatchNotFoundError
 from vaeil.domain.privacy import PrivateDate, PrivateText
 from vaeil.domain.repository import AuditEvent, AuditKind, MemberNotFoundError, RepositoryError, StoredSession, ApplicationConflictError, InviteConflictError
 from vaeil.domain.pseudonym import validate_pseudonym_candidate
 
 metadata = MetaData()
+matches = Table(
+    "matches", metadata,
+    Column("match_id", String, primary_key=True),
+    Column("first_id", String, ForeignKey("members.member_id"), nullable=False),
+    Column("second_id", String, ForeignKey("members.member_id"), nullable=False),
+    Column("first_decision", String),
+    Column("second_decision", String),
+    Column("conversation_id", String, ForeignKey("conversations.conversation_id"), unique=True),
+    UniqueConstraint("first_id", "second_id", name="match_unordered_pair"),
+)
 members = Table(
     "members", metadata,
     Column("member_id", String, primary_key=True),
@@ -127,6 +138,47 @@ class SqlUnitOfWork:
         if row is None:
             raise MemberNotFoundError("Member not found.")
         return row_to_member(row)
+
+    def list_matching_members(self) -> tuple[d.Member, ...]:
+        rows = self._execute(select(members).join(
+            principals, principals.c.principal_id == members.c.member_id
+        ).where(principals.c.role == Role.MEMBER.value,
+                principals.c.admission == AdmissionStatus.APPROVED.value)).mappings()
+        return tuple(row_to_member(row) for row in rows)
+
+    def list_conversations(self) -> tuple[c.Conversation, ...]:
+        return tuple(row_to_conversation(row) for row in self._execute(select(conversations)).mappings())
+
+    def list_matches(self) -> tuple[Match, ...]:
+        return tuple(self._read_matches(select(matches)))
+
+    def list_member_matches(self, member_id: str) -> tuple[Match, ...]:
+        statement = select(matches).where((matches.c.first_id == member_id) | (matches.c.second_id == member_id))
+        return tuple(self._read_matches(statement))
+
+    def get_match(self, match_id: str) -> Match:
+        match = next(self._read_matches(select(matches).where(matches.c.match_id == match_id)), None)
+        if match is None:
+            raise MatchNotFoundError("Match not found.")
+        return match
+
+    def _read_matches(self, statement):
+        for row in self._execute(statement.order_by(matches.c.match_id)).mappings():
+            yield Match(row["match_id"], (row["first_id"], row["second_id"]),
+                        tuple(None if value is None else MatchDecision(value)
+                              for value in (row["first_decision"], row["second_decision"])),
+                        row["conversation_id"])
+
+    def create_match(self, match: Match) -> None:
+        first, second = match.participant_ids
+        self._execute(insert(matches).values(match_id=match.match_id, first_id=first, second_id=second))
+
+    def update_match(self, match: Match) -> None:
+        first, second = match.decisions
+        self._execute(update(matches).where(matches.c.match_id == match.match_id).values(
+            first_decision=None if first is None else first.value,
+            second_decision=None if second is None else second.value,
+            conversation_id=match.conversation_id))
 
     def store_conversation(self, conversation: c.Conversation) -> None:
         existing = tuple(row_to_conversation(row) for row in self._execute(select(conversations)).mappings())

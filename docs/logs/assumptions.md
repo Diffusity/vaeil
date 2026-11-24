@@ -131,3 +131,7 @@ Parth explicitly authorizes code-review of T7 PR29 and Nevil-assigned H1 PR28 ag
 ## 2026-11-17 T8 seam approved
 
 Parth approves docs/specs/t8-reveal-seam.md to move forward. This satisfies proposed domain/application/storage/HTTP/browser seam and transition semantics; publish T8 under#7 and implement tests-first. No merge/deployment/provider work authorized. Existing Reveal/Clock/identity/privacy rules unchanged; Rule5partial.
+
+## 2026-11-24 T10 Matching seam approved
+
+Parth approved the proposed T10 weights and integer rounding, canonical pair tie-break, greedy disjoint proposals, at most one pending Match per Member, and no repeat introduction after a pair opened a Conversation. The approved interface still requires two acceptances and preserves the existing active/Blocked rules, values-only scope and exact anonymous partner view. Supersede only if Parth changes the Matching policy. No deployment or merge authorization from the seam approval.

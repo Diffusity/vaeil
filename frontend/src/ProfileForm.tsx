@@ -12,7 +12,7 @@ type Draft = {
   about: string;
 };
 
-const singleChoices = {
+export const singleChoices = {
   relationship_intent: { label: 'Relationship intent', options: [['long_term', 'Long-term relationship'], ['open_to_relationship', 'Open to a relationship'], ['still_exploring', 'Still exploring']] },
   life_stage: { label: 'Life stage', options: [['undergraduate', 'Undergraduate'], ['postgraduate', 'Postgraduate'], ['working', 'Working'], ['between_study_and_work', 'Between study and work']] },
   communication_style: { label: 'Communication style', options: [['direct', 'Direct'], ['reflective', 'Reflective'], ['expressive', 'Expressive'], ['balanced', 'Balanced']] },

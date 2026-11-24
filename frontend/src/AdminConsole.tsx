@@ -116,6 +116,16 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
     });
   }
 
+  function proposeMatches() {
+    return run(async signal => {
+      const response = await request('/api/admin/matches', signal, {});
+      const value: unknown = await response.json();
+      if (!record(value) || typeof value.created !== 'number' || !Number.isSafeInteger(value.created) || value.created < 0)
+        throw new Error('Invalid Match count');
+      if (!signal.aborted) setStatus(value.created === 1 ? '1 Match proposed.' : value.created + ' Matches proposed.');
+    });
+  }
+
   function copyInvite() {
     return run(async signal => {
       try {
@@ -152,6 +162,7 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
       <button onClick={() => void copyInvite()} disabled={working}>Copy Invite</button>
     </>}
     <button onClick={() => void run(refresh)} disabled={working || queuesLoading}>Refresh queues</button>
+    <button onClick={() => void proposeMatches()} disabled={working}>Propose Matches</button>
     {status && <p role="status">{status}</p>}
     {error && <p role="alert">{error}</p>}
     <section>

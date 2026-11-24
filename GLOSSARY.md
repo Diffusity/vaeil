@@ -49,7 +49,7 @@ _Avoid_: setup, intake, signup flow
 ### Matching
 
 **Match**:
-A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again.
+A pairing of two Members proposed for anonymous Conversation; its Conversation opens when both Members accept, and a declined Match is never proposed again. A Member has at most one pending Match, and a pair already introduced through a Conversation is not proposed again.
 _Avoid_: introduction, pairing, date
 
 **Icebreaker**:

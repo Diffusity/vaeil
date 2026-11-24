@@ -36,7 +36,7 @@ def main():
                                              clock=RuntimeClock(), model=HumanReviewModel())
             admission.seed_admin(email='browser.admin@example.invalid', password='Fictional admin password')
             admin = SessionPrincipal('admin', Role.ADMIN, AdmissionStatus.APPROVED)
-            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise'), ('reveal-a', 'FictionalRiver', 'River'), ('reveal-b', 'FictionalMeadow', 'Meadow')]:
+            for identifier, legal_name, pseudonym in [('browser-a', 'FictionalSun', 'Sunbeam'), ('browser-b', 'FictionalMoon', 'Moonrise'), ('reveal-a', 'FictionalRiver', 'River'), ('reveal-b', 'FictionalMeadow', 'Meadow'), ('matching-a', 'FictionalGrove', 'Horizon'), ('matching-b', 'FictionalOrchard', 'Watchtower')]:
                 code = 'invite-' + identifier
                 with repository.transaction() as unit:
                     unit.issue_invite(code, issuer_id='admin')
@@ -48,7 +48,8 @@ def main():
                 actor = SessionPrincipal(identifier, Role.MEMBER, AdmissionStatus.APPROVED)
                 admission.save_own_profile(actor=actor, draft=ProfileDraftInput(pseudonym=pseudonym,
                     relationship_intent='long_term', life_stage='undergraduate', interests=['reading'], values=['honesty'],
-                    communication_style='direct', pace_and_lifestyle='quiet_and_routine'))
+                    communication_style='direct', pace_and_lifestyle='quiet_and_routine',
+                    about='<b>Quiet afternoons.</b>' if identifier == 'matching-b' else ''))
             with repository.transaction() as unit:
                 unit.store_conversation(Conversation('browser-conversation', ('browser-a', 'browser-b')))
                 unit.commit()
