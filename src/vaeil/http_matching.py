@@ -40,4 +40,3 @@ def attach_matching_routes(app, provider, *, actor, check_origin, exact, safe_re
         except (TypeError, ValueError):
             raise HTTPException(400, detail="Invalid Match decision.") from None
         return safe_response(match_payload(matching.decide_match(actor=principal, match_id=match_id, decision=decision)))
-

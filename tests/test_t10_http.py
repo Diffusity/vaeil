@@ -148,3 +148,89 @@ def test_concurrent_batches_and_retried_accepts_create_only_one_match_and_conver
         assert first == retry and first.conversation_id
         with repo.transaction() as unit:
             assert {item.conversation_id for item in unit.list_conversations()} == {"ab", first.conversation_id}
+
+
+
+def test_stale_slot_does_not_record_acceptance_and_pair_can_retry(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    from dataclasses import replace
+    from threading import Barrier
+    import pytest
+    from vaeil.application.matching import MatchingApplication
+    from vaeil.domain.conversation import Conversation
+    from vaeil.domain.matching import MatchConflictError, MatchDecision
+
+    with open_repository(repository_url) as repo:
+        chat, actors, _ = setup(repo)
+        matching = MatchingApplication(repo, tokens=chat.tokens)
+        with repo.transaction() as unit:
+            unit.store_conversation(replace(unit.get_conversation("ab"), revealed=True))
+            unit.commit()
+        assert matching.propose_matches(actor=actors["admin"]) == 1
+        pending, = matching.read_matches(actor=actors["a"])
+        with repo.transaction() as unit:
+            competing = Conversation("other-active", ("b", "c"))
+            unit.store_conversation(competing)
+            unit.commit()
+
+        def accept(who):
+            return matching.decide_match(actor=actors[who], match_id=pending.match_id,
+                                         decision=MatchDecision.ACCEPT)
+
+        first = accept("a")
+        assert first.state == "pending"
+        with pytest.raises(MatchConflictError):
+            accept("c")
+        current, = matching.read_matches(actor=actors["c"])
+        assert current.decision is None and current.conversation_id is None
+        with repo.transaction() as unit:
+            unit.store_conversation(replace(competing, revealed=True))
+            unit.commit()
+
+        # In the clean separate B-C history, the later A-C acceptance can safely be retried.
+        gate = Barrier(2)
+
+        def attempt(who):
+            gate.wait(timeout=10)
+            return accept(who)
+
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            replies = tuple(workers.map(attempt, ("a", "c")))
+        final, = matching.read_matches(actor=actors["a"])
+        assert final.state == "accepted"
+        assert {reply.conversation_id for reply in replies} - {None} == {final.conversation_id}
+        with repo.transaction() as unit:
+            assert {item.conversation_id for item in unit.list_conversations()} == {
+                "ab", "other-active", final.conversation_id,
+            }
+
+
+def test_simultaneous_distinct_members_accept_one_new_conversation(repository_url):
+    from concurrent.futures import ThreadPoolExecutor
+    from dataclasses import replace
+    from threading import Barrier
+    from vaeil.application.matching import MatchingApplication
+    from vaeil.domain.matching import MatchDecision
+
+    with open_repository(repository_url) as repo:
+        chat, actors, _ = setup(repo)
+        matching = MatchingApplication(repo, tokens=chat.tokens)
+        with repo.transaction() as unit:
+            unit.store_conversation(replace(unit.get_conversation("ab"), revealed=True))
+            unit.commit()
+        assert matching.propose_matches(actor=actors["admin"]) == 1
+        pending, = matching.read_matches(actor=actors["a"])
+        gate = Barrier(2)
+
+        def accept(who):
+            gate.wait(timeout=10)
+            return matching.decide_match(actor=actors[who], match_id=pending.match_id,
+                                         decision=MatchDecision.ACCEPT)
+
+        with ThreadPoolExecutor(max_workers=2) as workers:
+            replies = tuple(workers.map(accept, ("a", "c")))
+        assert sorted(reply.state for reply in replies) == ["accepted", "pending"]
+        accepted = next(reply for reply in replies if reply.state == "accepted")
+        assert accepted.conversation_id
+        with repo.transaction() as unit:
+            assert {item.conversation_id for item in unit.list_conversations()} == {"ab", accepted.conversation_id}

@@ -85,4 +85,3 @@ class MatchingApplication:
             view = self._view(unit, match, actor.principal_id)
             unit.commit()
             return view
-
