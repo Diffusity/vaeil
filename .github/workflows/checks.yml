@@ -54,6 +54,10 @@ jobs:
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
         run: python scripts/mutate_matching.py
+      - name: Kill T11 Block and Report mutations
+        env:
+          VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres
+        run: python scripts/mutate_safety.py
       - name: Verify restored contracts and privacy boundary
         env:
           VAEIL_TEST_POSTGRES_URL: postgresql://postgres:contract-test-only@127.0.0.1:5432/postgres

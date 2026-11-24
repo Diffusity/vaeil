@@ -192,3 +192,45 @@ def test_block_and_reports_roll_back_on_audit_failure_and_serialize_retries(repo
         assert matching.propose_matches(actor=admin) == 1
         proposal, = matching.read_matches(actor=a)
         assert proposal.partner.pseudonym.value == "Star"
+
+
+
+def test_public_block_wins_during_moderation_and_releases_no_body(repository_url):
+    import pytest
+    from vaeil.application.safety import SafetyApplication
+    from vaeil.domain.messaging import MessageBlockedError
+
+    with open_repository(repository_url) as repo:
+        class BlockingModerator:
+            def moderate(self, _text):
+                safety.block_conversation(actor=actors["b"], conversation_id="ab")
+                return Verdict.APPROVED
+
+        messages, actors, clock = setup(repo, BlockingModerator())
+        safety = SafetyApplication(repo, tokens=messages.tokens, clock=clock)
+        with pytest.raises(MessageBlockedError):
+            messages.send_message(actor=actors["a"], conversation_id="ab",
+                                  request_id=REQUEST, text="NeverDeliveredCanary")
+        with repo.transaction() as unit:
+            assert unit.list_delivered_messages("ab") == ()
+            assert [event.kind.value for event in unit.list_audit(subject_id="ab")] == ["conversation_blocked"]
+
+
+def test_completed_reveal_survives_block_and_both_members_can_report(repository_url):
+    from test_t8_application import reveal_setup
+    from vaeil.application.safety import SafetyApplication
+    from vaeil.domain.safety import ReportDecision, ReportReason
+
+    with open_repository(repository_url) as repo:
+        reveal, messages, actors, clock = reveal_setup(repo)
+        a, b, admin = actors["a"], actors["b"], actors["admin"]
+        safety = SafetyApplication(repo, tokens=messages.tokens, clock=clock)
+        reveal.set_reveal_consent(actor=a, conversation_id="ab", consent=True)
+        assert reveal.set_reveal_consent(actor=b, conversation_id="ab", consent=True).revealed
+        report = safety.submit_report(actor=b, conversation_id="ab", reason=ReportReason.OTHER)
+        safety.decide_report(actor=admin, report_id=report.report_id, decision=ReportDecision.APPROVE)
+        with repo.transaction() as unit:
+            assert unit.get_conversation("ab").open_for_chat
+        assert safety.block_conversation(actor=a, conversation_id="ab").revealed
+        assert safety.submit_report(actor=a, conversation_id="ab", reason=ReportReason.HARASSMENT).report_id != report.report_id
+        assert reveal.read_reveal(actor=b, conversation_id="ab").revealed
