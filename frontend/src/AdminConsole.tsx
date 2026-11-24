@@ -198,7 +198,8 @@ export function AdminConsole({ onSessionExpired }: { onSessionExpired: () => voi
       <h4 id="reports-heading">Reports</h4>
       {queueStatus(reportQueue, 'No Reports awaiting review.')}
       {!!reportQueue.items.length && <ul>{reportQueue.items.map(item => <li key={item.report_id}>
-        <p>{reportLabels[item.reason]}</p>
+        <p>{reportLabels[item.reason]} · Pending review</p>
+        <p>Report {item.report_id}</p>
         <p>Conversation {item.conversation_id} · <time dateTime={item.created_at}>{item.created_at}</time></p>
         {['approve', 'reject'].map(decision => <button key={decision} disabled={working || queuesLoading}
           onClick={() => void recordDecision('/api/admin/reports/' + encodeURIComponent(item.report_id) + '/decision', decision)}>

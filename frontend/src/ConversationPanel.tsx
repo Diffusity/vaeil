@@ -51,6 +51,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
   const [view, setView] = useState<View | null>(null);
   const [text, setText] = useState('');
   const [confirmingBlock, setConfirmingBlock] = useState(false);
+  const [blocking, setBlocking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState<{ message_id: string; text: string } | null>(null);
@@ -58,6 +59,13 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
   const unresolved = useRef<{ text: string; key: string } | null>(null);
   const conversationPath = `/api/conversations/${encodeURIComponent(conversationId)}`;
   const path = conversationPath + '/messages';
+
+  const closeView = useCallback(() => {
+    operation.current?.abort();
+    setView({ blocked: true, delivered: [], attempts: [] });
+    setText(''); setRetry(null); setConfirmingBlock(false); unresolved.current = null;
+    setError(''); setBusy(false); setBlocking(false);
+  }, []);
 
   const begin = () => {
     operation.current?.abort();
@@ -85,7 +93,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
     finally { if (!controller.signal.aborted) setBusy(false); }
   }, [conversationId, path, onUnauthorized]);
   useEffect(() => {
-    setView(null); setRetry(null); setText(''); setConfirmingBlock(false); unresolved.current = null;
+    setView(null); setRetry(null); setText(''); setConfirmingBlock(false); setBlocking(false); unresolved.current = null;
     void load();
     return () => operation.current?.abort();
   }, [load]);
@@ -108,7 +116,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
       if (response.status === 409) {
         const failure = object(await response.json());
         if (controller.signal.aborted) return;
-        if (failure.reason === 'conversation_closed') { await load(); return; }
+        if (failure.reason === 'conversation_closed') { closeView(); return; }
       }
       if (!response.ok) { setError(response.status === 409 ? 'This request or Message text already has a decision. Refresh or change your Message.'
         : 'Could not send. Your text is still here; review it and retry.'); return; }
@@ -133,7 +141,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
       if (response.status === 409) {
         const failure = object(await response.json());
         if (controller.signal.aborted) return;
-        if (failure.reason === 'conversation_closed') { await load(); return; }
+        if (failure.reason === 'conversation_closed') { closeView(); return; }
       }
       if (!response.ok) throw new Error('Unavailable');
       const item = receipt(await response.json(), conversationId);
@@ -147,7 +155,8 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
   }
 
   async function block() {
-    const controller = begin(); setBusy(true); setError('');
+    if (blocking) return;
+    const controller = begin(); setBlocking(true); setBusy(true); setError('');
     try {
       const response = await fetch(conversationPath + '/block', {
         method: 'POST', credentials: 'same-origin', signal: controller.signal,
@@ -158,11 +167,10 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
       const result = object(await response.json());
       if (controller.signal.aborted) return;
       if (result.conversation_id !== conversationId || result.blocked !== true) throw new Error('Invalid Block response');
-      setView({ blocked: true, delivered: [], attempts: [] });
-      setText(''); setRetry(null); setConfirmingBlock(false); unresolved.current = null;
+      closeView();
     } catch {
       if (!controller.signal.aborted) setError('Could not confirm the Block. Refresh the Conversation and try again.');
-    } finally { if (!controller.signal.aborted) setBusy(false); }
+    } finally { if (!controller.signal.aborted) { setBusy(false); setBlocking(false); } }
   }
 
   function compose(event: FormEvent<HTMLFormElement>) {
@@ -171,7 +179,7 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
 
   return <section aria-labelledby="conversation-heading">
     <h2 id="conversation-heading">Conversation</h2>
-    {view && !view.blocked && <RevealPanel conversationId={conversationId} onUnauthorized={onUnauthorized} />}
+    {view && !view.blocked && <RevealPanel conversationId={conversationId} onUnauthorized={onUnauthorized} onClosed={closeView} />}
     <p>Messages are checked before delivery. Demo only — use fictional details.</p>
     <button disabled={busy} onClick={() => void load()}>Refresh Conversation</button>
     {busy && <p role="status">Checking…</p>}
@@ -180,9 +188,9 @@ export function ConversationPanel({ conversationId, onUnauthorized }: { conversa
     {view && !view.blocked && <>
       {confirmingBlock ? <div aria-label="Confirm ending this Conversation">
         <p>Blocking ends this Conversation and prevents another Match with this Member.</p>
-        <button disabled={busy} onClick={() => void block()}>Confirm Block</button>
-        <button disabled={busy} onClick={() => setConfirmingBlock(false)}>Cancel Block</button>
-      </div> : <button disabled={busy} onClick={() => setConfirmingBlock(true)}>Block Conversation</button>}
+        <button disabled={blocking} onClick={() => void block()}>Confirm Block</button>
+        <button disabled={blocking} onClick={() => setConfirmingBlock(false)}>Cancel Block</button>
+      </div> : <button disabled={blocking} onClick={() => setConfirmingBlock(true)}>Block Conversation</button>}
       <div role="log" aria-label="Delivered Messages">
         {view.delivered.length === 0 && <p>No delivered Messages yet.</p>}
         {view.delivered.map(item => <p className="message-body" key={item.message_id}>{item.text}</p>)}
